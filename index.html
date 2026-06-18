@@ -383,12 +383,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div class="fg" style="margin-bottom:10px"><label>Descrição</label><input type="text" class="colab-input" id="co-desc" placeholder="Detalhes adicionais..." style="margin:0"></div>
         <div style="margin-bottom:12px">
-          <label style="font-size:12px;font-weight:500;color:#94a3b8;display:block;margin-bottom:6px">Foto</label>
-          <div id="co-foto-preview" style="margin-bottom:6px"></div>
-          <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:#334155;color:#94a3b8;padding:8px 14px;border-radius:7px;font-size:13px">
-            📷 Tirar/Escolher foto
-            <input type="file" accept="image/*" capture="environment" style="display:none" onchange="colabFoto(this)">
-          </label>
+          <label style="font-size:12px;font-weight:500;color:#94a3b8;display:block;margin-bottom:6px">Fotos</label>
+          <div style="display:flex;gap:10px;margin-bottom:8px">
+            <div><div id="co-foto-preview" style="margin-bottom:4px"></div>
+              <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:#334155;color:#94a3b8;padding:8px 14px;border-radius:7px;font-size:13px">📷 Foto 1<input type="file" accept="image/*" capture="environment" style="display:none" onchange="colabFoto(1,this)"></label>
+            </div>
+            <div><div id="co-foto2-preview" style="margin-bottom:4px"></div>
+              <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:#334155;color:#94a3b8;padding:8px 14px;border-radius:7px;font-size:13px">📷 Foto 2<input type="file" accept="image/*" capture="environment" style="display:none" onchange="colabFoto(2,this)"></label>
+            </div>
+          </div>
         </div>
         <button class="colab-btn" onclick="colabEnviarOcorr()">✅ Registrar Ocorrência</button>
         <div id="co-success" style="display:none;text-align:center;padding:12px;color:#22c55e;font-weight:600;font-size:14px;margin-top:8px">✅ Ocorrência registrada com sucesso!</div>
@@ -507,6 +510,23 @@ let fdb,storage;
 const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{}};
 let _unsubDay=null;
 
+// Comprime imagem antes de salvar (max 800px, 60% qualidade → ~40-80KB)
+function compressImage(file){
+  return new Promise(resolve=>{
+    const img=new Image(),url=URL.createObjectURL(file);
+    img.onload=()=>{
+      let w=img.width,h=img.height,max=800;
+      if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg',0.6));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);resolve(null);};
+    img.src=url;
+  });
+}
+
 function sanitize(obj){
   if(obj===null||obj===undefined)return null;
   if(typeof obj!=='object')return obj;
@@ -535,7 +555,7 @@ function saveDD(d,data){
   CACHE.dias[d]=data;
   if(!db)return;
   const toSave=JSON.parse(JSON.stringify(data));
-  (toSave.ocorrs||[]).forEach(o=>{if(o.foto&&o.foto.startsWith('data:'))o.foto=null;});
+  (toSave.ocorrs||[]).forEach(o=>{if(o.foto&&o.foto.startsWith('data:'))o.foto=null;if(o.foto2&&o.foto2.startsWith('data:'))o.foto2=null;});
   fdb.collection('dias').doc(d).set(sanitize(toSave));
 }
 function allDays(){return Object.keys(CACHE.dias).sort();}
@@ -643,7 +663,7 @@ async function initFirebase(){
               const data=normalizeDD(raw);
               CACHE.dias[d]=data;
               const toSave=JSON.parse(JSON.stringify(data));
-              (toSave.ocorrs||[]).forEach(o=>{if(o.foto&&o.foto.startsWith('data:'))o.foto=null;});
+              (toSave.ocorrs||[]).forEach(o=>{if(o.foto&&o.foto.startsWith('data:'))o.foto=null;if(o.foto2&&o.foto2.startsWith('data:'))o.foto2=null;});
               await fdb.collection('dias').doc(d).set(sanitize(toSave));
             }
           }catch(e){console.warn('Erro migração '+d,e);}
@@ -888,9 +908,13 @@ function renderOcorrDia(ocorrs){
       </div>
       <div style="display:flex;align-items:flex-end;gap:10px">
         <div class="fg" style="flex:1"><label>Descrição</label><input type="text" value="${o.desc||''}" placeholder="Detalhes..." oninput="db('od${i}',()=>upOcorr(${i},'desc',this.value))"></div>
-        <div><label style="font-size:12px;font-weight:500;color:var(--text-s);display:block;margin-bottom:3px">Foto</label>
-          <label style="cursor:pointer">${o.foto?`<img src="${o.foto}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFoto(${i},this)"></label>
-        </div>
+        <div style="display:flex;gap:6px"><div>
+          <label style="font-size:12px;font-weight:500;color:var(--text-s);display:block;margin-bottom:3px">Foto 1</label>
+          <label style="cursor:pointer">${o.foto?`<img src="${o.foto}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFoto(${i},'foto',this)"></label>
+        </div><div>
+          <label style="font-size:12px;font-weight:500;color:var(--text-s);display:block;margin-bottom:3px">Foto 2</label>
+          <label style="cursor:pointer">${o.foto2?`<img src="${o.foto2}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFoto(${i},'foto2',this)"></label>
+        </div></div>
       </div>
     </div>`;
   }).join('');
@@ -899,24 +923,18 @@ function addOcorr(){
   const d=getDataL(),data=getDD(d);
   if(!data.ocorrs)data.ocorrs=[];
   const now=new Date();const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  data.ocorrs.push({tipo_id:'',resp:'',resp_nome:'',hora,setor:'',subtipo:'',secao:'',rua:'',item:'',cod:'',qtd:0,desc:'',foto:null});
+  data.ocorrs.push({tipo_id:'',resp:'',resp_nome:'',hora,setor:'',subtipo:'',secao:'',rua:'',item:'',cod:'',qtd:0,desc:'',foto:null,foto2:null});
   saveDD(d,data);renderOcorrDia(data.ocorrs);
 }
 function upOcorr(i,field,val){const d=getDataL(),data=getDD(d);if(!data.ocorrs)data.ocorrs=[];data.ocorrs[i][field]=val;saveDD(d,data);}
 function remOcorr(i){const d=getDataL(),data=getDD(d);data.ocorrs.splice(i,1);saveDD(d,data);renderOcorrDia(data.ocorrs);}
-async function upOcorrFoto(i,input){
+async function upOcorrFoto(i,field,input){
   if(!input.files||!input.files[0])return;
-  const file=input.files[0];
-  try{
-    const ref=storage.ref('fotos/'+Date.now()+'_'+file.name);
-    await ref.put(file);
-    const url=await ref.getDownloadURL();
-    const d=getDataL(),data=getDD(d);data.ocorrs[i].foto=url;saveDD(d,data);renderOcorrDia(data.ocorrs);
-  }catch(e){
-    const reader=new FileReader();
-    reader.onload=ev=>{const d=getDataL(),data=getDD(d);data.ocorrs[i].foto=ev.target.result;saveDD(d,data);renderOcorrDia(data.ocorrs);};
-    reader.readAsDataURL(file);
-  }
+  const compressed=await compressImage(input.files[0]);
+  if(!compressed)return;
+  const d=getDataL(),data=getDD(d);
+  data.ocorrs[i][field]=compressed;
+  saveDD(d,data);renderOcorrDia(data.ocorrs);
 }
 function verFoto(src){
   const m=document.createElement('div');
@@ -1168,8 +1186,9 @@ function buildOcorrTable(ocorrs){
       const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'—';
       const resp=users.find(u=>u.mat===o.resp)?.nome||o.resp_nome||'—';
       const loc=[o.setor,o.subtipo,o.secao?'Seção '+o.secao:'',o.rua].filter(Boolean).join(' · ');
-      const fotoHtml=o.foto?'<img src="'+o.foto+'" style="width:32px;height:32px;border-radius:4px;object-fit:cover;cursor:pointer" onclick="verFoto(this.src)">':'—';
-      return '<tr><td>'+(o.hora||'—')+'</td><td><span class="badge bg-red" style="font-size:10px">'+tn+'</span></td><td style="font-size:11px">'+(loc||'—')+'</td><td style="font-size:11px;font-weight:500">'+(o.item||'—')+(o.cod?' <span style="color:var(--text-s);font-size:10px">'+o.cod+'</span>':'')+'</td><td style="text-align:center;font-weight:600">'+(o.qtd||'—')+'</td><td style="font-size:11px">'+resp+'</td><td style="text-align:center">'+fotoHtml+'</td></tr>';
+      const fi=s=>'<img src="'+s+'" style="width:32px;height:32px;border-radius:4px;object-fit:cover;cursor:pointer" onclick="verFoto(this.src)">';
+      const fotoHtml=(o.foto?fi(o.foto):'')+(o.foto2?fi(o.foto2):'')||'—';
+      return '<tr><td>'+(o.hora||'—')+'</td><td><span class="badge bg-red" style="font-size:10px">'+tn+'</span></td><td style="font-size:11px">'+(loc||'—')+'</td><td style="font-size:11px;font-weight:500">'+(o.item||'—')+(o.cod?' <span style="color:var(--text-s);font-size:10px">'+o.cod+'</span>':'')+'</td><td style="text-align:center;font-weight:600">'+(o.qtd||'—')+'</td><td style="font-size:11px">'+resp+'</td><td style="text-align:center;display:flex;gap:3px">'+fotoHtml+'</td></tr>';
     }).join('')+
     '</tbody></table></div>';
 }
@@ -1722,15 +1741,13 @@ function renderColabPainel(){
     </div>`;
   }).join('')+data.cols.filter(c=>c.status==='Atividade Indireta').map(c=>`<div class="mini-rank"><div style="font-size:16px;width:24px;text-align:center">⚡</div><div style="font-size:13px;font-weight:600;color:#f59e0b;flex:1">${nomeCurto(c.nome)}</div><div style="font-size:11px;color:#92400e">Indireta</div></div>`).join('');
 }
-function colabFoto(input){
+async function colabFoto(n,input){
   if(!input.files||!input.files[0])return;
-  window._colabFotoFile=input.files[0];
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const prev=document.getElementById('co-foto-preview');
-    prev.innerHTML=`<img src="${e.target.result}" style="width:80px;height:80px;border-radius:8px;object-fit:cover;border:2px solid #334155">`;
-  };
-  reader.readAsDataURL(input.files[0]);
+  const compressed=await compressImage(input.files[0]);
+  if(!compressed)return;
+  if(n===1)window._colabFoto1=compressed; else window._colabFoto2=compressed;
+  const prev=document.getElementById('co-foto'+(n===2?'2':'')+'-preview');
+  prev.innerHTML=`<img src="${compressed}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #334155">`;
 }
 async function colabEnviarOcorr(){
   const cu=getCU();if(!cu)return;
@@ -1745,22 +1762,17 @@ async function colabEnviarOcorr(){
   const desc=document.getElementById('co-desc').value.trim();
   const now=new Date();
   const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  let foto=null;
-  if(window._colabFotoFile){
-    try{
-      const ref=storage.ref('fotos/'+Date.now()+'_'+window._colabFotoFile.name);
-      await ref.put(window._colabFotoFile);
-      foto=await ref.getDownloadURL();
-    }catch(e){console.warn('Upload foto falhou',e);}
-    window._colabFotoFile=null;
-  }
+  const foto=window._colabFoto1||null;
+  const foto2=window._colabFoto2||null;
+  window._colabFoto1=null;window._colabFoto2=null;
   const d=today();const data=getDD(d);
   if(!data.ocorrs)data.ocorrs=[];
-  data.ocorrs.push({tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,foto});
+  data.ocorrs.push({tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,foto,foto2});
   saveDD(d,data);
   ['co-tipo','co-setor','co-sub'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['co-sec','co-rua','co-item','co-cod','co-qtd','co-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('co-foto-preview').innerHTML='';
+  document.getElementById('co-foto2-preview').innerHTML='';
   const suc=document.getElementById('co-success');suc.style.display='block';setTimeout(()=>suc.style.display='none',3000);
 }
 function renderColabObs(){
