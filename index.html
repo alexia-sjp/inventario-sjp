@@ -826,7 +826,7 @@ function calcColabTotal(c){
   });
   const hInd=parseFloat(c.horas_ind)||0;
   const hProd=Math.max(0,HORAS_BASE-hInd);
-  const hUsed=totalH>0?totalH:hProd;
+  const hUsed=Math.min(totalH>0?totalH:hProd,hProd);
   const metaPond=hUsed>0?metaPeso/hUsed:0;
   const skuh=hUsed>0&&totalSkus>0?totalSkus/hUsed:null;
   const pct=skuh!=null&&metaPond>0?Math.round(skuh/metaPond*100):null;
@@ -1470,6 +1470,18 @@ function renderMensal(){
 
     ${sec('👥','Desempenho por Colaborador')}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">${colCards}</div>
+    ${(()=>{
+      const comDados=users.map(u=>stats[u.mat]).filter(s=>s&&s.cntPct>0);
+      if(!comDados.length)return'';
+      const mediaEquipe=Math.round(comDados.reduce((a,s)=>a+s.somaPct/s.cntPct,0)/comDados.length);
+      const cor=mediaEquipe>=100?'#16a34a':mediaEquipe>=80?'#d97706':'#dc2626';
+      return`<div style="margin-top:10px;padding:12px 16px;background:white;border:1px solid #e2e8f0;border-radius:10px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:12px;color:#64748b;font-weight:500">Média geral da equipe no mês</div>
+        <div style="height:6px;flex:1;background:#f1f5f9;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.min(mediaEquipe,100)}%;background:${cor};border-radius:99px"></div></div>
+        <div style="font-size:20px;font-weight:800;color:${cor}">${mediaEquipe}%</div>
+        <div style="font-size:11px;color:#94a3b8">${totBat} de ${users.length} bateram a meta</div>
+      </div>`;
+    })()}
 
     ${Object.values(stats).some(s=>s.tasks.length)?`
     ${sec('⚡','Atividades Indiretas')}
@@ -1486,6 +1498,27 @@ function renderMensal(){
       <div class="met-card"><div class="ml">Tipo +frequente</div><div class="mv" style="font-size:14px;color:#dc2626">${tipoEnt[0]?.[0]||'—'}</div><div class="ms">${tipoEnt[0]?.[1]||0}×</div></div>
       <div class="met-card"><div class="ml">Setor +crítico</div><div class="mv" style="font-size:14px;color:#d97706">${setorEnt[0]?.[0]||'—'}</div><div class="ms">${setorEnt[0]?.[1]||0}×</div></div>
     </div>
+    ${(()=>{
+      const porSecao={};
+      ocorrs.forEach(o=>{
+        const partes=[o.setor,o.subtipo,o.secao?'Seção '+o.secao:'',o.rua].filter(Boolean);
+        if(partes.length){const k=partes.join(' · ');porSecao[k]=(porSecao[k]||0)+1;}
+      });
+      const top3=Object.entries(porSecao).sort((a,b)=>b[1]-a[1]).slice(0,3);
+      if(!top3.length)return'';
+      const medals=['🥇','🥈','🥉'];
+      return`<div style="background:white;border:1px solid #fecaca;border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">🏴 Seções mais críticas do mês</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${top3.map(([loc,v],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${i===0?'#fef2f2':i===1?'#fff7ed':'#fffbeb'};border-radius:8px">
+            <span style="font-size:20px">${medals[i]}</span>
+            <span style="font-size:13px;font-weight:600;color:#1e293b;flex:1">${loc}</span>
+            <span style="font-size:18px;font-weight:800;color:${i===0?'#dc2626':i===1?'#d97706':'#ca8a04'}">${v}</span>
+            <span style="font-size:11px;color:#94a3b8">ocorrência${v>1?'s':''}</span>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    })()}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
       <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px">
         <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Por tipo</div>
