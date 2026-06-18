@@ -586,7 +586,7 @@ async function initFirebase(){
   try{
     firebase.initializeApp(firebaseConfig);
     db=firebase.firestore();
-    storage=firebase.storage();
+    try{storage=firebase.storage();}catch(e){console.warn('Storage indisponível:',e.message);}
 
     // Carrega config em paralelo
     const[uS,aS,tS,sS,cS,caS]=await Promise.all([
