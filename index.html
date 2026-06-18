@@ -8,7 +8,20 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<style>@keyframes sjp-spin{to{transform:rotate(360deg)}}</style>
+<style>
+@keyframes sjp-spin{to{transform:rotate(360deg)}}
+@media print{
+  .sidebar,.topbar,#tab-lanc,#tab-resumo,.adm-nav,button,select,.dp,#ocorr-busca{display:none!important}
+  .adm-wrap{display:block!important}.main{width:100%!important}
+  .content{padding:0!important}#tab-mensal{display:block!important}
+  body{background:white!important;color:#111!important}
+  .met-card{border:1px solid #ddd!important;background:white!important}
+  .tbl{font-size:11px!important}
+  .badge{border:1px solid #ddd!important}
+  #men-print-header{display:block!important}
+}
+#men-print-header{display:none;margin-bottom:16px;text-align:center}
+</style>
 <style>
 :root{
   --bg:#f0f2f5;--bg-card:#fff;--bg-card2:#f7f8fa;--bg-side:#1a1f2e;--bg-side2:#252b3b;
@@ -277,13 +290,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="topbar">
       <div class="topbar-title" id="page-title">Lançamento</div>
       <div class="topbar-r">
-        <div class="dp"><svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><input type="date" id="data-lanc" onchange="carregarDia()"></div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn" onclick="navDay(-1)" style="padding:6px 9px;font-size:13px">◀</button>
+          <div class="dp"><svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><input type="date" id="data-lanc" onchange="carregarDia()"></div>
+          <button class="btn" onclick="navDay(1)" style="padding:6px 9px;font-size:13px">▶</button>
+        </div>
         <button class="btn" onclick="marcarFer()">🚩 Feriado</button>
         <button class="btn btn-primary" id="btn-salvar" onclick="salvarDia()">💾 Salvar</button>
       </div>
     </div>
     <div class="content">
       <div id="tab-lanc" class="tc on">
+        <div id="ciclo-dash" style="display:none;background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap"></div>
         <div id="fer-aviso" style="display:none" class="fer-bar">🚩 <strong style="color:#f9fafb">Feriado marcado</strong><button onclick="desmarcarFer()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af;text-decoration:underline">Desmarcar</button></div>
         <div id="trend-alerts"></div>
         <div id="linhas-colab"></div>
@@ -305,6 +323,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div style="font-size:13px;font-weight:600;color:#dc2626">⚠️ Ocorrências do dia</div>
             <button class="btn btn-danger" style="font-size:12px" onclick="addOcorr()">+ Registrar ocorrência</button>
           </div>
+          <div style="margin-bottom:8px"><input type="text" id="ocorr-busca" placeholder="🔍 Buscar ocorrência..." oninput="filtrarOcorr(this.value)" style="width:100%;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d);background:white;box-sizing:border-box"></div>
           <div id="lista-ocorr-dia"></div>
         </div>
       </div>
@@ -318,8 +337,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div id="tab-mensal" class="tc">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <select id="sel-mes" onchange="renderMensal()" style="font-size:13px;padding:7px 11px;border-radius:6px;border:1px solid var(--border-d);background:white"></select>
-          <button class="btn btn-primary" onclick="exportarExcel()">📊 Exportar Excel</button>
+          <div style="display:flex;gap:7px">
+            <button class="btn btn-primary" onclick="exportarExcel()">📊 Excel</button>
+            <button class="btn" onclick="imprimirMensal()" style="border-color:#7c3aed;color:#7c3aed">🖨️ PDF</button>
+          </div>
         </div>
+        <div id="men-print-header"></div>
         <div id="men-content"></div>
       </div>
       <div id="tab-config" class="tc">
@@ -830,6 +853,7 @@ function carregarDia(){
   renderObsDia(data.obs);
   renderOcorrDia(data.ocorrs);
   renderTrendAlerts();
+  renderCicloDash();
 }
 function salvarDia(){
   const btn=document.getElementById('btn-salvar');
@@ -888,7 +912,8 @@ function cancelarObs(){document.getElementById('obs-input-wrap').style.display='
 function remObs(i){const d=getDataL(),data=getDD(d);if(!Array.isArray(data.obs))data.obs=[];data.obs.splice(i,1);saveDD(d,data);renderObsDia(data.obs);}
 
 // ── OCORR DIA ──────────────────────────────────────────────────────────────────
-function renderOcorrDia(ocorrs){
+function renderOcorrDia(ocorrs,isFiltered){
+  if(!isFiltered)_ocorrAll=ocorrs||[];
   const cont=document.getElementById('lista-ocorr-dia');
   const tipos=getTipos();const users=getUsers();
   if(!ocorrs||!ocorrs.length){cont.innerHTML='<div style="font-size:12px;color:var(--text-s);padding:4px 0">Nenhuma ocorrência hoje.</div>';return;}
@@ -944,6 +969,66 @@ async function upOcorrFoto(i,field,input){
   const d=getDataL(),data=getDD(d);
   data.ocorrs[i][field]=compressed;
   saveDD(d,data);renderOcorrDia(data.ocorrs);
+}
+function navDay(n){
+  const el=document.getElementById('data-lanc');
+  const d=new Date(el.value+'T12:00:00');
+  d.setDate(d.getDate()+n);
+  el.value=d.toISOString().slice(0,10);
+  carregarDia();
+}
+let _ocorrAll=[];
+function filtrarOcorr(q){
+  const term=q.toLowerCase().trim();
+  const tipos=getTipos();const users=getUsers();
+  const filtered=!term?_ocorrAll:_ocorrAll.filter((o,i)=>{
+    const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'';
+    const resp=users.find(u=>u.mat===o.resp)?.nome||o.resp_nome||'';
+    return [tn,resp,o.setor,o.subtipo,o.item,o.cod,o.desc,o.secao,o.rua].join(' ').toLowerCase().includes(term);
+  });
+  renderOcorrDia(filtered,true);
+}
+function tocarNotificacao(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[880,.15],[1100,.3],[1320,.45]].forEach(([freq,t])=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.frequency.value=freq;o.type='sine';
+      g.gain.setValueAtTime(0,ctx.currentTime+t);
+      g.gain.linearRampToValueAtTime(.25,ctx.currentTime+t+.04);
+      g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+t+.22);
+      o.start(ctx.currentTime+t);o.stop(ctx.currentTime+t+.25);
+    });
+  }catch(e){}
+}
+function imprimirMensal(){
+  const mes=document.getElementById('sel-mes').value;
+  if(!mes){alert('Selecione um mês primeiro.');return;}
+  const nomeMes=new Date(parseInt(mes.split('-')[0]),parseInt(mes.split('-')[1])-1,1)
+    .toLocaleString('pt-BR',{month:'long',year:'numeric'});
+  const hdr=document.getElementById('men-print-header');
+  hdr.innerHTML=`<h2 style="font-size:18px;margin:0 0 4px">Inventário SJP — Fechamento Mensal</h2><p style="color:#555;margin:0">${nomeMes}</p>`;
+  window.print();
+}
+function renderCicloDash(){
+  const ciclo=getCicloAt();const el=document.getElementById('ciclo-dash');if(!el)return;
+  const ini=ciclo.inicio;
+  const dias=allDays().filter(d=>d>=ini).sort();
+  if(!dias.length){el.style.display='none';return;}
+  let totSku=0,totOcorr=0,diasTrab=0;
+  dias.forEach(d=>{
+    const data=getDD(d);if(data.feriado)return;
+    data.cols.forEach(c=>{if(c.status==='Trabalhando'){const r=calcColabTotal(c);totSku+=r.totalSkus;}});
+    totOcorr+=(data.ocorrs||[]).length;
+    if((data.cols||[]).some(c=>c.status==='Trabalhando'))diasTrab++;
+  });
+  const kpi=(lbl,val,cor)=>`<div style="flex:1;min-width:100px;text-align:center"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:3px">${lbl}</div><div style="font-size:20px;font-weight:700;color:${cor}">${val}</div></div>`;
+  el.style.display='flex';
+  el.innerHTML=`<div style="font-size:11px;color:#475569;display:flex;flex-direction:column;justify-content:center;padding-right:16px;border-right:1px solid #334155;margin-right:4px"><div style="font-weight:700;color:#94a3b8">Ciclo ${ciclo.num}</div><div>desde ${fmtDate(ini)}</div></div>`
+    +kpi('SKUs no ciclo',totSku.toLocaleString('pt-BR'),'#38bdf8')
+    +kpi('Dias produtivos',diasTrab,'#a78bfa')
+    +kpi('Ocorrências',totOcorr,totOcorr>0?'#f87171':'#4ade80');
 }
 function verFoto(src){
   const m=document.createElement('div');
@@ -1184,7 +1269,23 @@ function renderResumo(){
       return`<tr style="background:#fffbeb"><td style="font-weight:600">${ti===0?c.nome:''}</td><td><span class="badge bg-amber">${atv.nome}</span></td><td style="text-align:center;font-weight:600">${realH>0?realH+'h':'—'}</td><td style="text-align:center;color:var(--text-s)">${metaH>0?metaH+'h':'—'}</td><td>${metaH>0?`<span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ Dentro do prazo':'⚠️ Acima do esperado'}</span>`:''} ${t.desc||''}</td></tr>`;
     }).join('')).join('')}
     </tbody></table></div>`:''} 
-    ${(data.ocorrs||[]).length?buildOcorrTable(data.ocorrs):''}`;
+    ${(data.ocorrs||[]).length?`
+    ${(()=>{
+      const tipos=getTipos();const porTipo={};
+      (data.ocorrs||[]).forEach(o=>{const n=tipos.find(t=>t.id===o.tipo_id)?.nome||'Sem tipo';porTipo[n]=(porTipo[n]||0)+1;});
+      const ent=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]);const mx=ent[0]?.[1]||1;
+      return`<div style="background:white;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">⚠️ Ocorrências hoje — ${data.ocorrs.length} registro${data.ocorrs.length>1?'s':''}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+        ${ent.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:#475569;width:130px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+          <div style="flex:1;height:10px;background:#fee2e2;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.round(v/mx*100)}%;background:#dc2626;border-radius:99px"></div></div>
+          <span style="font-size:12px;font-weight:700;color:#dc2626;width:16px;text-align:right">${v}</span>
+        </div>`).join('')}
+        </div>
+      </div>`;
+    })()}
+    ${buildOcorrTable(data.ocorrs)}`:''}`;
   }catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px;font-size:13px">Erro ao renderizar: '+e.message+'</div>';console.error('renderResumo error:',e);}
 }
 function buildOcorrTable(ocorrs){
@@ -1269,162 +1370,168 @@ function renderMensal(){
   const totalPoss=users.length*diasU*HORAS_BASE;
   const pctInd=totalPoss>0?Math.round(totHInd/totalPoss*100):0;
 
-  // Semanas chart
+  // ── helpers ──
+  const sec=(icon,title,badge='')=>`<div style="display:flex;align-items:center;gap:8px;margin:20px 0 12px"><div style="font-size:15px">${icon}</div><div style="font-size:13px;font-weight:700;color:#1e293b;letter-spacing:-.01em">${title}</div>${badge?`<span class="badge bg-red" style="margin-left:auto">${badge}</span>`:''}<div style="flex:1;height:1px;background:#e2e8f0;margin-left:8px"></div></div>`;
+
+  // ── semanas chart ──
   const skeys=Object.keys(semanas).sort();
   const maxSkuS=Math.max(...skeys.map(k=>semanas[k].skus),1);
   const maxHIS=Math.max(...skeys.map(k=>semanas[k].hInd),1);
   const semanasHTML=skeys.map(k=>{
     const s=semanas[k];const p=s.meta>0?Math.round(s.skus/s.meta*100):0;
-    const soInd=s.skus===0&&s.hInd>0;
-    const barW=Math.min(s.skus/maxSkuS*100,100);
-    const bc=p>=100?'#16a34a':'#3b82f6';
-    return`<div style="display:grid;grid-template-columns:38px 1fr 48px 70px;gap:8px;align-items:center">
-      <div style="font-size:12px;font-weight:600;color:#64748b">${k}</div>
-      <div style="position:relative;height:16px;background:#f3f4f6;border-radius:4px;overflow:hidden">
-        ${soInd?`<div style="position:absolute;inset:0;background:#fef3c7;border-radius:4px"></div><div style="position:absolute;inset:0;display:flex;align-items:center;padding-left:6px;font-size:10px;font-weight:600;color:#92400e">Indireta · ${s.hInd}h</div>`
-        :`<div style="height:100%;width:${barW}%;background:${bc};border-radius:4px;transition:width .5s"></div>${s.hInd>0?`<div style="position:absolute;top:0;right:0;bottom:0;width:${Math.min(s.hInd/maxHIS*25,30)}%;background:#f59e0b;opacity:.6;border-radius:4px"></div>`:''}`}
+    const soInd=s.skus===0&&s.hInd>0;const barW=Math.min(s.skus/maxSkuS*100,100);const bc=p>=100?'#16a34a':'#3b82f6';
+    return`<div style="display:grid;grid-template-columns:36px 1fr 44px 72px;gap:8px;align-items:center">
+      <div style="font-size:11px;font-weight:700;color:#64748b">${k}</div>
+      <div style="position:relative;height:14px;background:#f1f5f9;border-radius:99px;overflow:hidden">
+        ${soInd?`<div style="position:absolute;inset:0;background:#fef3c7"></div><div style="position:absolute;inset:0;display:flex;align-items:center;padding-left:8px;font-size:10px;font-weight:600;color:#92400e">Indireta · ${s.hInd}h</div>`
+        :`<div style="height:100%;width:${barW}%;background:${bc};border-radius:99px"></div>${s.hInd>0?`<div style="position:absolute;top:0;right:0;bottom:0;width:${Math.min(s.hInd/maxHIS*20,25)}%;background:#f59e0b;opacity:.5;border-radius:99px"></div>`:''}`}
       </div>
-      <div style="font-size:14px;font-weight:700;color:${soInd?'#d97706':bc};text-align:right">${soInd?'IND':p+'%'}</div>
-      <div style="font-size:11px;color:#9ca3af;text-align:right">${s.skus>0?s.skus.toLocaleString('pt-BR')+' SKUs':s.hInd+'h ind.'}</div>
+      <div style="font-size:13px;font-weight:700;color:${soInd?'#d97706':bc};text-align:right">${soInd?'IND':p+'%'}</div>
+      <div style="font-size:11px;color:#94a3b8;text-align:right">${s.skus>0?s.skus.toLocaleString('pt-BR')+' SKU':s.hInd+'h ind.'}</div>
     </div>`;
   }).join('');
 
-  // Férias no mês
-  const feriasHTML=users.map(u=>{
-    if(!u.ferias||!u.ferias.length)return'';
-    const[y,m]=mes.split('-');
-    const fersNoMes=u.ferias.filter(f=>{if(!f.ini||!f.fim)return false;return f.ini.startsWith(`${y}-${m}`)||f.fim.startsWith(`${y}-${m}`)||(`${y}-${m}`>=f.ini.slice(0,7)&&`${y}-${m}`<=f.fim.slice(0,7));});
-    return fersNoMes.map(f=>{
-      const ini=new Date(f.ini);const fim=new Date(f.fim);
-      const dias_fer=Math.round((fim-ini)/(1000*60*60*24))+1;
-      return`<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;margin-bottom:4px;font-size:12px"><span>🌴</span><strong>${u.nome}</strong><span style="color:#64748b">Férias · ${fmtDate(f.ini)} a ${fmtDate(f.fim)} · ${dias_fer} dias</span></div>`;
-    }).join('');
+  // ── colaborador cards ──
+  const colCards=users.map(u=>{
+    const s=stats[u.mat];if(!s)return'';
+    const mediaSKUH=s.cntSKUH>0?(s.somaSKUH/s.cntSKUH).toFixed(1):'—';
+    const mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
+    const bateu=mediaPct!=null&&mediaPct>=100;
+    const hIT=s.hInd+s.hIndDia;
+    const pctDisp=Math.round((diasU*HORAS_BASE-hIT)/(diasU*HORAS_BASE)*100);
+    const soInd=s.dias===0&&s.indDias>0;
+    let badgeRH,cor;
+    if(soInd){badgeRH='⚡ Só Indireta';cor='#7c3aed';}
+    else if(bateu){badgeRH=`✅ Meta atingida`;cor='#16a34a';}
+    else if(mediaPct!=null){badgeRH=`✗ Não bateu`;cor='#dc2626';}
+    else{badgeRH='Sem dados';cor='#94a3b8';}
+    const initials=u.nome.split(' ').map(n=>n[0]).slice(0,2).join('');
+    const avatarBg=bateu?'#dcfce7':soInd?'#ede9fe':'#fee2e2';
+    const avatarCor=bateu?'#15803d':soInd?'#6d28d9':'#b91c1c';
+    const barPct=mediaPct!=null?Math.min(mediaPct,100):0;
+    const barCor=bateu?'#16a34a':mediaPct!=null&&mediaPct>=80?'#d97706':'#dc2626';
+    return`<div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:10px;background:${avatarBg};color:${avatarCor};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">${initials}</div>
+        <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.nome}</div><div style="font-size:11px;color:#94a3b8">Mat. ${u.mat}</div></div>
+        <div style="font-size:11px;font-weight:600;color:${cor};text-align:right">${badgeRH}</div>
+      </div>
+      ${mediaPct!=null?`<div style="height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden"><div style="height:100%;width:${barPct}%;background:${barCor};border-radius:99px"></div></div>`:''}
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center">
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Dias</div><div style="font-size:14px;font-weight:700;color:#334155">${s.dias}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Faltas</div><div style="font-size:14px;font-weight:700;color:${s.faltas>0?'#dc2626':'#94a3b8'}">${s.faltas||'—'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Disp.</div><div style="font-size:14px;font-weight:700;color:${pctDisp>=80?'#16a34a':'#d97706'}">${pctDisp}%</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">SKU/h</div><div style="font-size:14px;font-weight:700;color:${parseFloat(mediaSKUH)>=26?'#16a34a':'#dc2626'}">${mediaSKUH}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Média%</div><div style="font-size:14px;font-weight:700;color:${mediaPct!=null?(bateu?'#16a34a':'#dc2626'):'#94a3b8'}">${mediaPct!=null?mediaPct+'%':'—'}</div></div>
+      </div>
+      ${s.ferias>0||s.atestados>0?`<div style="display:flex;gap:6px;flex-wrap:wrap">${s.ferias>0?`<span style="font-size:11px;padding:2px 8px;background:#f0fdf4;border:1px solid #86efac;border-radius:99px;color:#15803d">🌴 ${s.ferias}d férias</span>`:''} ${s.atestados>0?`<span style="font-size:11px;padding:2px 8px;background:#fff7ed;border:1px solid #fed7aa;border-radius:99px;color:#c2410c">📋 ${s.atestados}d atestado</span>`:''}</div>`:''}
+    </div>`;
   }).join('');
 
-  // Observações agrupadas
-  const obsGrupos={};
-  obsAll.forEach(o=>{const k=o.texto.trim();if(!obsGrupos[k])obsGrupos[k]=[];obsGrupos[k].push(o.data);});
-  const obsHTML=Object.entries(obsGrupos).map(([texto,datas])=>{
-    const sorted=datas.sort();const n=datas.length;
-    const range=n>1?`${fmtDate(sorted[0])} a ${fmtDate(sorted[n-1])} · ${n} dia${n>1?'s':''}`:fmtDate(sorted[0]);
-    return`<div style="border-left:3px solid #3b82f6;padding:6px 10px;margin-bottom:5px;background:#f0f9ff;border-radius:0 6px 6px 0"><div style="font-size:11px;font-weight:600;color:#0369a1;margin-bottom:2px">${range}</div><div style="font-size:12px;color:#1e40af">${texto}</div></div>`;
-  }).join('');
-
-  // Qualidade — cards
+  // ── ocorrências ──
   const tipos=getTipos();
-  const porTipo={};const porSetor={};const porSecao={};
+  const porTipo={};const porSetor={};
   ocorrs.forEach(o=>{
     const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'Sem tipo';
     porTipo[tn]=(porTipo[tn]||0)+1;
     if(o.setor)porSetor[o.setor]=(porSetor[o.setor]||0)+1;
-    const loc=`${o.setor||''}${o.subtipo?' · '+o.subtipo:''}${o.secao?' · Seção '+o.secao:''}${o.rua?' · '+o.rua:''}`;
-    if(loc.trim())porSecao[loc]=(porSecao[loc]||0)+1;
   });
   const diasComOcorr=new Set(ocorrs.map(o=>o.data));
   const tipoEnt=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]);
   const setorEnt=Object.entries(porSetor).sort((a,b)=>b[1]-a[1]);
-  const secaoEnt=Object.entries(porSecao).sort((a,b)=>b[1]-a[1]);
-  const maxTipo=tipoEnt[0]?.[1]||1;
-  const maxSetor=setorEnt[0]?.[1]||1;
-  const maxSecao=secaoEnt[0]?.[1]||1;
+  const maxTipo=tipoEnt[0]?.[1]||1;const maxSetor=setorEnt[0]?.[1]||1;
+
+  // ── observações ──
+  const obsGrupos={};
+  obsAll.forEach(o=>{const k=o.texto.trim();if(!obsGrupos[k])obsGrupos[k]=[];obsGrupos[k].push(o.data);});
+  const obsHTML=Object.entries(obsGrupos).map(([texto,datas])=>{
+    const sorted=datas.sort();const n=datas.length;
+    const range=n>1?`${fmtDate(sorted[0])} – ${fmtDate(sorted[n-1])} · ${n} dias`:fmtDate(sorted[0]);
+    return`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9"><div style="font-size:11px;color:#94a3b8;min-width:130px;flex-shrink:0">${range}</div><div style="font-size:13px;color:#334155">${texto}</div></div>`;
+  }).join('');
 
   cont.innerHTML=`
-    <div class="met-grid">
+    ${sec('📊','Visão Geral do Mês')}
+    <div class="met-grid" style="margin-bottom:0">
       <div class="met-card"><div class="ml">Total SKUs</div><div class="mv" style="color:#3b82f6">${totSku.toLocaleString('pt-BR')}</div></div>
       <div class="met-card"><div class="ml">Média SKU/h</div><div class="mv" style="color:${parseFloat(medG)>=26?'#16a34a':'#d97706'}">${medG}</div></div>
-      <div class="met-card"><div class="ml">Bateram meta</div><div class="mv" style="color:#16a34a">${totBat} / ${users.length}</div></div>
+      <div class="met-card"><div class="ml">Bateram meta</div><div class="mv" style="color:#16a34a">${totBat}<span style="font-size:14px;color:#94a3b8"> / ${users.length}</span></div></div>
       <div class="met-card"><div class="ml">Disponibilidade</div><div class="mv" style="color:${(100-pctInd)>=80?'#16a34a':'#d97706'}">${100-pctInd}%</div><div class="ms">${pctInd}% em indireta</div></div>
     </div>
 
-    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:13px 17px;margin-bottom:12px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div style="font-size:12px;font-weight:600;color:var(--text-s);text-transform:uppercase;letter-spacing:.04em">📊 Semana a Semana — Produção vs Indireta</div>
-        <div style="display:flex;gap:10px;font-size:11px;color:var(--text-s)"><span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3b82f6;margin-right:3px"></span>SKUs</span><span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f59e0b;margin-right:3px"></span>Indireta</span></div>
+    ${sec('📈','Produção Semana a Semana')}
+    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px">
+      <div style="display:flex;gap:14px;font-size:11px;color:#94a3b8;margin-bottom:12px">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#3b82f6;margin-right:4px;vertical-align:middle"></span>Produção</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#f59e0b;margin-right:4px;vertical-align:middle"></span>Indireta</span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:8px">${semanasHTML}</div>
+      <div style="display:flex;flex-direction:column;gap:10px">${semanasHTML}</div>
     </div>
 
-    <div class="tbl-wrap">
-      <table class="tbl"><thead><tr>
-        <th style="width:17%">Colaborador</th><th style="width:5%">Dias</th><th style="width:5%">Faltas</th>
-        <th style="width:5%">Atest.</th><th style="width:5%">Férias</th><th style="width:6%">Ind.(d)</th>
-        <th style="width:6%">H.ind.</th><th style="width:7%">Disp.%</th><th style="width:7%">SKU/h</th>
-        <th style="width:8%">Média%</th><th style="width:9%">Meta</th><th>Resultado RH</th>
-      </tr></thead><tbody>
-      ${users.map(u=>{
-        const s=stats[u.mat];if(!s)return'';
-        const mediaSKUH=s.cntSKUH>0?(s.somaSKUH/s.cntSKUH).toFixed(1):'—';
-        const mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
-        const bateu=mediaPct!=null&&mediaPct>=100;
-        const hIT=s.hInd+s.hIndDia;
-        const pctDisp=Math.round((diasU*HORAS_BASE-hIT)/(diasU*HORAS_BASE)*100);
-        const soInd=s.dias===0&&s.indDias>0;
-        const maiorInd=s.indDias>s.dias;
-        let resRH='',motivo='';
-        if(soInd){resRH=`<span class="badge bg-purple">⚡ Só indireta</span>`;motivo='Dedicação total a atividades indiretas';}
-        else if(bateu){resRH=`<span class="badge bg-green">✅ Bateu — ${mediaPct}%</span>`;motivo='Meta atingida';}
-        else if(mediaPct!=null&&maiorInd){resRH=`<span class="badge bg-amber">⚠️ Avaliar — ${mediaPct}%</span>`;motivo='Mais dias em indireta';}
-        else if(mediaPct!=null){resRH=`<span class="badge bg-red">✗ Não bateu — ${mediaPct}%</span>`;motivo='Produtividade abaixo da meta';}
-        else{resRH=`<span style="color:var(--text-s);font-size:11px">sem dados</span>`;}
-        return`<tr style="${soInd||maiorInd?'background:#fffbeb':''}" title="${motivo}">
-          <td style="font-weight:600">${u.nome}</td>
-          <td style="text-align:center">${s.dias}</td>
-          <td style="text-align:center;color:${s.faltas>0?'#dc2626':'var(--text-s)'}">${s.faltas||'—'}</td>
-          <td style="text-align:center;color:${s.atestados>0?'#dc2626':'var(--text-s)'}">${s.atestados||'—'}</td>
-          <td style="text-align:center;color:${s.ferias>0?'#6b7280':'var(--text-s)'}">${s.ferias||'—'}</td>
-          <td style="text-align:center;color:${s.indDias>0?'#d97706':'var(--text-s)'}"><strong>${s.indDias>0?s.indDias+'d':'—'}</strong></td>
-          <td style="text-align:center;color:${hIT>0?'#d97706':'var(--text-s)'}">${hIT>0?hIT+'h':'—'}</td>
-          <td style="text-align:center;font-weight:600;color:${pctDisp>=80?'#16a34a':pctDisp>=60?'#d97706':'#dc2626'}">${pctDisp}%</td>
-          <td style="text-align:center;font-weight:700;color:${parseFloat(mediaSKUH)>=26?'#16a34a':'#dc2626'}">${mediaSKUH}</td>
-          <td style="text-align:center;font-weight:700;color:${mediaPct!=null?(bateu?'#16a34a':'#dc2626'):'var(--text-s)'}">${mediaPct!=null?mediaPct+'%':'—'}</td>
-          <td style="text-align:center">${mediaPct!=null?`<span class="badge ${bateu?'bg-green':'bg-red'}" style="font-size:10px">${bateu?'✓ Bateu':'✗ Não bateu'}</span>`:'—'}</td>
-          <td>${resRH}${motivo?`<div style="font-size:10px;color:var(--text-s);margin-top:2px">${motivo}</div>`:''}</td>
-        </tr>`;
-      }).join('')}</tbody></table>
-    </div>
-
-    ${feriasHTML?`<div style="margin-bottom:12px">${feriasHTML}</div>`:''}
+    ${sec('👥','Desempenho por Colaborador')}
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">${colCards}</div>
 
     ${Object.values(stats).some(s=>s.tasks.length)?`
-    <div style="font-size:12px;font-weight:600;color:var(--text-s);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em">⚡ Atividades Indiretas — Desempenho</div>
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Colaborador</th><th>Atividade</th><th>Ocorr.</th><th>H.total</th><th>Meta/vez</th><th>Meta total</th><th>Resultado</th></tr></thead><tbody>
-    ${users.map(u=>{const s=stats[u.mat];if(!s||!s.tasks.length)return'';return s.tasks.map((t,ti)=>{const metaT=t.metaVal*t.count;const ok=t.horas<=metaT;return`<tr><td style="font-weight:600">${ti===0?u.nome:''}</td><td><span class="badge bg-amber">${t.nome}</span></td><td style="text-align:center">${t.count}x</td><td style="text-align:center;font-weight:600">${t.horas}h</td><td style="text-align:center;color:var(--text-s)">${t.metaVal}h</td><td style="text-align:center;color:var(--text-s)">${metaT}h</td><td><span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ OK':'⚠️ Excedeu'}</span></td></tr>`;}).join('');}).join('')}
-    </tbody></table></div>`:''}
+    ${sec('⚡','Atividades Indiretas')}
+    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">
+    <div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>Colaborador</th><th>Atividade</th><th>Vezes</th><th>H. total</th><th>Meta/vez</th><th>Resultado</th></tr></thead><tbody>
+    ${users.map(u=>{const s=stats[u.mat];if(!s||!s.tasks.length)return'';return s.tasks.map((t,ti)=>{const metaT=t.metaVal*t.count;const ok=t.horas<=metaT;return`<tr><td style="font-weight:600">${ti===0?u.nome:''}</td><td><span class="badge bg-amber">${t.nome}</span></td><td style="text-align:center">${t.count}×</td><td style="text-align:center;font-weight:700">${t.horas}h</td><td style="text-align:center;color:#94a3b8">${t.metaVal>0?t.metaVal+'h':'—'}</td><td><span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ OK':'⚠️ Excedeu'}</span></td></tr>`;}).join('');}).join('')}
+    </tbody></table></div></div>`:''}
 
     ${ocorrs.length?`
-    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:13px 17px;margin-bottom:12px">
-      <div style="font-size:13px;font-weight:600;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between">
-        <span>🔍 Relatório de Qualidade</span><span class="badge bg-red">${ocorrs.length} ocorrência${ocorrs.length>1?'s':''}</span>
+    ${sec('⚠️','Ocorrências do Mês',ocorrs.length+' registro'+(ocorrs.length>1?'s':''))}
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+      <div class="met-card"><div class="ml">Total</div><div class="mv" style="color:#dc2626">${ocorrs.length}</div></div>
+      <div class="met-card"><div class="ml">Dias afetados</div><div class="mv" style="color:#d97706">${diasComOcorr.size}<span style="font-size:13px;color:#94a3b8"> / ${diasU}</span></div></div>
+      <div class="met-card"><div class="ml">Tipo +frequente</div><div class="mv" style="font-size:14px;color:#dc2626">${tipoEnt[0]?.[0]||'—'}</div><div class="ms">${tipoEnt[0]?.[1]||0}×</div></div>
+      <div class="met-card"><div class="ml">Setor +crítico</div><div class="mv" style="font-size:14px;color:#d97706">${setorEnt[0]?.[0]||'—'}</div><div class="ms">${setorEnt[0]?.[1]||0}×</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Por tipo</div>
+        ${tipoEnt.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+          <span style="font-size:12px;color:#475569;width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+          <div style="flex:1;height:8px;background:#fee2e2;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.round(v/maxTipo*100)}%;background:#dc2626;border-radius:99px"></div></div>
+          <span style="font-size:12px;font-weight:700;color:#dc2626;width:18px;text-align:right">${v}</span>
+        </div>`).join('')}
       </div>
-      <div class="met-grid">
-        <div class="met-card"><div class="ml">Total ocorrências</div><div class="mv" style="color:#dc2626">${ocorrs.length}</div></div>
-        <div class="met-card"><div class="ml">Dias com ocorrência</div><div class="mv" style="color:#d97706">${diasComOcorr.size}</div><div class="ms">de ${diasU} dias</div></div>
-        <div class="met-card"><div class="ml">Tipo mais frequente</div><div class="mv" style="font-size:13px">${tipoEnt[0]?.[0]||'—'}</div><div class="ms">${tipoEnt[0]?.[1]||0} occ.</div></div>
-        <div class="met-card"><div class="ml">Setor mais crítico</div><div class="mv" style="font-size:13px">${setorEnt[0]?.[0]||'—'}</div><div class="ms">${setorEnt[0]?.[1]||0} occ.</div></div>
+      <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px">
+        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Por setor</div>
+        ${setorEnt.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+          <span style="font-size:12px;color:#475569;width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+          <div style="flex:1;height:8px;background:#fef3c7;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.round(v/maxSetor*100)}%;background:#d97706;border-radius:99px"></div></div>
+          <span style="font-size:12px;font-weight:700;color:#d97706;width:18px;text-align:right">${v}</span>
+        </div>`).join('')}
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
-        <div><div style="font-size:11px;font-weight:600;color:var(--text-s);text-transform:uppercase;margin-bottom:8px">Tipo de ocorrência</div>${tipoEnt.map(([n,v])=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><span style="font-size:12px;color:var(--text-s);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n}</span><div class="rank-bar-h"><div class="rank-bar-hf" style="width:${Math.round(v/maxTipo*100)}%;background:#dc2626"></div></div><span style="font-size:12px;font-weight:600;color:#dc2626;width:20px;text-align:right">${v}</span></div>`).join('')}</div>
-        <div><div style="font-size:11px;font-weight:600;color:var(--text-s);text-transform:uppercase;margin-bottom:8px">Setor operacional</div>${setorEnt.map(([n,v])=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><span style="font-size:12px;color:var(--text-s);width:100px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n}</span><div class="rank-bar-h"><div class="rank-bar-hf" style="width:${Math.round(v/maxSetor*100)}%;background:#d97706"></div></div><span style="font-size:12px;font-weight:600;color:#d97706;width:20px;text-align:right">${v}</span></div>`).join('')}</div>
-        <div><div style="font-size:11px;font-weight:600;color:var(--text-s);text-transform:uppercase;margin-bottom:8px">Localização (setor · seção · rua)</div>${secaoEnt.slice(0,6).map(([n,v])=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:6px"><span style="font-size:11px;color:var(--text-s);width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${n}</span><div class="rank-bar-h"><div class="rank-bar-hf" style="width:${Math.round(v/maxSecao*100)}%;background:#4338ca"></div></div><span style="font-size:12px;font-weight:600;color:#4338ca;width:20px;text-align:right">${v}</span></div>`).join('')}</div>
-      </div>
-      <div class="tbl-wrap" style="margin-bottom:0">
-        <table class="tbl"><thead><tr><th style="width:10%">Data</th><th style="width:16%">Tipo</th><th style="width:15%">Setor · Subtipo</th><th style="width:12%">Seção · Rua</th><th style="width:18%">Item</th><th style="width:9%">Código</th><th style="width:6%">Qtd</th><th style="width:10%">Responsável</th><th style="width:4%">📷</th></tr></thead><tbody>
-        ${ocorrs.map(o=>{
-          const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'—';
-          const resp=getUsers().find(u=>u.mat===o.resp)?.nome||o.resp_nome||'—';
-          return`<tr><td style="font-size:11px">${fmtDate(o.data)} ${o.hora?'· '+o.hora:''}</td><td><span class="badge bg-red" style="font-size:10px">${tn}</span></td><td style="font-size:11px">${[o.setor,o.subtipo].filter(Boolean).join(' · ')||'—'}</td><td style="font-size:11px">${[o.secao?'S.'+o.secao:'',o.rua].filter(Boolean).join(' · ')||'—'}</td><td style="font-size:11px;font-weight:500">${o.item||'—'}</td><td style="font-size:11px">${o.cod||'—'}</td><td style="text-align:center;font-weight:600">${o.qtd||'—'}</td><td style="font-size:11px">${resp}</td><td>${o.foto?`<img src="${o.foto}" style="width:28px;height:28px;border-radius:3px;object-fit:cover;cursor:pointer" onclick="verFoto('${o.foto}')">` :'—'}</td></tr>`;
-        }).join('')}
-        </tbody></table>
-      </div>
+    </div>
+    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">
+      <div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>Data · Hora</th><th>Tipo</th><th>Localização</th><th>Item</th><th>Qtd</th><th>Responsável</th><th>📷</th></tr></thead><tbody>
+      ${ocorrs.map(o=>{
+        const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'—';
+        const resp=getUsers().find(u=>u.mat===o.resp)?.nome||o.resp_nome||'—';
+        const loc=[o.setor,o.subtipo,o.secao?'Seção '+o.secao:'',o.rua].filter(Boolean).join(' · ');
+        const fi=s=>`<img src="${s}" style="width:28px;height:28px;border-radius:4px;object-fit:cover;cursor:pointer" onclick="verFoto(this.src)">`;
+        const fotos=(o.foto?fi(o.foto):'')+(o.foto2?fi(o.foto2):'')||'—';
+        return`<tr>
+          <td style="font-size:11px;white-space:nowrap">${fmtDate(o.data)}${o.hora?' · '+o.hora:''}</td>
+          <td><span class="badge bg-red" style="font-size:10px">${tn}</span></td>
+          <td style="font-size:11px">${loc||'—'}</td>
+          <td style="font-size:11px;font-weight:500">${o.item||'—'}${o.cod?` <span style="color:#94a3b8;font-size:10px">${o.cod}</span>`:''}</td>
+          <td style="text-align:center;font-weight:700">${o.qtd||'—'}</td>
+          <td style="font-size:11px">${resp}</td>
+          <td style="display:flex;gap:3px">${fotos}</td>
+        </tr>`;
+      }).join('')}
+      </tbody></table></div>
     </div>`:''}
 
     ${obsHTML?`
-    <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:13px 17px;margin-bottom:12px">
-      <div style="font-size:12px;font-weight:600;color:var(--text-s);text-transform:uppercase;margin-bottom:10px">📝 Observações do mês <span style="font-weight:400;color:var(--text-s)">(${obsAll.length} registros em ${new Set(obsAll.map(o=>o.data)).size} dias)</span></div>
+    ${sec('📝','Observações do Mês')}
+    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:2px 16px">
       ${obsHTML}
     </div>`:''}
 
-    <div style="font-size:11px;color:var(--text-s);margin-top:6px">* Média % mês = soma dos % diários ÷ dias produtivos. Meta = ≥100%.</div>`;
+    <div style="font-size:11px;color:#94a3b8;margin-top:16px;padding:10px 0;border-top:1px solid #f1f5f9">* Média % mês = soma dos % diários ÷ dias produtivos. Meta = ≥100%.</div>`;
   }catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px;font-size:13px">Erro ao renderizar: '+e.message+'</div>';console.error('renderMensal error:',e);}
 }
 
@@ -1778,6 +1885,7 @@ async function colabEnviarOcorr(){
   if(!data.ocorrs)data.ocorrs=[];
   data.ocorrs.push({tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,foto,foto2});
   saveDD(d,data);
+  tocarNotificacao();
   ['co-tipo','co-setor','co-sub'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['co-sec','co-rua','co-item','co-cod','co-qtd','co-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('co-foto-preview').innerHTML='';
