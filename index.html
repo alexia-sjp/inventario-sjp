@@ -583,11 +583,23 @@ function subscribeToConfig(){
 // ── INICIALIZAÇÃO FIREBASE ───────────────────────────────────────────────────
 async function initFirebase(){
   const loadEl=document.getElementById('loading-screen');
+  const setMsg=m=>{if(loadEl){const el=loadEl.querySelector('div:last-child');if(el)el.textContent=m;}};
+  // Timeout de segurança — 20s
+  const timeout=setTimeout(()=>{
+    if(loadEl)loadEl.innerHTML=`<div style="color:white;text-align:center;padding:20px">
+      <div style="font-size:36px;margin-bottom:12px">⏱️</div>
+      <div style="font-size:15px;margin-bottom:6px">Conexão demorou demais</div>
+      <div style="font-size:12px;color:#64748b;margin-bottom:16px">Verifique sua internet ou o Firestore no Firebase Console.</div>
+      <button onclick="location.reload()" style="padding:10px 22px;border-radius:8px;border:none;background:#3b82f6;color:white;cursor:pointer;font-size:14px">Tentar novamente</button>
+    </div>`;
+  },20000);
   try{
+    setMsg('Iniciando Firebase...');
     firebase.initializeApp(firebaseConfig);
     db=firebase.firestore();
     try{storage=firebase.storage();}catch(e){console.warn('Storage indisponível:',e.message);}
 
+    setMsg('Carregando configurações...');
     // Carrega config em paralelo
     const[uS,aS,tS,sS,cS,caS]=await Promise.all([
       db.collection('config').doc('users').get(),
@@ -640,12 +652,14 @@ async function initFirebase(){
     }
 
     subscribeToConfig();
+    clearTimeout(timeout);
     if(loadEl)loadEl.style.display='none';
     const cu=getCU();
     if(cu)iniciarApp(cu);
     else document.getElementById('login-screen').style.display='flex';
 
   }catch(e){
+    clearTimeout(timeout);
     console.error('Erro Firebase:',e);
     if(loadEl)loadEl.innerHTML=`<div style="color:white;text-align:center;padding:20px">
       <div style="font-size:36px;margin-bottom:12px">⚠️</div>
