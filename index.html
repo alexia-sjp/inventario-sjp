@@ -503,7 +503,7 @@ const firebaseConfig={
 };
 
 // ── CACHE & FIRESTORE ────────────────────────────────────────────────────────
-let db,storage;
+let fdb,storage;
 const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{}};
 let _unsubDay=null;
 
@@ -525,31 +525,31 @@ function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||null}catch(e){
 
 // Getters síncronos — leem do cache
 function getUsers(){return CACHE.users||JSON.parse(JSON.stringify(USERS_DEFAULT));}
-function saveUsers(u){CACHE.users=u;db&&db.collection('config').doc('users').set({data:sanitize(u)});}
+function saveUsers(u){CACHE.users=u;fdb&&ffdb.collection('config').doc('users').set({data:sanitize(u)});}
 function getAtivs(){return CACHE.ativs||JSON.parse(JSON.stringify(ATIVS_DEFAULT));}
-function saveAtivs(a){CACHE.ativs=a;db&&db.collection('config').doc('atividades').set({data:sanitize(a)});}
+function saveAtivs(a){CACHE.ativs=a;fdb&&ffdb.collection('config').doc('atividades').set({data:sanitize(a)});}
 function getTipos(){return CACHE.tipos||JSON.parse(JSON.stringify(TIPOS_DEFAULT));}
-function saveTipos(t){CACHE.tipos=t;db&&db.collection('config').doc('tipos').set({data:sanitize(t)});}
+function saveTipos(t){CACHE.tipos=t;fdb&&ffdb.collection('config').doc('tipos').set({data:sanitize(t)});}
 function getDD(d){const raw=CACHE.dias[d]||{feriado:false,cols:[],obs:[],ocorrs:[]};return JSON.parse(JSON.stringify(raw));}
 function saveDD(d,data){
   CACHE.dias[d]=data;
   if(!db)return;
   const toSave=JSON.parse(JSON.stringify(data));
   (toSave.ocorrs||[]).forEach(o=>{if(o.foto&&o.foto.startsWith('data:'))o.foto=null;});
-  db.collection('dias').doc(d).set(sanitize(toSave));
+  fdb.collection('dias').doc(d).set(sanitize(toSave));
 }
 function allDays(){return Object.keys(CACHE.dias).sort();}
 function getSetoresAtivos(){return CACHE.setores||[];}
-function saveSetoresAtivos(s){CACHE.setores=s;db&&db.collection('config').doc('setores').set({data:sanitize(s)});}
+function saveSetoresAtivos(s){CACHE.setores=s;fdb&&ffdb.collection('config').doc('setores').set({data:sanitize(s)});}
 function getCiclos(){return CACHE.ciclos||[];}
-function saveCiclos(c){CACHE.ciclos=c;db&&db.collection('config').doc('ciclos').set({data:sanitize(c)});}
+function saveCiclos(c){CACHE.ciclos=c;fdb&&ffdb.collection('config').doc('ciclos').set({data:sanitize(c)});}
 function getCicloAt(){return CACHE.cicloAt||{num:1,inicio:today()};}
-function saveCicloAt(c){CACHE.cicloAt=c;db&&db.collection('config').doc('cicloAtual').set({data:sanitize(c)});}
+function saveCicloAt(c){CACHE.cicloAt=c;fdb&&ffdb.collection('config').doc('cicloAtual').set({data:sanitize(c)});}
 
 // ── TEMPO REAL ───────────────────────────────────────────────────────────────
 function subscribeToDay(d){
   if(_unsubDay)_unsubDay();
-  _unsubDay=db.collection('dias').doc(d).onSnapshot({includeMetadataChanges:true},snap=>{
+  _unsubDay=fdb.collection('dias').doc(d).onSnapshot({includeMetadataChanges:true},snap=>{
     if(snap.metadata.hasPendingWrites)return; // escrita própria, ignora
     if(!snap.exists)return;
     const data=normalizeDD(snap.data());
@@ -568,10 +568,10 @@ function subscribeToDay(d){
 }
 function subscribeToConfig(){
   const opts={includeMetadataChanges:true};
-  db.collection('config').doc('users').onSnapshot(opts,s=>{if(!s.metadata.hasPendingWrites&&s.exists)CACHE.users=s.data().data;});
-  db.collection('config').doc('atividades').onSnapshot(opts,s=>{if(!s.metadata.hasPendingWrites&&s.exists)CACHE.ativs=s.data().data;});
-  db.collection('config').doc('tipos').onSnapshot(opts,s=>{if(!s.metadata.hasPendingWrites&&s.exists)CACHE.tipos=s.data().data;});
-  db.collection('config').doc('setores').onSnapshot(opts,s=>{
+  fdb.collection('config').doc('users').onSnapshot(opts,s=>{if(!s.metadata.hasPendingWrites&&s.exists)CACHE.users=s.data().data;});
+  fdb.collection('config').doc('atividades').onSnapshot(opts,s=>{if(!s.metadata.hasPendingWrites&&s.exists)CACHE.ativs=s.data().data;});
+  fdb.collection('config').doc('tipos').onSnapshot(opts,s=>{if(!s.metadata.hasPendingWrites&&s.exists)CACHE.tipos=s.data().data;});
+  fdb.collection('config').doc('setores').onSnapshot(opts,s=>{
     if(!s.metadata.hasPendingWrites&&s.exists){
       CACHE.setores=s.data().data;
       renderTVSetores();
@@ -596,18 +596,18 @@ async function initFirebase(){
   try{
     setMsg('Iniciando Firebase...');
     firebase.initializeApp(firebaseConfig);
-    db=firebase.firestore();
+    fdb=firebase.firestore();
     try{storage=firebase.storage();}catch(e){console.warn('Storage indisponível:',e.message);}
 
     setMsg('Carregando configurações...');
     // Carrega config em paralelo
     const[uS,aS,tS,sS,cS,caS]=await Promise.all([
-      db.collection('config').doc('users').get(),
-      db.collection('config').doc('atividades').get(),
-      db.collection('config').doc('tipos').get(),
-      db.collection('config').doc('setores').get(),
-      db.collection('config').doc('ciclos').get(),
-      db.collection('config').doc('cicloAtual').get(),
+      fdb.collection('config').doc('users').get(),
+      fdb.collection('config').doc('atividades').get(),
+      fdb.collection('config').doc('tipos').get(),
+      fdb.collection('config').doc('setores').get(),
+      fdb.collection('config').doc('ciclos').get(),
+      fdb.collection('config').doc('cicloAtual').get(),
     ]);
 
     // Popula cache — migra do localStorage se Firestore estiver vazio
@@ -619,15 +619,15 @@ async function initFirebase(){
     CACHE.cicloAt=caS.exists?caS.data().data:(lsGet('sjp_ciclo_at')||{num:1,inicio:today()});
 
     // Persiste defaults no Firestore se primeira vez
-    if(!uS.exists)await db.collection('config').doc('users').set({data:sanitize(CACHE.users)});
-    if(!aS.exists)await db.collection('config').doc('atividades').set({data:sanitize(CACHE.ativs)});
-    if(!tS.exists)await db.collection('config').doc('tipos').set({data:sanitize(CACHE.tipos)});
-    if(!sS.exists)await db.collection('config').doc('setores').set({data:sanitize(CACHE.setores)});
-    if(!cS.exists)await db.collection('config').doc('ciclos').set({data:sanitize(CACHE.ciclos)});
-    if(!caS.exists)await db.collection('config').doc('cicloAtual').set({data:sanitize(CACHE.cicloAt)});
+    if(!uS.exists)await fdb.collection('config').doc('users').set({data:sanitize(CACHE.users)});
+    if(!aS.exists)await fdb.collection('config').doc('atividades').set({data:sanitize(CACHE.ativs)});
+    if(!tS.exists)await fdb.collection('config').doc('tipos').set({data:sanitize(CACHE.tipos)});
+    if(!sS.exists)await fdb.collection('config').doc('setores').set({data:sanitize(CACHE.setores)});
+    if(!cS.exists)await fdb.collection('config').doc('ciclos').set({data:sanitize(CACHE.ciclos)});
+    if(!caS.exists)await fdb.collection('config').doc('cicloAtual').set({data:sanitize(CACHE.cicloAt)});
 
     // Carrega todos os dias
-    const diasSnap=await db.collection('dias').get();
+    const diasSnap=await fdb.collection('dias').get();
     const noFirestore=new Set();
     diasSnap.forEach(doc=>{CACHE.dias[doc.id]=normalizeDD(doc.data());noFirestore.add(doc.id);});
 
@@ -644,7 +644,7 @@ async function initFirebase(){
               CACHE.dias[d]=data;
               const toSave=JSON.parse(JSON.stringify(data));
               (toSave.ocorrs||[]).forEach(o=>{if(o.foto&&o.foto.startsWith('data:'))o.foto=null;});
-              await db.collection('dias').doc(d).set(sanitize(toSave));
+              await fdb.collection('dias').doc(d).set(sanitize(toSave));
             }
           }catch(e){console.warn('Erro migração '+d,e);}
         }
@@ -709,7 +709,7 @@ function iniciarApp(u){
   } else {
     document.getElementById('colab-app').style.display='flex';
     document.getElementById('colab-nome').textContent=u.nome.split(' ')[0];
-    if(db)subscribeToDay(today());
+    if(fdb)subscribeToDay(today());
     initColabScreen();
   }
 }
@@ -795,7 +795,7 @@ function carregarDia(){
   if(!data.obs)data.obs=[];
   if(!data.ocorrs)data.ocorrs=[];
   saveDD(d,data);
-  if(db)subscribeToDay(d);
+  if(fdb)subscribeToDay(d);
   document.getElementById('fer-aviso').style.display=data.feriado?'flex':'none';
   renderColab(data.cols);
   renderObsDia(data.obs);
