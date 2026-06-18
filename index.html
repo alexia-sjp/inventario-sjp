@@ -22,19 +22,22 @@
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
 
 /* LOGIN */
-.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1a1f2e 0%,#252b3b 100%)}
-.login-box{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:40px 44px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
-.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px}
-.login-logo-icon{width:44px;height:44px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center}
-.login-logo-icon svg{width:24px;height:24px;fill:white}
-.login-logo-text{color:white;font-size:18px;font-weight:700}
-.login-logo-sub{color:#64748b;font-size:13px}
-.login-label{font-size:13px;font-weight:500;color:#94a3b8;margin-bottom:6px;display:block}
-.login-input{width:100%;background:#0f172a;border:1px solid #334155;border-radius:8px;padding:12px 14px;font-size:15px;color:#f1f5f9;margin-bottom:14px;transition:border-color .15s}
-.login-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
-.login-btn{width:100%;background:var(--accent);color:white;border:none;border-radius:8px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;margin-top:6px;transition:background .15s}
-.login-btn:hover{background:var(--accent-d)}
-.login-err{background:#450a0a;border:1px solid #7f1d1d;color:#fca5a5;border-radius:6px;padding:10px 14px;font-size:13px;margin-top:12px;display:none}
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%,#1e2d4a 0%,#0f172a 70%)}
+.login-box{background:rgba(30,41,59,.85);backdrop-filter:blur(12px);border:1px solid rgba(99,130,180,.18);border-radius:20px;padding:44px 48px;width:100%;max-width:400px;box-shadow:0 32px 80px rgba(0,0,0,.55)}
+.login-logo{display:flex;flex-direction:column;align-items:center;gap:10px;margin-bottom:36px}
+.login-logo-icon{width:56px;height:56px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(59,130,246,.35)}
+.login-logo-icon svg{width:28px;height:28px;fill:white}
+.login-logo-text{color:white;font-size:20px;font-weight:700;letter-spacing:-.02em;text-align:center}
+.login-logo-sub{color:#64748b;font-size:12px;text-align:center;letter-spacing:.06em;text-transform:uppercase}
+.login-field{position:relative;margin-bottom:16px}
+.login-field-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:#475569;font-size:15px;pointer-events:none}
+.login-label{font-size:12px;font-weight:600;color:#64748b;margin-bottom:6px;display:block;letter-spacing:.05em;text-transform:uppercase}
+.login-input{width:100%;background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:13px 14px 13px 38px;font-size:15px;color:#f1f5f9;transition:border-color .15s,box-shadow .15s;box-sizing:border-box}
+.login-input:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}
+.login-btn{width:100%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;transition:opacity .15s,transform .1s;letter-spacing:.01em}
+.login-btn:hover{opacity:.9}
+.login-btn:active{transform:scale(.98)}
+.login-err{background:#450a0a;border:1px solid #7f1d1d;color:#fca5a5;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px;display:none}
 
 /* LAYOUT */
 .adm-wrap{display:flex;min-height:100vh}
@@ -225,12 +228,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="login-box">
     <div class="login-logo">
       <div class="login-logo-icon"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
-      <div><div class="login-logo-text">Inventário SJP</div><div class="login-logo-sub">Controle de Produtividade</div></div>
+      <div class="login-logo-text">Inventário SJP</div>
+      <div class="login-logo-sub">Controle de Produtividade</div>
     </div>
     <label class="login-label">Matrícula</label>
-    <input class="login-input" type="text" id="l-mat" placeholder="Ex: 10380" onkeydown="if(event.key==='Enter')login()">
+    <div class="login-field">
+      <span class="login-field-icon">🪪</span>
+      <input class="login-input" type="text" id="l-mat" placeholder="" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('l-sen').focus();}">
+    </div>
     <label class="login-label">Senha</label>
-    <input class="login-input" type="password" id="l-sen" placeholder="••••••" onkeydown="if(event.key==='Enter')login()">
+    <div class="login-field">
+      <span class="login-field-icon">🔒</span>
+      <input class="login-input" type="password" id="l-sen" placeholder="" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();login();}">
+    </div>
     <button class="login-btn" onclick="login()">Entrar</button>
     <div class="login-err" id="l-err">Matrícula ou senha incorretos.</div>
   </div>
