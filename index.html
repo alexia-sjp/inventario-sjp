@@ -545,26 +545,25 @@ function lsGet(k){try{return JSON.parse(localStorage.getItem(k))||null}catch(e){
 
 // Getters síncronos — leem do cache
 function getUsers(){return CACHE.users||JSON.parse(JSON.stringify(USERS_DEFAULT));}
-function saveUsers(u){CACHE.users=u;fdb&&ffdb.collection('config').doc('users').set({data:sanitize(u)});}
+function saveUsers(u){CACHE.users=u;fdb&&fdb.collection('config').doc('users').set({data:sanitize(u)});}
 function getAtivs(){return CACHE.ativs||JSON.parse(JSON.stringify(ATIVS_DEFAULT));}
-function saveAtivs(a){CACHE.ativs=a;fdb&&ffdb.collection('config').doc('atividades').set({data:sanitize(a)});}
+function saveAtivs(a){CACHE.ativs=a;fdb&&fdb.collection('config').doc('atividades').set({data:sanitize(a)});}
 function getTipos(){return CACHE.tipos||JSON.parse(JSON.stringify(TIPOS_DEFAULT));}
-function saveTipos(t){CACHE.tipos=t;fdb&&ffdb.collection('config').doc('tipos').set({data:sanitize(t)});}
+function saveTipos(t){CACHE.tipos=t;fdb&&fdb.collection('config').doc('tipos').set({data:sanitize(t)});}
 function getDD(d){const raw=CACHE.dias[d]||{feriado:false,cols:[],obs:[],ocorrs:[]};return JSON.parse(JSON.stringify(raw));}
 function saveDD(d,data){
   CACHE.dias[d]=data;
-  if(!db)return;
+  if(!fdb)return;
   const toSave=JSON.parse(JSON.stringify(data));
-  (toSave.ocorrs||[]).forEach(o=>{if(o.foto&&o.foto.startsWith('data:'))o.foto=null;if(o.foto2&&o.foto2.startsWith('data:'))o.foto2=null;});
   fdb.collection('dias').doc(d).set(sanitize(toSave));
 }
 function allDays(){return Object.keys(CACHE.dias).sort();}
 function getSetoresAtivos(){return CACHE.setores||[];}
-function saveSetoresAtivos(s){CACHE.setores=s;fdb&&ffdb.collection('config').doc('setores').set({data:sanitize(s)});}
+function saveSetoresAtivos(s){CACHE.setores=s;fdb&&fdb.collection('config').doc('setores').set({data:sanitize(s)});}
 function getCiclos(){return CACHE.ciclos||[];}
-function saveCiclos(c){CACHE.ciclos=c;fdb&&ffdb.collection('config').doc('ciclos').set({data:sanitize(c)});}
+function saveCiclos(c){CACHE.ciclos=c;fdb&&fdb.collection('config').doc('ciclos').set({data:sanitize(c)});}
 function getCicloAt(){return CACHE.cicloAt||{num:1,inicio:today()};}
-function saveCicloAt(c){CACHE.cicloAt=c;fdb&&ffdb.collection('config').doc('cicloAtual').set({data:sanitize(c)});}
+function saveCicloAt(c){CACHE.cicloAt=c;fdb&&fdb.collection('config').doc('cicloAtual').set({data:sanitize(c)});}
 
 // ── TEMPO REAL ───────────────────────────────────────────────────────────────
 function subscribeToDay(d){
