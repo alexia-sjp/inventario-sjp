@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="skus.js"></script>
 <style>
 @keyframes sjp-spin{to{transform:rotate(360deg)}}
 @media print{
@@ -272,6 +273,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nb on" onclick="goTab('lanc',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>Lançamento</button>
       <button class="nb" onclick="goTab('resumo',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Resumo do Dia</button>
       <button class="nb" onclick="goTab('mensal',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Fechamento Mensal</button>
+      <button class="nb" onclick="goTab('vales',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 14l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Vales</button>
       <div class="nlbl">Configurações</div>
       <button class="nb" onclick="goTab('config',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>Configurações</button>
       <button class="nb" onclick="goTab('setores',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Setores</button>
@@ -303,6 +305,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div id="tab-lanc" class="tc on">
         <div id="ciclo-dash" style="display:none;background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap"></div>
         <div id="fer-aviso" style="display:none" class="fer-bar">🚩 <strong style="color:#f9fafb">Feriado marcado</strong><button onclick="desmarcarFer()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af;text-decoration:underline">Desmarcar</button></div>
+        <div id="ativind-live" style="display:none;margin-bottom:10px"></div>
         <div id="trend-alerts"></div>
         <div id="linhas-colab"></div>
         <button class="btn-dashed" onclick="addLinha()">+ Adicionar Colaborador</button>
@@ -345,6 +348,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div id="men-print-header"></div>
         <div id="men-content"></div>
       </div>
+      <div id="tab-vales" class="tc">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="btn" onclick="navValeDay(-1)" style="padding:6px 9px;font-size:13px">◀</button>
+            <div class="dp"><svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><input type="date" id="data-vales" onchange="carregarVales()"></div>
+            <button class="btn" onclick="navValeDay(1)" style="padding:6px 9px;font-size:13px">▶</button>
+          </div>
+          <div style="display:flex;gap:7px">
+            <button class="btn btn-danger" onclick="addValeItem()">+ Adicionar item</button>
+            <button class="btn btn-primary" onclick="exportarValesExcel()">📊 Excel</button>
+          </div>
+        </div>
+        <div id="vales-status-bar" style="display:none;margin-bottom:12px"></div>
+        <div id="lista-vales"></div>
+      </div>
       <div id="tab-config" class="tc">
         <div class="card" style="margin-bottom:10px">
           <div class="card-hd"><div class="card-title">👥 Equipe</div><button class="btn btn-primary" onclick="addColabForm()">+ Colaborador</button></div>
@@ -353,6 +371,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="card" style="margin-bottom:10px">
           <div class="card-hd"><div class="card-title">📋 Atividades Indiretas</div><button class="btn btn-primary" onclick="addAtiv()">+ Nova</button></div>
           <div style="padding:14px 17px"><div id="lista-ativs"></div></div>
+        </div>
+        <div class="card" style="margin-bottom:10px">
+          <div class="card-hd"><div class="card-title">💡 Atividades Sugeridas <span style="font-size:11px;font-weight:400;color:var(--text-s)">(enviadas pelos colaboradores)</span></div></div>
+          <div style="padding:14px 17px"><div id="lista-sugeridas"><div class="empty">Nenhuma atividade sugerida.</div></div></div>
         </div>
         <div class="card">
           <div class="card-hd"><div class="card-title">⚠️ Tipos de Ocorrência <span style="font-size:11px;font-weight:400;color:var(--text-s)">(só ADM edita)</span></div><button class="btn btn-primary" onclick="addTipoOcorr()">+ Novo tipo</button></div>
@@ -380,6 +402,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
   <div class="colab-tabs">
     <div class="colab-tab on" onclick="colabGoTab('painel',this)">📊 Painel</div>
+    <div class="colab-tab" onclick="colabGoTab('ativind',this)">⚡ Atividade</div>
     <div class="colab-tab" onclick="colabGoTab('ocorr',this)">⚠️ Ocorrência</div>
     <div class="colab-tab" onclick="colabGoTab('obs',this)">📝 Observação</div>
   </div>
@@ -397,6 +420,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="colab-card">
         <div class="colab-card-title">⚡ Ranking do Time</div>
         <div id="colab-ranking"></div>
+      </div>
+    </div>
+    <div id="colab-tc-ativind" class="colab-tc">
+      <div class="colab-card">
+        <div class="colab-card-title">⚡ Atividade Indireta</div>
+        <div id="ativind-em-andamento" style="display:none"></div>
+        <div id="ativind-form">
+          <div class="fg" style="margin-bottom:10px"><label>Selecionar atividade</label>
+            <select class="colab-select" id="ai-sel" style="margin:0" onchange="aiFotoRequired()">
+              <option value="">— escolha uma atividade —</option>
+            </select>
+          </div>
+          <div id="ai-outra-wrap" style="display:none;margin-bottom:10px">
+            <div class="fg"><label>Descreva a atividade</label>
+              <input type="text" class="colab-input" id="ai-outra-desc" placeholder="Ex: Reorganização de prateleiras..." style="margin:0">
+            </div>
+          </div>
+          <button class="colab-btn" onclick="aiIniciar()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)">▶ Iniciar Atividade</button>
+        </div>
+        <div id="ativind-success" style="display:none;text-align:center;padding:12px;color:#22c55e;font-weight:600;font-size:14px;margin-top:8px"></div>
+      </div>
+      <div class="colab-card" style="margin-top:10px">
+        <div class="colab-card-title">📋 Histórico do Mês</div>
+        <div id="ativind-historico"></div>
       </div>
     </div>
     <div id="colab-tc-ocorr" class="colab-tc">
@@ -441,6 +488,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div id="co-obs-list"></div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal finalizar atividade indireta -->
+<div id="ai-fim-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:white;border-radius:14px;padding:22px;width:100%;max-width:380px">
+    <div style="font-size:16px;font-weight:700;color:#1e293b;margin-bottom:14px">⏹ Finalizar Atividade</div>
+    <div id="ai-fim-foto-prev"></div>
+    <label style="cursor:pointer;display:flex;align-items:center;gap:8px;background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:8px;padding:12px 14px;font-size:13px;color:#475569;margin-bottom:14px">
+      📷 Adicionar foto de comprovação (opcional)
+      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="aiFotoFim(this)">
+    </label>
+    <div style="display:flex;gap:8px">
+      <button onclick="aiConfirmarFim()" style="flex:1;padding:11px;border:none;border-radius:8px;background:#16a34a;color:white;font-size:14px;font-weight:700;cursor:pointer">✅ Confirmar</button>
+      <button onclick="document.getElementById('ai-fim-modal').style.display='none'" style="padding:11px 16px;border:1px solid #e2e8f0;border-radius:8px;background:white;font-size:14px;cursor:pointer">Cancelar</button>
     </div>
   </div>
 </div>
@@ -505,7 +568,7 @@ const FRASES=[
   {t:'Qualidade + Velocidade.',s:'O equilíbrio certo para um inventário preciso. ✅'},
   {t:'Cada pausa é uma recarga.',s:'Volte com tudo para o próximo bloco! ⚡'},
 ];
-const PAGE_TITLES={lanc:'Lançamento de Produção',resumo:'Resumo do Dia',mensal:'Fechamento Mensal',config:'Configurações',setores:'Setores'};
+const PAGE_TITLES={lanc:'Lançamento de Produção',resumo:'Resumo do Dia',mensal:'Fechamento Mensal',vales:'Vales',config:'Configurações',setores:'Setores'};
 const USERS_DEFAULT=[
   {mat:'10380',senha:'1234',nome:'Administrador',cargo:'ADM',admin:true,ferias:[]},
   {mat:'10275',senha:'1234',nome:'Eduardo Afonso Lapuinka',cargo:'Operador',admin:false,ferias:[]},
@@ -540,7 +603,7 @@ const firebaseConfig={
 
 // ── CACHE & FIRESTORE ────────────────────────────────────────────────────────
 let fdb,storage;
-const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{}};
+const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{},vales:{}};
 let _unsubDay=null;
 
 // Comprime imagem antes de salvar (max 800px, 60% qualidade → ~40-80KB)
@@ -597,6 +660,127 @@ function getCiclos(){return CACHE.ciclos||[];}
 function saveCiclos(c){CACHE.ciclos=c;fdb&&fdb.collection('config').doc('ciclos').set({data:sanitize(c)});}
 function getCicloAt(){return CACHE.cicloAt||{num:1,inicio:today()};}
 function saveCicloAt(c){CACHE.cicloAt=c;fdb&&fdb.collection('config').doc('cicloAtual').set({data:sanitize(c)});}
+function getVales(d){return JSON.parse(JSON.stringify(CACHE.vales[d]||{items:[]}));}
+function saveVales(d,data){CACHE.vales[d]=data;fdb&&fdb.collection('vales').doc(d).set(sanitize(data));}
+function allValeDays(){return Object.keys(CACHE.vales).sort();}
+
+// ── VALES ────────────────────────────────────────────────────────────────────
+function initValeDate(){const t=today();document.getElementById('data-vales').value=t;carregarVales();}
+function navValeDay(n){const el=document.getElementById('data-vales');const d=new Date(el.value+'T12:00:00');d.setDate(d.getDate()+n);el.value=d.toISOString().split('T')[0];carregarVales();}
+function getValeDate(){return document.getElementById('data-vales').value;}
+
+function calcValeStatus(vale,d){
+  // Procura ocorrência com mesmo código em todos os dias
+  const cod=vale.cod;if(!cod)return'aberto';
+  const dias=Object.entries(CACHE.dias);
+  for(const[dia,dd] of dias){
+    const oc=(dd.ocorrs||[]).find(o=>o.cod&&o.cod.trim()===cod.trim());
+    if(oc){return dia<d?'antes':dia>d?'depois':'antes';}
+  }
+  return'aberto';
+}
+
+function renderVales(){
+  const d=getValeDate();if(!d)return;
+  const data=getVales(d);
+  const items=data.items||[];
+  const cont=document.getElementById('lista-vales');
+  const bar=document.getElementById('vales-status-bar');
+
+  // Calcula stats para barra de status
+  const tot=items.length;
+  const antes=items.filter(v=>calcValeStatus(v,d)==='antes').length;
+  const depois=items.filter(v=>calcValeStatus(v,d)==='depois').length;
+  const abertos=items.filter(v=>calcValeStatus(v,d)==='aberto').length;
+  if(tot>0){
+    bar.style.display='flex';
+    bar.style.cssText='display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:white;border:1px solid #e2e8f0;border-radius:10px;align-items:center';
+    bar.innerHTML=`<span style="font-size:12px;font-weight:600;color:#64748b">${tot} vale${tot>1?'s':''} nesta data</span>
+      <span style="margin-left:auto;display:flex;gap:8px">
+        ${antes>0?`<span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600">🔵 ${antes} antes</span>`:''}
+        ${depois>0?`<span style="background:#ffedd5;color:#c2410c;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600">🟠 ${depois} depois</span>`:''}
+        ${abertos>0?`<span style="background:#f1f5f9;color:#64748b;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600">⚪ ${abertos} aberto${abertos>1?'s':''}</span>`:''}
+      </span>`;
+  } else {bar.style.display='none';}
+
+  if(!items.length){
+    cont.innerHTML=`<div style="text-align:center;padding:40px;color:#94a3b8;font-size:13px">Nenhum vale registrado para esta data.<br><small>Clique em "+ Adicionar item" para começar.</small></div>`;
+    return;
+  }
+  cont.innerHTML=items.map((v,i)=>{
+    const status=calcValeStatus(v,d);
+    const statusBadge=status==='antes'?'<span style="background:#dbeafe;color:#1d4ed8;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">🔵 Ocorr. ANTES do vale</span>':
+      status==='depois'?'<span style="background:#ffedd5;color:#c2410c;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">🟠 Ocorr. DEPOIS do vale</span>':
+      '<span style="background:#f1f5f9;color:#64748b;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">⚪ Em aberto</span>';
+    const nomeSku=v.nome||(SKUS_LOOKUP&&v.cod?SKUS_LOOKUP[v.cod.trim()]||'':'');
+    return`<div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        ${statusBadge}
+        <button onclick="remValeItem(${i})" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#dc2626;font-size:13px">🗑 Remover</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="fg"><label style="font-size:11px;color:#94a3b8;font-weight:600">CÓDIGO</label>
+          <input type="text" class="fg input" value="${v.cod||''}" placeholder="ex: 760901"
+            oninput="upValeItem(${i},'cod',this.value)" onchange="autoNomeVale(${i},this.value)"
+            style="font-size:14px;font-weight:700;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box"></div>
+        <div class="fg"><label style="font-size:11px;color:#94a3b8;font-weight:600">QUANTIDADE</label>
+          <input type="number" class="fg input" min="1" value="${v.qtd||''}" placeholder="0"
+            oninput="upValeItem(${i},'qtd',parseInt(this.value)||0)"
+            style="font-size:14px;font-weight:700;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box"></div>
+      </div>
+      <div class="fg" style="margin-bottom:8px"><label style="font-size:11px;color:#94a3b8;font-weight:600">MERCADORIA</label>
+        <input type="text" value="${nomeSku}" id="vale-nome-${i}" placeholder="Nome automático via código..." readonly
+          style="font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box;background:#f8fafc;color:#334155"></div>
+      <div class="fg"><label style="font-size:11px;color:#94a3b8;font-weight:600">MOTIVO (opcional)</label>
+        <input type="text" value="${v.motivo||''}" placeholder="Descreva o motivo do vale..."
+          oninput="upValeItem(${i},'motivo',this.value)"
+          style="font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box"></div>
+    </div>`;
+  }).join('');
+}
+
+function addValeItem(){
+  const d=getValeDate();if(!d){alert('Selecione uma data.');return;}
+  const data=getVales(d);
+  data.items.push({id:'v'+Date.now(),cod:'',nome:'',qtd:1,motivo:''});
+  saveVales(d,data);renderVales();
+}
+function remValeItem(i){
+  const d=getValeDate();const data=getVales(d);
+  data.items.splice(i,1);saveVales(d,data);renderVales();
+}
+function upValeItem(i,field,val){
+  const d=getValeDate();const data=getVales(d);
+  data.items[i][field]=val;saveVales(d,data);
+  if(field==='cod')return; // nome e status atualizam no onchange
+  renderVales();
+}
+function autoNomeVale(i,cod){
+  const nome=(SKUS_LOOKUP&&SKUS_LOOKUP[cod.trim()])||'';
+  const el=document.getElementById('vale-nome-'+i);
+  if(el)el.value=nome;
+  const d=getValeDate();const data=getVales(d);
+  data.items[i].cod=cod;data.items[i].nome=nome;
+  saveVales(d,data);renderVales();
+}
+
+function exportarValesExcel(){
+  if(typeof XLSX==='undefined'){alert('Excel não disponível.');return;}
+  const wb=XLSX.utils.book_new();
+  const rows=[['Data','Código','Mercadoria','Quantidade','Motivo','Status']];
+  allValeDays().forEach(d=>{
+    const data=getVales(d);
+    (data.items||[]).forEach(v=>{
+      const st=calcValeStatus(v,d);
+      const stLabel=st==='antes'?'Ocorr. antes do vale':st==='depois'?'Ocorr. depois do vale':'Em aberto';
+      rows.push([fmtDate(d),v.cod||'',v.nome||'',v.qtd||0,v.motivo||'',stLabel]);
+    });
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:12},{wch:35},{wch:12},{wch:30},{wch:22}];
+  XLSX.utils.book_append_sheet(wb,ws,'Vales');
+  XLSX.writeFile(wb,`Vales_${today()}.xlsx`);
+}
 
 // ── TEMPO REAL ───────────────────────────────────────────────────────────────
 function subscribeToDay(d){
@@ -630,6 +814,29 @@ function subscribeToConfig(){
       if(document.getElementById('tab-setores').classList.contains('on'))renderSetoresGestao();
     }
   });
+}
+
+function subscribeAtivInd(){
+  if(!fdb)return;
+  fdb.collection('atividades_ind').where('status','==','andamento').onSnapshot(snap=>{
+    const ativas=[];snap.forEach(d=>ativas.push(d.data()));
+    renderAtivIndLive(ativas);
+  });
+}
+function renderAtivIndLive(ativas){
+  const el=document.getElementById('ativind-live');if(!el)return;
+  if(!ativas||!ativas.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=`<div style="background:linear-gradient(135deg,#451a03,#78350f);border:1px solid #92400e;border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+    <span style="font-size:12px;font-weight:700;color:#fcd34d">⚡ EM ATIVIDADE INDIRETA</span>
+    ${ativas.map(r=>{
+      const mins=Math.floor((Date.now()-new Date(r.inicio).getTime())/60000);
+      const h=Math.floor(mins/60),m=mins%60;
+      const tempo=h>0?`${h}h${m>0?' '+m+'min':''}`:m+'min';
+      const alerta=r.meta_val>0&&r.meta_tipo==='horas'&&(mins/60)>=(r.meta_val*0.8);
+      return`<span style="background:${alerta?'#dc2626':'#92400e'};color:white;padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600">${r.nome.split(' ')[0]} · ${r.atv_nome} · ${tempo}${alerta?' ⚠️':''}</span>`;
+    }).join('')}
+  </div>`;
 }
 
 // ── INICIALIZAÇÃO FIREBASE ───────────────────────────────────────────────────
@@ -682,6 +889,9 @@ async function initFirebase(){
     const diasSnap=await fdb.collection('dias').get();
     const noFirestore=new Set();
     diasSnap.forEach(doc=>{CACHE.dias[doc.id]=normalizeDD(doc.data());noFirestore.add(doc.id);});
+    // Carrega vales
+    const valesSnap=await fdb.collection('vales').get();
+    valesSnap.forEach(doc=>{CACHE.vales[doc.id]=doc.data();});
 
     // Migra dias do localStorage que ainda não estão no Firestore
     for(let i=0;i<localStorage.length;i++){
@@ -704,6 +914,7 @@ async function initFirebase(){
     }
 
     subscribeToConfig();
+    subscribeAtivInd();
     clearTimeout(timeout);
     if(loadEl)loadEl.style.display='none';
     const cu=getCU();
@@ -776,6 +987,7 @@ function goTab(t,btn){
   document.getElementById('page-title').textContent=PAGE_TITLES[t]||t;
   if(t==='resumo'){document.getElementById('data-res').value=document.getElementById('data-lanc').value;renderResumo();}
   if(t==='mensal'){initMes();renderMensal();}
+  if(t==='vales'){initValeDate();renderVales();}
   if(t==='config')renderConfig();
   if(t==='setores')renderSetoresGestao();
 }
@@ -786,6 +998,7 @@ function colabGoTab(t,el){
   el.classList.add('on');
   if(t==='painel')renderColabPainel();
   if(t==='obs')renderColabObs();
+  if(t==='ativind')renderAtivInd();
 }
 function getDataL(){return document.getElementById('data-lanc').value;}
 function initDate(){
@@ -1076,32 +1289,6 @@ function renderColab(lista){
       const fer=u?.ferias?.find(f=>f.ini&&f.fim&&getDataL()>=f.ini&&getDataL()<=f.fim);
       corpo=`<div class="cblock-body" style="padding:10px 14px;display:flex;align-items:center;gap:10px"><span class="badge bg-gray">${c.status}</span>${fer?`<span style="font-size:12px;color:var(--text-s)">Férias: ${fmtDate(fer.ini)} a ${fmtDate(fer.fim)}</span>`:''}</div>`;
     } else {
-      // HORAS INDIRETAS PARCIAIS
-      const hInd=parseFloat(c.horas_ind)||0;
-      const hindHTML=`<div class="hind-wrap">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${hInd>0?'8px':'0'}">
-          <span style="color:#d97706;font-size:13px">⏱</span><span style="font-size:12px;color:var(--text-s)">H. indiretas no dia:</span>
-          <input type="number" min="0" max="8" step=".5" value="${hInd||0}" oninput="db('hi${i}',()=>upC(${i},'horas_ind',parseFloat(this.value)||0))" style="width:52px;font-size:13px;padding:4px 6px;border-radius:5px;border:1px solid #fcd34d;text-align:center;background:white">
-          <span style="font-size:12px;color:var(--text-s)">h</span>
-          <span style="margin-left:4px;font-size:12px;color:var(--text-s)">H. produtivas:</span><span class="hprod-chip">${r.horasProd.toFixed(1)}h</span>
-        </div>
-        ${hInd>0?`<div>
-          <div style="font-size:11px;font-weight:500;color:#92400e;margin-bottom:5px">O que foi feito nas ${hInd}h indiretas?</div>
-          ${(c.tasks_p||[]).map((t,ti)=>{
-            const atv=ativs.find(a=>a.id===t.atv_id)||{};
-            const metaH=parseFloat(atv.metaVal)||0;const realH=parseFloat(t.horas)||0;
-            const ok=metaH>0&&realH<=metaH;
-            return`<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap">
-              <select onchange="upTaskP(${i},${ti},'atv_id',this.value)" style="font-size:12px;padding:4px 6px;border-radius:5px;border:1px solid #fcd34d;background:white;min-width:150px"><option value="">— atividade —</option>${ativs.map(a=>`<option value="${a.id}" ${t.atv_id===a.id?'selected':''}>${a.nome}</option>`).join('')}</select>
-              <input type="number" min="0" max="8" step=".5" value="${t.horas||''}" placeholder="h" oninput="db('tp${i}_${ti}',()=>upTaskP(${i},${ti},'horas',parseFloat(this.value)||0))" style="width:50px;font-size:12px;padding:4px 6px;border-radius:5px;border:1px solid #fcd34d;background:white">
-              ${metaH>0?`<span style="font-size:11px;color:${ok?'#16a34a':'#dc2626'}">${ok?'✅':'⚠️'} ${metaH}h</span>`:''}
-              <input type="text" value="${t.desc||''}" placeholder="Descrição..." oninput="db('tpd${i}_${ti}',()=>upTaskP(${i},${ti},'desc',this.value))" style="flex:1;min-width:80px;font-size:12px;padding:4px 6px;border-radius:5px;border:1px solid #fcd34d;background:white">
-              <button onclick="remTaskP(${i},${ti})" style="background:none;border:none;cursor:pointer;color:#dc2626">✕</button>
-            </div>`;
-          }).join('')}
-          <button onclick="addTaskP(${i})" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px dashed #fcd34d;background:transparent;cursor:pointer;color:#92400e">+ Adicionar atividade indireta</button>
-        </div>`:''}
-      </div>`;
       // SETORES
       const setores=c.setores||[];
       const setoresHTML=setores.map((s,si)=>{
@@ -1141,7 +1328,6 @@ function renderColab(lista){
       }).join('');
       const pctColor=r.pct!=null?(r.bateu?'#16a34a':r.pct>=80?'#d97706':'#dc2626'):'#6b7280';
       corpo=`<div class="cblock-body">
-        ${hindHTML}
         ${setoresHTML}
         <button class="btn-dashed" onclick="addSetorC(${i})" style="margin-bottom:8px">+ Outro setor</button>
         <div class="sum-bar">
@@ -1500,10 +1686,7 @@ function renderMensal(){
     </div>
     ${(()=>{
       const porSecao={};
-      ocorrs.forEach(o=>{
-        const partes=[o.setor,o.subtipo,o.secao?'Seção '+o.secao:'',o.rua].filter(Boolean);
-        if(partes.length){const k=partes.join(' · ');porSecao[k]=(porSecao[k]||0)+1;}
-      });
+      ocorrs.forEach(o=>{if(o.secao){const k='Seção '+o.secao;porSecao[k]=(porSecao[k]||0)+1;}});
       const top3=Object.entries(porSecao).sort((a,b)=>b[1]-a[1]).slice(0,3);
       if(!top3.length)return'';
       const medals=['🥇','🥈','🥉'];
@@ -1512,8 +1695,8 @@ function renderMensal(){
         <div style="display:flex;flex-direction:column;gap:8px">
           ${top3.map(([loc,v],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${i===0?'#fef2f2':i===1?'#fff7ed':'#fffbeb'};border-radius:8px">
             <span style="font-size:20px">${medals[i]}</span>
-            <span style="font-size:13px;font-weight:600;color:#1e293b;flex:1">${loc}</span>
-            <span style="font-size:18px;font-weight:800;color:${i===0?'#dc2626':i===1?'#d97706':'#ca8a04'}">${v}</span>
+            <span style="font-size:16px;font-weight:800;color:#1e293b;flex:1">${loc}</span>
+            <span style="font-size:22px;font-weight:800;color:${i===0?'#dc2626':i===1?'#d97706':'#ca8a04'}">${v}</span>
             <span style="font-size:11px;color:#94a3b8">ocorrência${v>1?'s':''}</span>
           </div>`).join('')}
         </div>
@@ -1564,6 +1747,42 @@ function renderMensal(){
       ${obsHTML}
     </div>`:''}
 
+    ${(()=>{
+      const mesDias=allValeDays().filter(d=>d.startsWith(mes));
+      const todosVales=[];
+      mesDias.forEach(d=>{const vd=getVales(d);(vd.items||[]).forEach(v=>todosVales.push({...v,data:d}));});
+      if(!todosVales.length)return'';
+      const recuperados=todosVales.filter(v=>calcValeStatus(v,v.data)!=='aberto');
+      const abertos=todosVales.filter(v=>calcValeStatus(v,v.data)==='aberto');
+      const antes=todosVales.filter(v=>calcValeStatus(v,v.data)==='antes');
+      const depois=todosVales.filter(v=>calcValeStatus(v,v.data)==='depois');
+      // Tempo médio: para vales recuperados com ocorrência, calcular dias entre vale e ocorrência
+      let somaD=0,cntD=0;
+      recuperados.forEach(v=>{
+        const cod=v.cod;if(!cod)return;
+        let ocDia=null;
+        Object.entries(CACHE.dias).forEach(([dia,dd])=>{
+          const oc=(dd.ocorrs||[]).find(o=>o.cod&&o.cod.trim()===cod.trim());
+          if(oc)ocDia=dia;
+        });
+        if(ocDia){const diff=Math.abs(new Date(ocDia)-new Date(v.data))/(1000*60*60*24);somaD+=diff;cntD++;}
+      });
+      const tmedio=cntD>0?(somaD/cntD).toFixed(1):'—';
+      return`${sec('🧾','Vales do Mês',todosVales.length+' registrado'+(todosVales.length>1?'s':''))}
+      <div class="met-grid" style="margin-bottom:12px">
+        <div class="met-card"><div class="ml">Total Vales</div><div class="mv" style="color:#3b82f6">${todosVales.length}</div></div>
+        <div class="met-card"><div class="ml">Recuperados</div><div class="mv" style="color:#16a34a">${recuperados.length}</div><div class="ms">${antes.length} antes · ${depois.length} depois</div></div>
+        <div class="met-card"><div class="ml">Em aberto</div><div class="mv" style="color:#dc2626">${abertos.length}</div></div>
+        <div class="met-card"><div class="ml">Tempo médio</div><div class="mv" style="color:#d97706">${tmedio}</div><div class="ms">dias até ocorrência</div></div>
+      </div>
+      ${abertos.length?`<div style="background:white;border:1px solid #fecaca;border-radius:10px;overflow:hidden;margin-bottom:12px">
+        <div style="padding:10px 14px;font-size:11px;font-weight:700;color:#dc2626;border-bottom:1px solid #fee2e2">⚪ Vales em aberto (sem ocorrência registrada)</div>
+        <div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>Data</th><th>Código</th><th>Mercadoria</th><th>Qtd</th><th>Motivo</th></tr></thead><tbody>
+        ${abertos.map(v=>`<tr><td>${fmtDate(v.data)}</td><td style="font-weight:700">${v.cod||'—'}</td><td>${v.nome||'—'}</td><td style="text-align:center">${v.qtd||'—'}</td><td style="color:#94a3b8">${v.motivo||'—'}</td></tr>`).join('')}
+        </tbody></table></div>
+      </div>`:''}`;
+    })()}
+
     <div style="font-size:11px;color:#94a3b8;margin-top:16px;padding:10px 0;border-top:1px solid #f1f5f9">* Média % mês = soma dos % diários ÷ dias produtivos. Meta = ≥100%.</div>`;
   }catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px;font-size:13px">Erro ao renderizar: '+e.message+'</div>';console.error('renderMensal error:',e);}
 }
@@ -1612,7 +1831,7 @@ function exportarExcel(){
 }
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────────
-function renderConfig(){renderEq();renderAtivs();renderTipos();}
+function renderConfig(){renderEq();renderAtivs();renderSugeridas();renderTipos();}
 function renderEq(){
   const users=getUsers(),cont=document.getElementById('lista-eq');
   if(!users.length){cont.innerHTML='<div class="empty">Nenhum colaborador.</div>';return;}
@@ -1659,6 +1878,26 @@ function renderAtivs(){
 function addAtiv(){const a=getAtivs();a.push({id:'a'+Date.now(),nome:'Nova atividade',metaVal:1,metaTipo:'horas',recorrente:false});saveAtivs(a);renderAtivs();}
 function upAtiv(i,f,v){const a=getAtivs();a[i][f]=v;saveAtivs(a);}
 function remAtiv(i){if(!confirm('Remover?'))return;const a=getAtivs();a.splice(i,1);saveAtivs(a);renderAtivs();}
+async function renderSugeridas(){
+  const el=document.getElementById('lista-sugeridas');if(!el||!fdb)return;
+  const snap=await fdb.collection('atividades_ind').where('sugerida','==',true).get();
+  const nomes=new Map();
+  snap.forEach(d=>{const r=d.data();const n=r.atv_nome;if(n&&!nomes.has(n))nomes.set(n,{nome:n,count:1,mat:r.mat,colaborador:r.nome});else if(n)nomes.get(n).count++;});
+  if(!nomes.size){el.innerHTML='<div class="empty">Nenhuma atividade sugerida.</div>';return;}
+  el.innerHTML=[...nomes.values()].map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+    <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1e293b">${s.nome}</div><div style="font-size:11px;color:#94a3b8">${s.count}× usada</div></div>
+    <button onclick="aprovarSugerida('${s.nome.replace(/'/g,'\\\'')}')" style="font-size:12px;padding:5px 12px;border-radius:6px;border:none;background:#dcfce7;color:#15803d;font-weight:600;cursor:pointer">✅ Aprovar</button>
+  </div>`).join('');
+}
+async function aprovarSugerida(nome){
+  const a=getAtivs();
+  if(a.find(x=>x.nome.toLowerCase()===nome.toLowerCase())){alert('Atividade já existe na lista.');return;}
+  a.push({id:'a'+Date.now(),nome,metaVal:0,metaTipo:'horas',recorrente:false});
+  saveAtivs(a);
+  // Marca como não-sugerida no Firestore
+  if(fdb){const snap=await fdb.collection('atividades_ind').where('sugerida','==',true).where('atv_nome','==',nome).get();const batch=fdb.batch();snap.forEach(d=>batch.update(d.ref,{sugerida:false}));await batch.commit();}
+  renderAtivs();renderSugeridas();
+}
 function renderTipos(){
   const tipos=getTipos(),cont=document.getElementById('lista-tipos');
   if(!tipos.length){cont.innerHTML='<div class="empty">Nenhum tipo.</div>';return;}
@@ -1853,14 +2092,143 @@ function renderTVSetores(){
 
 // ── COLABORADOR SCREEN ─────────────────────────────────────────────────────────
 function initColabScreen(){
-  // Preenche selects
   const tipos=getTipos();
   const tipoSel=document.getElementById('co-tipo');
   tipoSel.innerHTML='<option value="">— tipo de ocorrência —</option>'+tipos.map(t=>`<option value="${t.id}">${t.nome}</option>`).join('');
   document.getElementById('co-setor').innerHTML='<option value="">— setor —</option>'+SETORES_CD.map(s=>`<option value="${s}">${s}</option>`).join('');
   document.getElementById('co-sub').innerHTML='<option value="">— subtipo —</option>'+SUBTIPOS_CD.map(s=>`<option value="${s}">${s}</option>`).join('');
+  // Preenche select de atividades indiretas
+  const aiSel=document.getElementById('ai-sel');
+  if(aiSel){
+    const ativs=getAtivs();
+    aiSel.innerHTML='<option value="">— escolha uma atividade —</option>'+ativs.map(a=>`<option value="${a.id}">${a.nome}${a.metaVal?' · meta: '+a.metaVal+(a.metaTipo==='dias'?' dias úteis':' h'):''}</option>`).join('')+'<option value="outra">✏️ Outra atividade (livre)</option>';
+  }
   renderColabPainel();
   renderColabObs();
+}
+
+// ── ATIVIDADES INDIRETAS COLAB ────────────────────────────────────────────────
+function aiFotoRequired(){
+  const v=document.getElementById('ai-sel').value;
+  document.getElementById('ai-outra-wrap').style.display=v==='outra'?'block':'none';
+}
+
+async function aiIniciar(){
+  const u=getCU();if(!u)return;
+  const sel=document.getElementById('ai-sel');
+  const atvId=sel.value;if(!atvId){alert('Selecione uma atividade.');return;}
+  const ativs=getAtivs();
+  const atv=ativs.find(a=>a.id===atvId)||{id:'outra',nome:'',metaTipo:'horas',metaVal:0};
+  const atvNome=atvId==='outra'?(document.getElementById('ai-outra-desc').value.trim()||'Outra atividade'):atv.nome;
+  if(atvId==='outra'&&!atvNome){alert('Descreva a atividade.');return;}
+  if(!fdb){alert('Sem conexão.');return;}
+  // Verifica se já tem uma em andamento
+  const existing=await fdb.collection('atividades_ind').where('mat','==',u.mat).where('status','==','andamento').get();
+  if(!existing.empty){alert('Você já tem uma atividade em andamento. Finalize-a antes de iniciar outra.');return;}
+  const ref=fdb.collection('atividades_ind').doc();
+  await ref.set({
+    id:ref.id,mat:u.mat,nome:u.nome,atv_id:atvId,atv_nome:atvNome,
+    meta_tipo:atv.metaTipo||'horas',meta_val:atv.metaVal||0,
+    inicio:new Date().toISOString(),fim:null,duracao_h:null,foto:null,
+    status:'andamento',data:today(),
+    sugerida:atvId==='outra'
+  });
+  document.getElementById('ativind-success').style.display='block';
+  document.getElementById('ativind-success').textContent='✅ Atividade iniciada!';
+  setTimeout(()=>{document.getElementById('ativind-success').style.display='none';},2500);
+  renderAtivInd();
+}
+
+async function aiFinalizar(id){
+  if(!fdb)return;
+  const snap=await fdb.collection('atividades_ind').doc(id).get();
+  if(!snap.exists)return;
+  const rec=snap.data();
+  const fim=new Date().toISOString();
+  const inicioMs=new Date(rec.inicio).getTime();
+  const fimMs=new Date(fim).getTime();
+  const durH=parseFloat(((fimMs-inicioMs)/3600000).toFixed(2));
+  // Abre modal para foto de comprovação
+  window._aiFimId=id;window._aiFimDur=durH;window._aiFimData=rec.data||today();window._aiFimMat=rec.mat;
+  document.getElementById('ai-fim-modal').style.display='flex';
+}
+
+async function aiConfirmarFim(){
+  const id=window._aiFimId;const durH=window._aiFimDur;
+  if(!fdb||!id)return;
+  const foto=window._aiFimFoto||null;
+  await fdb.collection('atividades_ind').doc(id).update({fim:new Date().toISOString(),duracao_h:durH,foto,status:'concluido'});
+  // Atualiza horas_ind no dia do colaborador
+  const d=window._aiFimData||today();const mat=window._aiFimMat;
+  const data=getDD(d);
+  const colIdx=data.cols.findIndex(c=>c.mat===mat);
+  if(colIdx>=0){
+    // Soma todas as atividades concluídas do dia
+    const snap=await fdb.collection('atividades_ind').where('mat','==',mat).where('data','==',d).where('status','==','concluido').get();
+    let totalH=0;snap.forEach(doc=>{totalH+=parseFloat(doc.data().duracao_h)||0;});
+    totalH=parseFloat(totalH.toFixed(2));
+    data.cols[colIdx].horas_ind=totalH;
+    saveDD(d,data);
+  }
+  document.getElementById('ai-fim-modal').style.display='none';
+  window._aiFimFoto=null;
+  document.getElementById('ativind-success').style.display='block';
+  document.getElementById('ativind-success').textContent='✅ Atividade concluída! '+durH.toFixed(1)+'h registradas.';
+  setTimeout(()=>{document.getElementById('ativind-success').style.display='none';},3000);
+  renderAtivInd();
+}
+
+async function aiFotoFim(input){
+  if(!input.files||!input.files[0])return;
+  const comp=await compressImage(input.files[0]);
+  window._aiFimFoto=comp;
+  const prev=document.getElementById('ai-fim-foto-prev');
+  if(prev&&comp)prev.innerHTML=`<img src="${comp}" style="width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-top:6px">`;
+}
+
+async function renderAtivInd(){
+  const u=getCU();if(!u||!fdb)return;
+  // Atividade em andamento
+  const snap=await fdb.collection('atividades_ind').where('mat','==',u.mat).where('status','==','andamento').get();
+  const andEl=document.getElementById('ativind-em-andamento');
+  const formEl=document.getElementById('ativind-form');
+  if(!snap.empty){
+    const rec=snap.docs[0].data();
+    const inicio=new Date(rec.inicio);
+    const mins=Math.floor((Date.now()-inicio.getTime())/60000);
+    const h=Math.floor(mins/60),m=mins%60;
+    const tempo=h>0?`${h}h ${m}min`:`${m}min`;
+    andEl.style.display='block';
+    formEl.style.display='none';
+    andEl.innerHTML=`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">⚡ EM ANDAMENTO</div>
+      <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px">${rec.atv_nome}</div>
+      <div style="font-size:12px;color:#78716c">Iniciada às ${inicio.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} · há ${tempo}</div>
+      ${rec.meta_val>0?`<div style="font-size:11px;color:#92400e;margin-top:4px">Meta: ${rec.meta_val} ${rec.meta_tipo==='dias'?'dias úteis':'horas'}</div>`:''}
+      <button onclick="aiFinalizar('${rec.id}')" style="margin-top:12px;width:100%;padding:11px;border:none;border-radius:8px;background:#dc2626;color:white;font-size:14px;font-weight:700;cursor:pointer">⏹ Finalizar Atividade</button>
+    </div>`;
+  } else {
+    andEl.style.display='none';
+    formEl.style.display='block';
+    // Repovoar select (pode ter mudado desde o login)
+    const aiSel=document.getElementById('ai-sel');
+    const ativs=getAtivs();
+    aiSel.innerHTML='<option value="">— escolha uma atividade —</option>'+ativs.map(a=>`<option value="${a.id}">${a.nome}${a.metaVal?' · meta: '+a.metaVal+(a.metaTipo==='dias'?' dias úteis':' h'):''}</option>`).join('')+'<option value="outra">✏️ Outra atividade (livre)</option>';
+  }
+  // Histórico do mês
+  const mesAtual=today().slice(0,7);
+  const histSnap=await fdb.collection('atividades_ind').where('mat','==',u.mat).get();
+  const hist=[];histSnap.forEach(d=>{const rec=d.data();if(rec.data&&rec.data.startsWith(mesAtual))hist.push(rec);});
+  hist.sort((a,b)=>b.inicio.localeCompare(a.inicio));
+  const histEl=document.getElementById('ativind-historico');
+  if(!hist.length){histEl.innerHTML='<div style="color:#64748b;font-size:13px;padding:8px 0">Nenhuma atividade neste mês.</div>';return;}
+  histEl.innerHTML=hist.map(r=>{
+    const st=r.status==='concluido'?`<span style="color:#16a34a;font-weight:700">✅ ${r.duracao_h?r.duracao_h.toFixed(1)+'h':''}</span>`:'<span style="color:#d97706;font-weight:700">⏳ em andamento</span>';
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1e293b">${r.atv_nome}</div><div style="font-size:11px;color:#94a3b8">${fmtDate(r.data)}</div></div>
+      ${st}
+    </div>`;
+  }).join('');
 }
 function renderColabPainel(){
   const d=today();const data=getDD(d);
