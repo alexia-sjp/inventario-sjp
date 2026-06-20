@@ -139,6 +139,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cblock-body{padding:12px 14px;background:white}
 .hprod-chip{background:var(--accent-l);color:var(--accent-d);font-weight:600;padding:2px 9px;border-radius:20px;font-size:11px}
 .hind-wrap{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:10px 12px;margin-bottom:10px}
+.sec-collapse{border:1px solid var(--border-d);border-radius:10px;overflow:hidden;background:white}
+.sec-collapse-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:#f8fafc;user-select:none}
+.sec-collapse-hd:hover{background:#f1f5f9}
+.sec-collapse-hd span:first-child{font-size:13px;font-weight:600;color:#374151}
+.sec-collapse-arrow{font-size:11px;color:#94a3b8;transition:transform .2s}
+.sec-collapse-body{padding:12px 14px}
 .setor-block{background:#f8faff;border:1px solid #dbeafe;border-radius:6px;padding:10px 12px;margin-bottom:8px}
 .hora-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin-bottom:8px}
 .hcol{display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -307,27 +313,52 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div id="fer-aviso" style="display:none" class="fer-bar">🚩 <strong style="color:#f9fafb">Feriado marcado</strong><button onclick="desmarcarFer()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af;text-decoration:underline">Desmarcar</button></div>
         <div id="ativind-live" style="display:none;margin-bottom:10px"></div>
         <div id="trend-alerts"></div>
-        <div id="linhas-colab"></div>
-        <button class="btn-dashed" onclick="addLinha()">+ Adicionar Colaborador</button>
-        <div style="margin-top:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <div style="font-size:13px;font-weight:600;color:var(--text-s)">📝 Observações do dia</div>
-            <button class="btn" style="font-size:12px" onclick="addObs()">+ Adicionar observação</button>
+        <!-- Seção colapsável: Colaboradores -->
+        <div class="sec-collapse" id="sec-colab">
+          <div class="sec-collapse-hd" onclick="toggleSec('colab')">
+            <span>👥 Colaboradores do dia</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn" onclick="event.stopPropagation();addLinha()" style="font-size:12px">+ Colaborador</button>
+              <span class="sec-collapse-arrow" id="arr-colab">▲</span>
+            </div>
           </div>
-          <div id="lista-obs-dia"></div>
-          <div id="obs-input-wrap" style="display:none;margin-top:8px;display:flex;gap:8px">
-            <input type="text" id="obs-input" placeholder="Descreva a observação..." style="flex:1;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d)" onkeydown="if(event.key==='Enter')confirmarObs()">
-            <button class="btn btn-primary" onclick="confirmarObs()">Adicionar</button>
-            <button class="btn" onclick="cancelarObs()">✕</button>
+          <div class="sec-collapse-body" id="body-colab">
+            <div id="linhas-colab"></div>
           </div>
         </div>
-        <div style="margin-top:14px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-            <div style="font-size:13px;font-weight:600;color:#dc2626">⚠️ Ocorrências do dia</div>
-            <button class="btn btn-danger" style="font-size:12px" onclick="addOcorr()">+ Registrar ocorrência</button>
+        <!-- Seção colapsável: Observações -->
+        <div class="sec-collapse" id="sec-obs" style="margin-top:8px">
+          <div class="sec-collapse-hd" onclick="toggleSec('obs')">
+            <span>📝 Observações do dia</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn" onclick="event.stopPropagation();addObs()" style="font-size:12px">+ Adicionar</button>
+              <span class="sec-collapse-arrow" id="arr-obs">▼</span>
+            </div>
           </div>
-          <div style="margin-bottom:8px"><input type="text" id="ocorr-busca" placeholder="🔍 Buscar ocorrência..." oninput="filtrarOcorr(this.value)" style="width:100%;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d);background:white;box-sizing:border-box"></div>
-          <div id="lista-ocorr-dia"></div>
+          <div class="sec-collapse-body" id="body-obs" style="display:none">
+            <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Obstáculos operacionais: equipamento parado, sistema lento, falta de insumo, risco de SLA. Não é sobre erro de produto.</div>
+            <div id="lista-obs-dia"></div>
+            <div id="obs-input-wrap" style="display:none;margin-top:8px;display:flex;gap:8px">
+              <input type="text" id="obs-input" placeholder="Descreva a observação..." style="flex:1;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d)" onkeydown="if(event.key==='Enter')confirmarObs()">
+              <button class="btn btn-primary" onclick="confirmarObs()">Adicionar</button>
+              <button class="btn" onclick="cancelarObs()">✕</button>
+            </div>
+          </div>
+        </div>
+        <!-- Seção colapsável: Ocorrências -->
+        <div class="sec-collapse" id="sec-ocorr" style="margin-top:8px">
+          <div class="sec-collapse-hd" onclick="toggleSec('ocorr')" style="border-color:#fecaca">
+            <span style="color:#dc2626">⚠️ Ocorrências do dia</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn btn-danger" onclick="event.stopPropagation();addOcorr()" style="font-size:12px">+ Registrar</button>
+              <span class="sec-collapse-arrow" id="arr-ocorr">▼</span>
+            </div>
+          </div>
+          <div class="sec-collapse-body" id="body-ocorr" style="display:none">
+            <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Erros operacionais: divergência de quantidade, item errado, produto vencido, avaria. Não é sobre obstáculos.</div>
+            <div style="margin-bottom:8px"><input type="text" id="ocorr-busca" placeholder="🔍 Buscar ocorrência..." oninput="filtrarOcorr(this.value)" style="width:100%;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d);background:white;box-sizing:border-box"></div>
+            <div id="lista-ocorr-dia"></div>
+          </div>
         </div>
       </div>
       <div id="tab-resumo" class="tc">
@@ -355,8 +386,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div class="dp"><svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><input type="date" id="data-vales" onchange="carregarVales()"></div>
             <button class="btn" onclick="navValeDay(1)" style="padding:6px 9px;font-size:13px">▶</button>
           </div>
-          <div style="display:flex;gap:7px">
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
             <button class="btn btn-danger" onclick="addValeItem()">+ Adicionar item</button>
+            <label style="cursor:pointer" title="Importar planilha com colunas: Código, Data, Quantidade, Motivo">
+              <span class="btn" style="border-color:#7c3aed;color:#7c3aed">📥 Importar planilha</span>
+              <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarValesPlanilha(this)">
+            </label>
             <button class="btn btn-primary" onclick="exportarValesExcel()">📊 Excel</button>
           </div>
         </div>
@@ -364,6 +399,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div id="lista-vales"></div>
       </div>
       <div id="tab-config" class="tc">
+        <div class="card" style="margin-bottom:10px">
+          <div class="card-hd"><div class="card-title">📦 Catálogo de Produtos</div></div>
+          <div style="padding:14px 17px">
+            <div style="font-size:12px;color:#64748b;margin-bottom:10px">A planilha deve ter colunas: <strong>CODIGO</strong>, <strong>MERCADORIA</strong>, <strong>END. PADRAO</strong>. Ao importar, o nome e endereço padrão preenchem automaticamente em Vales e Ocorrências.</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <label style="cursor:pointer">
+                <span class="btn btn-primary">📥 Importar / Atualizar catálogo (.xlsx)</span>
+                <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importarCatalogo(this)">
+              </label>
+              <span id="catalog-import-status" style="font-size:13px;color:#16a34a"></span>
+            </div>
+            <div style="margin-top:8px;font-size:11px;color:#94a3b8" id="catalog-count"></div>
+          </div>
+        </div>
         <div class="card" style="margin-bottom:10px">
           <div class="card-hd"><div class="card-title">👥 Equipe</div><button class="btn btn-primary" onclick="addColabForm()">+ Colaborador</button></div>
           <div style="padding:14px 17px"><div id="lista-eq"></div></div>
@@ -449,18 +498,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="colab-tc-ocorr" class="colab-tc">
       <div class="colab-card">
         <div class="colab-card-title">⚠️ Registrar Ocorrência</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;line-height:1.5">Erros operacionais: item errado, quantidade divergente, produto vencido, avaria. <strong style="color:#64748b">Não é sobre obstáculos — para isso use Observação.</strong></div>
+        <div id="co-resp-badge" style="margin-bottom:10px;padding:6px 10px;background:#1e293b;border-radius:7px;font-size:12px;color:#94a3b8">👤 Responsável: <strong style="color:#e2e8f0" id="co-resp-nome">—</strong></div>
         <div class="fg" style="margin-bottom:8px"><label>Tipo de ocorrência</label><select class="colab-select" id="co-tipo" style="margin:0"></select></div>
         <div class="fg" style="margin-bottom:8px"><label>Setor operacional</label><select class="colab-select" id="co-setor" style="margin:0"></select></div>
         <div class="fg" style="margin-bottom:8px"><label>Subtipo do produto</label><select class="colab-select" id="co-sub" style="margin:0"></select></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
           <div class="fg"><label>Seção</label><input type="text" class="colab-input" id="co-sec" placeholder="ex: 31" style="margin:0"></div>
-          <div class="fg"><label>Rua</label><input type="text" class="colab-input" id="co-rua" placeholder="ex: Rua 03" style="margin:0"></div>
+          <div class="fg"><label>Rua</label><input type="text" class="colab-input" id="co-rua" placeholder="ex: 03" inputmode="decimal" style="margin:0" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div>
         </div>
-        <div class="fg" style="margin-bottom:8px"><label>Nome do item</label><input type="text" class="colab-input" id="co-item" placeholder="ex: Losartana 50mg" style="margin:0"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label>Código interno</label><input type="text" class="colab-input" id="co-cod" placeholder="MED-004821" style="margin:0"></div>
+          <div class="fg"><label>Código interno</label><input type="text" class="colab-input" id="co-cod" placeholder="ex: 760901" style="margin:0" onchange="autoOcorrCod(this.value)"></div>
           <div class="fg"><label>Quantidade</label><input type="number" class="colab-input" id="co-qtd" placeholder="0" style="margin:0"></div>
         </div>
+        <div class="fg" style="margin-bottom:4px"><label>Nome do item</label><input type="text" class="colab-input" id="co-item" placeholder="Preenchido automaticamente pelo código..." style="margin:0"></div>
+        <div id="co-end-padrao" style="display:none;margin-bottom:8px;padding:6px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;font-size:11px;color:#15803d"></div>
         <div class="fg" style="margin-bottom:10px"><label>Descrição</label><input type="text" class="colab-input" id="co-desc" placeholder="Detalhes adicionais..." style="margin:0"></div>
         <div style="margin-bottom:12px">
           <label style="font-size:12px;font-weight:500;color:#94a3b8;display:block;margin-bottom:6px">Fotos</label>
@@ -480,6 +532,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="colab-tc-obs" class="colab-tc">
       <div class="colab-card">
         <div class="colab-card-title">📝 Observação do Dia</div>
+        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;line-height:1.5">Obstáculos que atrasam ou atrapalham a operação: equipamento parado, sistema lento, falta de insumo, risco de SLA. <strong style="color:#64748b">Não é sobre erro de produto — para isso use Ocorrência.</strong></div>
         <textarea class="colab-input" id="co-obs-txt" rows="4" placeholder="Descreva o que aconteceu hoje..." style="margin-bottom:10px;resize:none"></textarea>
         <button class="colab-btn" onclick="colabEnviarObs()">✅ Enviar Observação</button>
         <div id="co-obs-success" style="display:none;text-align:center;padding:12px;color:#22c55e;font-weight:600;font-size:14px;margin-top:8px">✅ Observação registrada!</div>
@@ -712,7 +765,7 @@ function renderVales(){
     const statusBadge=status==='antes'?'<span style="background:#dbeafe;color:#1d4ed8;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">🔵 Ocorr. ANTES do vale</span>':
       status==='depois'?'<span style="background:#ffedd5;color:#c2410c;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">🟠 Ocorr. DEPOIS do vale</span>':
       '<span style="background:#f1f5f9;color:#64748b;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">⚪ Em aberto</span>';
-    const nomeSku=v.nome||(SKUS_LOOKUP&&v.cod?SKUS_LOOKUP[v.cod.trim()]||'':'');
+    const nomeSku=v.nome||(CATALOG_LOOKUP&&v.cod?CATALOG_LOOKUP[v.cod.trim()]?.n||'':'');
     return`<div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         ${statusBadge}
@@ -756,7 +809,7 @@ function upValeItem(i,field,val){
   renderVales();
 }
 function autoNomeVale(i,cod){
-  const nome=(SKUS_LOOKUP&&SKUS_LOOKUP[cod.trim()])||'';
+  const nome=(CATALOG_LOOKUP&&CATALOG_LOOKUP[cod.trim()]?.n)||'';
   const el=document.getElementById('vale-nome-'+i);
   if(el)el.value=nome;
   const d=getValeDate();const data=getVales(d);
@@ -1037,7 +1090,7 @@ function calcColabTotal(c){
     totalH+=h;
     metaPeso+=meta*h;
   });
-  const hInd=parseFloat(c.horas_ind)||0;
+  const hInd=Math.min(parseFloat(c.horas_ind)||0,HORAS_BASE);
   const hProd=Math.max(0,HORAS_BASE-hInd);
   const hUsed=Math.min(totalH>0?totalH:hProd,hProd);
   const metaPond=hUsed>0?metaPeso/hUsed:0;
@@ -1144,17 +1197,20 @@ function renderOcorrDia(ocorrs,isFiltered){
         <div class="fg"><label>Subtipo</label><select onchange="upOcorr(${i},'subtipo',this.value)"><option value="">—</option>${SUBTIPOS_CD.map(s=>`<option value="${s}" ${o.subtipo===s?'selected':''}>${s}</option>`).join('')}</select></div>
         <div class="fg"><label>Responsável</label><select onchange="upOcorr(${i},'resp',this.value)"><option value="">—</option>${users.filter(u=>!u.admin).map(u=>`<option value="${u.mat}" ${o.resp===u.mat?'selected':''}>${u.nome.split(' ')[0]}</option>`).join('')}</select></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 3fr;gap:8px;margin-bottom:8px">
         <div class="fg"><label>Seção</label><input type="text" value="${o.secao||''}" placeholder="ex: 31" oninput="db('os${i}',()=>upOcorr(${i},'secao',this.value))"></div>
-        <div class="fg"><label>Rua</label><input type="text" value="${o.rua||''}" placeholder="ex: Rua 03" oninput="db('or${i}',()=>upOcorr(${i},'rua',this.value))"></div>
+        <div class="fg"><label>Descrição</label><input type="text" value="${o.desc||''}" placeholder="Detalhes adicionais..." oninput="db('od${i}',()=>upOcorr(${i},'desc',this.value))"></div>
       </div>
-      <div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:8px">
-        <div class="fg"><label>Nome do item</label><input type="text" value="${o.item||''}" placeholder="ex: Losartana 50mg" oninput="db('oi${i}',()=>upOcorr(${i},'item',this.value))"></div>
-        <div class="fg"><label>Código</label><input type="text" value="${o.cod||''}" placeholder="MED-004821" oninput="db('oc${i}',()=>upOcorr(${i},'cod',this.value))"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
+        <div class="fg"><label>Código</label><input type="text" value="${o.cod||''}" placeholder="ex: 760901" oninput="db('oc${i}',()=>upOcorr(${i},'cod',this.value))" onchange="autoOcorrAdmCod(${i},this.value)"></div>
         <div class="fg"><label>Quantidade</label><input type="number" value="${o.qtd||''}" placeholder="0" oninput="db('oq${i}',()=>upOcorr(${i},'qtd',parseInt(this.value)||0))"></div>
       </div>
+      <div id="oadm-end-${i}" style="display:${o.cod&&catalogEnd(o.cod)?'block':'none'};margin-bottom:4px;padding:4px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:11px;color:#15803d">${o.cod&&catalogEnd(o.cod)?'📍 End. padrão: '+catalogEnd(o.cod):''}</div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="fg"><label>Nome do item</label><input id="oadm-item-${i}" type="text" value="${o.item||o.cod&&catalogNome(o.cod)||''}" placeholder="Preenchido pelo código..." oninput="db('oi${i}',()=>upOcorr(${i},'item',this.value))"></div>
+        <div class="fg"><label>Rua</label><input type="text" value="${o.rua||''}" placeholder="ex: 03" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'');db('or${i}',()=>upOcorr(${i},'rua',this.value))"></div>
+      </div>
       <div style="display:flex;align-items:flex-end;gap:10px">
-        <div class="fg" style="flex:1"><label>Descrição</label><input type="text" value="${o.desc||''}" placeholder="Detalhes..." oninput="db('od${i}',()=>upOcorr(${i},'desc',this.value))"></div>
         <div style="display:flex;gap:6px"><div>
           <label style="font-size:12px;font-weight:500;color:var(--text-s);display:block;margin-bottom:3px">Foto 1</label>
           <label style="cursor:pointer">${o.foto?`<img src="${o.foto}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFoto(${i},'foto',this)"></label>
@@ -1183,6 +1239,32 @@ async function upOcorrFoto(i,field,input){
   data.ocorrs[i][field]=compressed;
   saveDD(d,data);renderOcorrDia(data.ocorrs);
 }
+function toggleSec(id){
+  const body=document.getElementById('body-'+id);
+  const arr=document.getElementById('arr-'+id);
+  if(!body)return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  if(arr)arr.textContent=open?'▼':'▲';
+}
+
+function autoOcorrAdmCod(i,cod){
+  const nome=catalogNome(cod);
+  const end=catalogEnd(cod);
+  const d=getDataL(),data=getDD(d);
+  if(!data.ocorrs[i])return;
+  if(nome&&!data.ocorrs[i].item){data.ocorrs[i].item=nome;saveDD(d,data);}
+  // Mostra endereço padrão inline
+  const endEl=document.getElementById('oadm-end-'+i);
+  if(endEl){
+    if(end){endEl.style.display='block';endEl.textContent='📍 End. padrão: '+end;}
+    else endEl.style.display='none';
+  }
+  // Atualiza campo nome se ainda vazio
+  const itemInput=document.getElementById('oadm-item-'+i);
+  if(itemInput&&!itemInput.value&&nome)itemInput.value=nome;
+}
+
 function navDay(n){
   const el=document.getElementById('data-lanc');
   const d=new Date(el.value+'T12:00:00');
@@ -1831,7 +1913,14 @@ function exportarExcel(){
 }
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────────
-function renderConfig(){renderEq();renderAtivs();renderSugeridas();renderTipos();}
+function renderConfig(){
+  renderEq();renderAtivs();renderSugeridas();renderTipos();
+  const countEl=document.getElementById('catalog-count');
+  if(countEl&&typeof CATALOG_LOOKUP!=='undefined'){
+    const n=Object.keys(CATALOG_LOOKUP).length;
+    countEl.textContent=n>0?`Catálogo atual: ${n.toLocaleString('pt-BR')} produtos carregados`:'Nenhum catálogo carregado.';
+  }
+}
 function renderEq(){
   const users=getUsers(),cont=document.getElementById('lista-eq');
   if(!users.length){cont.innerHTML='<div class="empty">Nenhum colaborador.</div>';return;}
@@ -2103,8 +2192,117 @@ function initColabScreen(){
     const ativs=getAtivs();
     aiSel.innerHTML='<option value="">— escolha uma atividade —</option>'+ativs.map(a=>`<option value="${a.id}">${a.nome}${a.metaVal?' · meta: '+a.metaVal+(a.metaTipo==='dias'?' dias úteis':' h'):''}</option>`).join('')+'<option value="outra">✏️ Outra atividade (livre)</option>';
   }
+  // Badge do responsável (auto-preenchido pelo usuário logado)
+  const cu=getCU();
+  const respEl=document.getElementById('co-resp-nome');
+  if(respEl&&cu)respEl.textContent=cu.nome;
   renderColabPainel();
   renderColabObs();
+}
+
+// ── CATÁLOGO DE PRODUTOS ──────────────────────────────────────────────────────
+function catalogNome(cod){return cod&&CATALOG_LOOKUP?CATALOG_LOOKUP[cod.trim()]?.n||'':'';}
+function catalogEnd(cod){return cod&&CATALOG_LOOKUP?CATALOG_LOOKUP[cod.trim()]?.e||'':'';}
+
+function autoOcorrCod(cod){
+  const nome=catalogNome(cod);
+  const end=catalogEnd(cod);
+  const itemEl=document.getElementById('co-item');
+  if(itemEl&&nome)itemEl.value=nome;
+  const endEl=document.getElementById('co-end-padrao');
+  if(endEl){
+    if(end){endEl.style.display='block';endEl.innerHTML=`📍 Endereço padrão: <strong>${end}</strong>`;}
+    else endEl.style.display='none';
+  }
+}
+
+async function importarCatalogo(input){
+  if(!input.files||!input.files[0])return;
+  const file=input.files[0];
+  const statusEl=document.getElementById('catalog-import-status');
+  if(statusEl)statusEl.textContent='Lendo arquivo...';
+  const arrBuf=await file.arrayBuffer();
+  const wb=XLSX.read(arrBuf,{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+  // Detectar colunas: procura "CODIGO", "MERCADORIA", "END"
+  const hdr=rows[0]||[];
+  const iCod=hdr.findIndex(h=>h&&/^cod/i.test(String(h).trim()));
+  const iNome=hdr.findIndex(h=>h&&/merc|nome|descr/i.test(String(h).trim()));
+  const iEnd=hdr.findIndex(h=>h&&/end/i.test(String(h).trim()));
+  if(iCod<0||iNome<0){
+    if(statusEl)statusEl.textContent='❌ Colunas CODIGO e MERCADORIA não encontradas.';
+    return;
+  }
+  const cat={};
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r];
+    const cod=String(row[iCod]||'').trim();
+    const nome=String(row[iNome]||'').trim();
+    const end=iEnd>=0?String(row[iEnd]||'').trim():'';
+    if(cod&&nome)cat[cod]={n:nome,e:end};
+  }
+  const total=Object.keys(cat).length;
+  if(!total){if(statusEl)statusEl.textContent='❌ Nenhum produto encontrado.';return;}
+  // Salva no Firestore como config/catalog
+  if(fdb){
+    if(statusEl)statusEl.textContent=`Salvando ${total} produtos no Firestore...`;
+    // Quebra em chunks de 500KB cada para evitar limite 1MB
+    const entries=Object.entries(cat);
+    const chunks=[];let chunk={};let sz=0;
+    for(const[k,v]of entries){
+      const s=JSON.stringify(v).length+k.length+5;
+      if(sz+s>400000){chunks.push(chunk);chunk={};sz=0;}
+      chunk[k]=v;sz+=s;
+    }
+    if(Object.keys(chunk).length)chunks.push(chunk);
+    for(let i=0;i<chunks.length;i++){
+      await fdb.collection('config').doc('catalog_'+i).set({data:chunks[i]});
+    }
+    await fdb.collection('config').doc('catalog_meta').set({chunks:chunks.length,total});
+  }
+  // Atualiza CATALOG_LOOKUP em memória
+  Object.assign(CATALOG_LOOKUP||{},cat);
+  if(statusEl)statusEl.textContent=`✅ ${total} produtos importados com sucesso!`;
+  setTimeout(()=>{if(statusEl)statusEl.textContent='';},4000);
+}
+
+async function importarValesPlanilha(input){
+  if(!input.files||!input.files[0])return;
+  const arrBuf=await input.files[0].arrayBuffer();
+  const wb=XLSX.read(arrBuf,{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1});
+  const hdr=(rows[0]||[]).map(h=>String(h||'').trim().toLowerCase());
+  const iCod=hdr.findIndex(h=>/^cod/i.test(h));
+  const iDt=hdr.findIndex(h=>/data|dt/i.test(h));
+  const iQtd=hdr.findIndex(h=>/qtd|quant/i.test(h));
+  const iMot=hdr.findIndex(h=>/motivo|obs|descr/i.test(h));
+  if(iCod<0){alert('Coluna CODIGO não encontrada.');return;}
+  const byDate={};
+  for(let r=1;r<rows.length;r++){
+    const row=rows[r];
+    const cod=String(row[iCod]||'').trim();if(!cod)continue;
+    let dt=today();
+    if(iDt>=0&&row[iDt]){
+      const raw=row[iDt];
+      if(typeof raw==='number'){const d=new Date(Math.round((raw-25569)*86400*1000));dt=d.toISOString().split('T')[0];}
+      else{const p=String(raw).trim();if(p.match(/^\d{4}-\d{2}-\d{2}$/))dt=p;}
+    }
+    const qtd=parseInt(row[iQtd])||1;
+    const motivo=iMot>=0?String(row[iMot]||'').trim():'';
+    const nome=catalogNome(cod);
+    if(!byDate[dt])byDate[dt]={items:[]};
+    byDate[dt].items.push({id:'v'+Date.now()+Math.random(),cod,nome,qtd,motivo});
+  }
+  let total=0;
+  for(const[d,data]of Object.entries(byDate)){
+    const existing=getVales(d);
+    const merged={items:[...existing.items,...data.items]};
+    saveVales(d,merged);total+=data.items.length;
+  }
+  alert(`✅ ${total} vales importados!`);
+  renderVales();
 }
 
 // ── ATIVIDADES INDIRETAS COLAB ────────────────────────────────────────────────
@@ -2165,8 +2363,13 @@ async function aiConfirmarFim(){
   if(colIdx>=0){
     // Soma todas as atividades concluídas do dia
     const snap=await fdb.collection('atividades_ind').where('mat','==',mat).where('data','==',d).where('status','==','concluido').get();
-    let totalH=0;snap.forEach(doc=>{totalH+=parseFloat(doc.data().duracao_h)||0;});
-    totalH=parseFloat(totalH.toFixed(2));
+    let totalH=0;snap.forEach(doc=>{
+      const r=doc.data();
+      const h=parseFloat(r.duracao_h)||0;
+      // Para atividades de 'dias', conta apenas HORAS_BASE por dia (não horas corridas)
+      totalH+=r.meta_tipo==='dias'?Math.min(h,HORAS_BASE):h;
+    });
+    totalH=Math.min(parseFloat(totalH.toFixed(2)),HORAS_BASE);
     data.cols[colIdx].horas_ind=totalH;
     saveDD(d,data);
   }
