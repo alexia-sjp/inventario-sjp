@@ -2402,29 +2402,31 @@ async function renderAtivInd(){
   const snap=await fdb.collection('atividades_ind').where('mat','==',u.mat).where('status','==','andamento').get();
   const andEl=document.getElementById('ativind-em-andamento');
   const formEl=document.getElementById('ativind-form');
+  // Mostra todas as atividades em andamento
   if(!snap.empty){
-    const rec=snap.docs[0].data();
-    const inicio=new Date(rec.inicio);
-    const mins=Math.floor((Date.now()-inicio.getTime())/60000);
-    const h=Math.floor(mins/60),m=mins%60;
-    const tempo=h>0?`${h}h ${m}min`:`${m}min`;
     andEl.style.display='block';
-    formEl.style.display='none';
-    andEl.innerHTML=`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:12px">
-      <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">⚡ EM ANDAMENTO</div>
-      <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px">${rec.atv_nome}</div>
-      <div style="font-size:12px;color:#78716c">Iniciada às ${inicio.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} · há ${tempo}</div>
-      ${rec.meta_val>0?`<div style="font-size:11px;color:#92400e;margin-top:4px">Meta: ${rec.meta_val} ${rec.meta_tipo==='dias'?'dias úteis':'horas'}</div>`:''}
-      <button onclick="aiFinalizar('${rec.id}')" style="margin-top:12px;width:100%;padding:11px;border:none;border-radius:8px;background:#dc2626;color:white;font-size:14px;font-weight:700;cursor:pointer">⏹ Finalizar Atividade</button>
-    </div>`;
+    andEl.innerHTML=snap.docs.map(doc=>{
+      const rec=doc.data();
+      const inicio=new Date(rec.inicio);
+      const mins=Math.floor((Date.now()-inicio.getTime())/60000);
+      const h=Math.floor(mins/60),m=mins%60;
+      const tempo=h>0?`${h}h ${m}min`:`${m}min`;
+      return`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:12px">
+        <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">⚡ EM ANDAMENTO</div>
+        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px">${rec.atv_nome}</div>
+        <div style="font-size:12px;color:#78716c">Iniciada às ${inicio.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} · há ${tempo}</div>
+        ${rec.meta_val>0?`<div style="font-size:11px;color:#92400e;margin-top:4px">Meta: ${rec.meta_val} ${rec.meta_tipo==='dias'?'dias úteis':'horas'}</div>`:''}
+        <button onclick="aiFinalizar('${rec.id}')" style="margin-top:12px;width:100%;padding:11px;border:none;border-radius:8px;background:#dc2626;color:white;font-size:14px;font-weight:700;cursor:pointer">⏹ Finalizar Atividade</button>
+      </div>`;
+    }).join('');
   } else {
     andEl.style.display='none';
-    formEl.style.display='block';
-    // Repovoar select (pode ter mudado desde o login)
-    const aiSel=document.getElementById('ai-sel');
-    const ativs=getAtivs();
-    aiSel.innerHTML='<option value="">— escolha uma atividade —</option>'+ativs.map(a=>`<option value="${a.id}">${a.nome}${a.metaVal?' · meta: '+a.metaVal+(a.metaTipo==='dias'?' dias úteis':' h'):''}</option>`).join('')+'<option value="outra">✏️ Outra atividade (livre)</option>';
   }
+  // Form sempre visível para iniciar nova atividade
+  formEl.style.display='block';
+  const aiSel=document.getElementById('ai-sel');
+  const ativs=getAtivs();
+  aiSel.innerHTML='<option value="">— escolha uma atividade —</option>'+ativs.map(a=>`<option value="${a.id}">${a.nome}${a.metaVal?' · meta: '+a.metaVal+(a.metaTipo==='dias'?' dias úteis':' h'):''}</option>`).join('')+'<option value="outra">✏️ Outra atividade (livre)</option>';
   // Histórico do mês
   const mesAtual=today().slice(0,7);
   const histSnap=await fdb.collection('atividades_ind').where('mat','==',u.mat).get();
