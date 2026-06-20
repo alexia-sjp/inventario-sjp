@@ -705,7 +705,8 @@ function saveDD(d,data,onError){
   if(!fdb)return;
   const toSave=JSON.parse(JSON.stringify(data));
   fdb.collection('dias').doc(d).set(sanitize(toSave)).catch(e=>{
-    console.error('[saveDD] Erro ao salvar no Firestore:',e);
+    console.error('[saveDD] Erro Firestore:',e);
+    alert('⚠️ Erro ao salvar!\n\n' + e.message + '\n\nVerifique as regras do Firestore no Firebase Console.');
     if(onError)onError(e);
   });
 }
