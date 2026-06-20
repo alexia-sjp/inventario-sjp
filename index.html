@@ -700,11 +700,14 @@ function saveAtivs(a){CACHE.ativs=a;fdb&&fdb.collection('config').doc('atividade
 function getTipos(){return CACHE.tipos||JSON.parse(JSON.stringify(TIPOS_DEFAULT));}
 function saveTipos(t){CACHE.tipos=t;fdb&&fdb.collection('config').doc('tipos').set({data:sanitize(t)});}
 function getDD(d){const raw=CACHE.dias[d]||{feriado:false,cols:[],obs:[],ocorrs:[]};return JSON.parse(JSON.stringify(raw));}
-function saveDD(d,data){
+function saveDD(d,data,onError){
   CACHE.dias[d]=data;
   if(!fdb)return;
   const toSave=JSON.parse(JSON.stringify(data));
-  fdb.collection('dias').doc(d).set(sanitize(toSave));
+  fdb.collection('dias').doc(d).set(sanitize(toSave)).catch(e=>{
+    console.error('[saveDD] Erro ao salvar no Firestore:',e);
+    if(onError)onError(e);
+  });
 }
 function allDays(){return Object.keys(CACHE.dias).sort();}
 function getSetoresAtivos(){return CACHE.setores||[];}
@@ -1157,6 +1160,8 @@ function renderObsDia(obs){
   }).join('');
 }
 function addObs(){
+  const body=document.getElementById('body-obs');
+  if(body&&body.style.display==='none'){toggleSec('obs');}
   const w=document.getElementById('obs-input-wrap');
   w.style.display='flex';
   document.getElementById('obs-input').focus();
@@ -1223,11 +1228,15 @@ function renderOcorrDia(ocorrs,isFiltered){
   }).join('');
 }
 function addOcorr(){
+  // Expande seção se estiver colapsada
+  const body=document.getElementById('body-ocorr');
+  if(body&&body.style.display==='none'){toggleSec('ocorr');}
   const d=getDataL(),data=getDD(d);
   if(!data.ocorrs)data.ocorrs=[];
   const now=new Date();const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   data.ocorrs.push({tipo_id:'',resp:'',resp_nome:'',hora,setor:'',subtipo:'',secao:'',rua:'',item:'',cod:'',qtd:0,desc:'',foto:null,foto2:null});
   saveDD(d,data);renderOcorrDia(data.ocorrs);
+  setTimeout(()=>{const el=document.getElementById('lista-ocorr-dia');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
 }
 function upOcorr(i,field,val){const d=getDataL(),data=getDD(d);if(!data.ocorrs)data.ocorrs=[];data.ocorrs[i][field]=val;saveDD(d,data);}
 function remOcorr(i){const d=getDataL(),data=getDD(d);data.ocorrs.splice(i,1);saveDD(d,data);renderOcorrDia(data.ocorrs);}
@@ -2320,9 +2329,6 @@ async function aiIniciar(){
   const atvNome=atvId==='outra'?(document.getElementById('ai-outra-desc').value.trim()||'Outra atividade'):atv.nome;
   if(atvId==='outra'&&!atvNome){alert('Descreva a atividade.');return;}
   if(!fdb){alert('Sem conexão.');return;}
-  // Verifica se já tem uma em andamento
-  const existing=await fdb.collection('atividades_ind').where('mat','==',u.mat).where('status','==','andamento').get();
-  if(!existing.empty){alert('Você já tem uma atividade em andamento. Finalize-a antes de iniciar outra.');return;}
   const ref=fdb.collection('atividades_ind').doc();
   await ref.set({
     id:ref.id,mat:u.mat,nome:u.nome,atv_id:atvId,atv_nome:atvNome,
@@ -2488,7 +2494,9 @@ async function colabEnviarOcorr(){
   const d=today();const data=getDD(d);
   if(!data.ocorrs)data.ocorrs=[];
   data.ocorrs.push({tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,foto,foto2});
-  saveDD(d,data);
+  saveDD(d,data,err=>{
+    alert('❌ Erro ao salvar ocorrência: '+err.message+'\nVerifique a conexão com internet.');
+  });
   tocarNotificacao();
   ['co-tipo','co-setor','co-sub'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['co-sec','co-rua','co-item','co-cod','co-qtd','co-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
