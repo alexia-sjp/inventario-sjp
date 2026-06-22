@@ -453,7 +453,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="colab-tab on" onclick="colabGoTab('painel',this)">📊 Painel</div>
     <div class="colab-tab" onclick="colabGoTab('ativind',this)">⚡ Atividade</div>
     <div class="colab-tab" onclick="colabGoTab('ocorr',this)">⚠️ Ocorrência</div>
-    <div class="colab-tab" onclick="colabGoTab('obs',this)">📝 Observação</div>
+    <div class="colab-tab" onclick="colabGoTab('obs',this)">📝 Obs.</div>
+    <div class="colab-tab" onclick="colabGoTab('minhoc',this)">📋 Minhas</div>
   </div>
   <div class="colab-content">
     <div id="colab-tc-painel" class="colab-tc on">
@@ -513,6 +514,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
         <div class="fg" style="margin-bottom:4px"><label>Nome do item</label><input type="text" class="colab-input" id="co-item" placeholder="Preenchido automaticamente pelo código..." style="margin:0"></div>
         <div id="co-end-padrao" style="display:none;margin-bottom:8px;padding:6px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;font-size:11px;color:#15803d"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <div class="fg"><label>Mat. de quem errou</label><input type="text" class="colab-input" id="co-mat-err" placeholder="ex: 12345" style="margin:0" onchange="autoNomeErr(this.value,'co-nome-err')"></div>
+          <div class="fg"><label>Nome</label><input type="text" class="colab-input" id="co-nome-err" placeholder="Preenchido auto..." style="margin:0"></div>
+        </div>
         <div class="fg" style="margin-bottom:10px"><label>Descrição</label><input type="text" class="colab-input" id="co-desc" placeholder="Detalhes adicionais..." style="margin:0"></div>
         <div style="margin-bottom:12px">
           <label style="font-size:12px;font-weight:500;color:#94a3b8;display:block;margin-bottom:6px">Fotos</label>
@@ -541,6 +546,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div id="co-obs-list"></div>
         </div>
       </div>
+    </div>
+    <div id="colab-tc-minhoc" class="colab-tc">
+      <div id="minhoc-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal editar ocorrência -->
+<div id="edit-oc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#1e293b;border-radius:14px;padding:20px;width:100%;max-width:420px;margin-top:20px">
+    <div style="font-size:15px;font-weight:700;color:#e2e8f0;margin-bottom:14px">✏️ Editar Ocorrência</div>
+    <input type="hidden" id="edit-oc-day"><input type="hidden" id="edit-oc-id">
+    <div class="fg" style="margin-bottom:8px"><label style="color:#94a3b8">Seção</label><input type="text" class="colab-input" id="edit-oc-sec" style="margin:0"></div>
+    <div class="fg" style="margin-bottom:8px"><label style="color:#94a3b8">Rua</label><input type="text" class="colab-input" id="edit-oc-rua" style="margin:0" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div>
+    <div class="fg" style="margin-bottom:8px"><label style="color:#94a3b8">Código interno</label><input type="text" class="colab-input" id="edit-oc-cod" style="margin:0"></div>
+    <div class="fg" style="margin-bottom:8px"><label style="color:#94a3b8">Nome do item</label><input type="text" class="colab-input" id="edit-oc-item" style="margin:0"></div>
+    <div class="fg" style="margin-bottom:8px"><label style="color:#94a3b8">Quantidade</label><input type="number" class="colab-input" id="edit-oc-qtd" style="margin:0"></div>
+    <div class="fg" style="margin-bottom:8px"><label style="color:#94a3b8">Mat. de quem errou</label><input type="text" class="colab-input" id="edit-oc-mat-err" style="margin:0"></div>
+    <div class="fg" style="margin-bottom:12px"><label style="color:#94a3b8">Descrição</label><input type="text" class="colab-input" id="edit-oc-desc" style="margin:0"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="salvarEditOc()" style="flex:1;padding:11px;border:none;border-radius:8px;background:#3b82f6;color:white;font-size:14px;font-weight:700;cursor:pointer">💾 Salvar</button>
+      <button onclick="document.getElementById('edit-oc-modal').style.display='none'" style="flex:1;padding:11px;border:none;border-radius:8px;background:#334155;color:#94a3b8;font-size:14px;cursor:pointer">Cancelar</button>
     </div>
   </div>
 </div>
@@ -853,6 +880,8 @@ function subscribeToDay(d){
       renderOcorrDia(data.ocorrs);
       document.getElementById('fer-aviso').style.display=data.feriado?'flex':'none';
       renderTrendAlerts();
+      const resTab=document.getElementById('tab-resumo');
+      if(resTab&&resTab.classList.contains('on')&&document.getElementById('data-res').value===d)renderResumo();
     }
     if(document.getElementById('colab-app').style.display!=='none'){
       renderColabPainel();renderColabObs();
@@ -1056,6 +1085,100 @@ function colabGoTab(t,el){
   if(t==='painel')renderColabPainel();
   if(t==='obs')renderColabObs();
   if(t==='ativind')renderAtivInd();
+  if(t==='minhoc')renderMinhasOcorr();
+}
+function autoNomeErr(mat,targetId){
+  // Placeholder — será preenchido quando planilha de colaboradores for importada
+  // Por ora permite digitação manual
+}
+function renderMinhasOcorr(){
+  const u=getCU();if(!u)return;
+  const cont=document.getElementById('minhoc-list');if(!cont)return;
+  const tipos=getTipos();
+  const ocList=[];
+  Object.keys(CACHE.dias).sort().reverse().forEach(d=>{
+    const data=CACHE.dias[d];
+    if(!Array.isArray(data.ocorrs))return;
+    data.ocorrs.forEach((oc,idx)=>{
+      if(oc.resp===u.mat)ocList.push({...oc,_day:d,_idx:idx});
+    });
+  });
+  if(!ocList.length){
+    cont.innerHTML='<div class="colab-card"><div class="colab-card-title">📋 Minhas Ocorrências</div><div style="color:#64748b;font-size:13px;padding:8px 0">Nenhuma ocorrência registrada por você ainda.</div></div>';
+    return;
+  }
+  cont.innerHTML='<div class="colab-card"><div class="colab-card-title">📋 Minhas Ocorrências ('+ocList.length+')</div>'
+    +ocList.map(oc=>{
+      const tipo=tipos.find(t=>t.id===oc.tipo_id);
+      const tipoNome=tipo?tipo.nome:(oc.tipo_id||'—');
+      const [y,mo,day]=oc._day.split('-');
+      const dateStr=`${day}/${mo}`;
+      const editBadge=oc._editado?`<span style="font-size:10px;color:#f59e0b;margin-left:6px">✏️ editado ${oc._editado}</span>`:'';
+      const ocKey=oc.id||(''+oc._day+'_'+oc._idx);
+      return`<div style="background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div>
+            <span style="font-size:10px;color:#64748b">${dateStr} · ${oc.hora||''}${editBadge}</span>
+            <div style="font-size:13px;font-weight:700;color:#fbbf24;margin-top:2px">${tipoNome}</div>
+          </div>
+          <button onclick="editMinhaOcorr('${oc._day}','${ocKey}')" style="background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer">✏️</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;font-size:11px;color:#64748b;margin-bottom:4px">
+          <div>Seção: <span style="color:#cbd5e1">${oc.secao||'—'}</span></div>
+          <div>Rua: <span style="color:#cbd5e1">${oc.rua||'—'}</span></div>
+          <div>Qtd: <span style="color:#cbd5e1">${oc.qtd||'—'}</span></div>
+        </div>
+        ${oc.item?`<div style="font-size:12px;color:#e2e8f0">${oc.item}${oc.cod?' <span style="color:#64748b">('+oc.cod+')</span>':''}</div>`:''}
+        ${oc.mat_err?`<div style="font-size:11px;color:#f87171;margin-top:3px">Responsável pelo erro: ${oc.nome_err||oc.mat_err}</div>`:''}
+        ${oc.desc?`<div style="font-size:11px;color:#94a3b8;margin-top:3px;font-style:italic">${oc.desc}</div>`:''}
+        <div style="display:flex;gap:6px;margin-top:6px">
+          ${oc.foto?`<img src="${oc.foto}" style="width:54px;height:54px;border-radius:6px;object-fit:cover">`:''}
+          ${oc.foto2?`<img src="${oc.foto2}" style="width:54px;height:54px;border-radius:6px;object-fit:cover">`:''}
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+}
+function editMinhaOcorr(day,ocKey){
+  const data=CACHE.dias[day];if(!data||!Array.isArray(data.ocorrs))return;
+  const oc=data.ocorrs.find(o=>o.id===ocKey)||data.ocorrs[parseInt(ocKey.split('_').pop())];
+  if(!oc)return;
+  document.getElementById('edit-oc-day').value=day;
+  document.getElementById('edit-oc-id').value=ocKey;
+  document.getElementById('edit-oc-sec').value=oc.secao||'';
+  document.getElementById('edit-oc-rua').value=oc.rua||'';
+  document.getElementById('edit-oc-cod').value=oc.cod||'';
+  document.getElementById('edit-oc-item').value=oc.item||'';
+  document.getElementById('edit-oc-qtd').value=oc.qtd||'';
+  document.getElementById('edit-oc-mat-err').value=oc.mat_err||'';
+  document.getElementById('edit-oc-desc').value=oc.desc||'';
+  const modal=document.getElementById('edit-oc-modal');
+  modal.style.display='flex';
+}
+function salvarEditOc(){
+  const u=getCU();if(!u)return;
+  const day=document.getElementById('edit-oc-day').value;
+  const ocKey=document.getElementById('edit-oc-id').value;
+  const data=getDD(day);
+  const idx=data.ocorrs.findIndex(o=>o.id===ocKey);
+  const realIdx=idx>=0?idx:parseInt(ocKey.split('_').pop());
+  if(realIdx<0||realIdx>=data.ocorrs.length)return;
+  const oc=data.ocorrs[realIdx];
+  if(oc.resp!==u.mat){alert('Você não pode editar ocorrências de outros colaboradores.');return;}
+  const now=new Date();
+  const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  data.ocorrs[realIdx]={...oc,
+    secao:document.getElementById('edit-oc-sec').value.trim(),
+    rua:document.getElementById('edit-oc-rua').value.trim(),
+    cod:document.getElementById('edit-oc-cod').value.trim(),
+    item:document.getElementById('edit-oc-item').value.trim(),
+    qtd:parseInt(document.getElementById('edit-oc-qtd').value)||oc.qtd,
+    mat_err:document.getElementById('edit-oc-mat-err').value.trim(),
+    desc:document.getElementById('edit-oc-desc').value.trim(),
+    _editado:hora
+  };
+  saveDD(day,data);
+  document.getElementById('edit-oc-modal').style.display='none';
+  renderMinhasOcorr();
 }
 function getDataL(){return document.getElementById('data-lanc').value;}
 function initDate(){
@@ -1108,15 +1231,17 @@ function carregarDia(){
   const d=getDataL(),data=getDD(d);
   const users=getUsers().filter(u=>!u.admin);
   const ja=new Set(data.cols.map(c=>c.mat));
+  let changed=false;
   users.forEach(u=>{
     if(!ja.has(u.mat)){
       data.cols.push({mat:u.mat,nome:u.nome,status:isOnVacation(u,d)?'Férias':'Trabalhando',horas_ind:0,setores:[{setor:'',skus:0,horas:0,modo:'total',horas_h:{}}],tasks:[],tasks_p:[]});
+      changed=true;
     }
   });
-  data.cols.forEach(row=>{const u=users.find(x=>x.mat===row.mat);if(u&&isOnVacation(u,d)&&row.status==='Trabalhando')row.status='Férias';});
-  if(!data.obs)data.obs=[];
-  if(!data.ocorrs)data.ocorrs=[];
-  saveDD(d,data);
+  data.cols.forEach(row=>{const u=users.find(x=>x.mat===row.mat);if(u&&isOnVacation(u,d)&&row.status==='Trabalhando'){row.status='Férias';changed=true;}});
+  if(!data.obs){data.obs=[];changed=true;}
+  if(!data.ocorrs){data.ocorrs=[];changed=true;}
+  if(changed)saveDD(d,data);
   if(fdb)subscribeToDay(d);
   document.getElementById('fer-aviso').style.display=data.feriado?'flex':'none';
   renderColab(data.cols);
@@ -1263,14 +1388,20 @@ function autoOcorrAdmCod(i,cod){
   const end=catalogEnd(cod);
   const d=getDataL(),data=getDD(d);
   if(!data.ocorrs[i])return;
-  if(nome&&!data.ocorrs[i].item){data.ocorrs[i].item=nome;saveDD(d,data);}
-  // Mostra endereço padrão inline
+  let changed=false;
+  if(nome&&!data.ocorrs[i].item){data.ocorrs[i].item=nome;changed=true;}
+  if(end){
+    const sec=(end.split('.')[1]||'').replace(/^0+/,'');
+    if(sec&&!data.ocorrs[i].secao){data.ocorrs[i].secao=sec;changed=true;}
+    const secEl=document.getElementById('oadm-sec-'+i);
+    if(secEl&&!secEl.value&&sec)secEl.value=sec;
+  }
+  if(changed)saveDD(d,data);
   const endEl=document.getElementById('oadm-end-'+i);
   if(endEl){
     if(end){endEl.style.display='block';endEl.textContent='📍 End. padrão: '+end;}
     else endEl.style.display='none';
   }
-  // Atualiza campo nome se ainda vazio
   const itemInput=document.getElementById('oadm-item-'+i);
   if(itemInput&&!itemInput.value&&nome)itemInput.value=nome;
 }
@@ -2219,6 +2350,11 @@ function autoOcorrCod(cod){
   const end=catalogEnd(cod);
   const itemEl=document.getElementById('co-item');
   if(itemEl&&nome)itemEl.value=nome;
+  if(end){
+    const sec=(end.split('.')[1]||'').replace(/^0+/,'');
+    const secEl=document.getElementById('co-sec');
+    if(secEl&&!secEl.value&&sec)secEl.value=sec;
+  }
   const endEl=document.getElementById('co-end-padrao');
   if(endEl){
     if(end){endEl.style.display='block';endEl.innerHTML=`📍 Endereço padrão: <strong>${end}</strong>`;}
@@ -2489,6 +2625,8 @@ async function colabEnviarOcorr(){
   const cod=document.getElementById('co-cod').value.trim();
   const qtd=parseInt(document.getElementById('co-qtd').value)||0;
   const desc=document.getElementById('co-desc').value.trim();
+  const mat_err=document.getElementById('co-mat-err').value.trim();
+  const nome_err=document.getElementById('co-nome-err').value.trim();
   const now=new Date();
   const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   const foto=window._colabFoto1||null;
@@ -2496,13 +2634,14 @@ async function colabEnviarOcorr(){
   window._colabFoto1=null;window._colabFoto2=null;
   const d=today();const data=getDD(d);
   if(!data.ocorrs)data.ocorrs=[];
-  data.ocorrs.push({tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,foto,foto2});
+  const ocId='oc_'+Date.now();
+  data.ocorrs.push({id:ocId,tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,mat_err,nome_err,foto,foto2});
   saveDD(d,data,err=>{
     alert('❌ Erro ao salvar ocorrência: '+err.message+'\nVerifique a conexão com internet.');
   });
   tocarNotificacao();
   ['co-tipo','co-setor','co-sub'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['co-sec','co-rua','co-item','co-cod','co-qtd','co-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['co-sec','co-rua','co-item','co-cod','co-qtd','co-desc','co-mat-err','co-nome-err'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('co-foto-preview').innerHTML='';
   document.getElementById('co-foto2-preview').innerHTML='';
   const suc=document.getElementById('co-success');suc.style.display='block';setTimeout(()=>suc.style.display='none',3000);
