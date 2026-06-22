@@ -765,8 +765,9 @@ function delOcorrDoc(id,d){
 async function uploadFotoStorage(base64,path){
   if(!storage||!base64)return null;
   try{
+    const timeout=new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),15000));
     const ref=storage.ref(path);
-    await ref.putString(base64,'data_url');
+    await Promise.race([ref.putString(base64,'data_url'),timeout]);
     return await ref.getDownloadURL();
   }catch(e){console.error('[uploadFoto]',e);return null;}
 }
@@ -2694,8 +2695,11 @@ async function colabFoto(n,input){
   prev.innerHTML=`<img src="${compressed}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #334155">`;
 }
 async function colabEnviarOcorr(){
+  const btn=document.querySelector('[onclick="colabEnviarOcorr()"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Enviando...';}
+  const resetBtn=()=>{if(btn){btn.disabled=false;btn.innerHTML='✅ Registrar Ocorrência';}};
   try{
-  const cu=getCU();if(!cu){alert('Erro: sessão não encontrada. Faça login novamente.');return;}
+  const cu=getCU();if(!cu){resetBtn();alert('Erro: sessão não encontrada. Faça login novamente.');return;}
   const tipo_id=document.getElementById('co-tipo').value;
   const setor=document.getElementById('co-setor').value;
   const subtipo=document.getElementById('co-sub').value;
@@ -2723,8 +2727,9 @@ async function colabEnviarOcorr(){
   ['co-sec','co-rua','co-item','co-cod','co-qtd','co-desc','co-mat-err','co-nome-err'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('co-foto-preview').innerHTML='';
   document.getElementById('co-foto2-preview').innerHTML='';
+  resetBtn();
   const suc=document.getElementById('co-success');suc.style.display='block';setTimeout(()=>suc.style.display='none',3000);
-  }catch(e){console.error('[colabEnviarOcorr]',e);alert('⚠️ Erro ao registrar ocorrência: '+e.message);}
+  }catch(e){resetBtn();console.error('[colabEnviarOcorr]',e);alert('⚠️ Erro ao registrar ocorrência: '+e.message);}
 }
 function renderColabObs(){
   const d=today();const data=getDD(d);
