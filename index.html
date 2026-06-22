@@ -9,6 +9,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 <script src="skus.js?v=20260620"></script>
+<script src="mats.js?v=20260622"></script>
 <style>
 @keyframes sjp-spin{to{transform:rotate(360deg)}}
 @media print{
@@ -1088,8 +1089,10 @@ function colabGoTab(t,el){
   if(t==='minhoc')renderMinhasOcorr();
 }
 function autoNomeErr(mat,targetId){
-  // Placeholder — será preenchido quando planilha de colaboradores for importada
-  // Por ora permite digitação manual
+  if(!mat||typeof MATS_LOOKUP==='undefined')return;
+  const nome=MATS_LOOKUP[mat.trim()];
+  const el=document.getElementById(targetId);
+  if(el)el.value=nome||'';
 }
 function renderMinhasOcorr(){
   const u=getCU();if(!u)return;
