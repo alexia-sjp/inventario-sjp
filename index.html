@@ -1446,8 +1446,7 @@ async function upOcorrFotoById(id,field,input){
   if(!compressed)return;
   const d=getDataL();const ocs=getOcorrs(d);
   const oc=ocs.find(o=>o.id===id);if(!oc)return;
-  const url=await uploadFotoStorage(compressed,'ocorrencias/'+id+'/'+field+'_'+Date.now());
-  oc[field]=url||compressed;
+  oc[field]=compressed;
   if(!CACHE.ocorrs[d])CACHE.ocorrs[d]=[];
   const idx=CACHE.ocorrs[d].findIndex(o=>o.id===id);
   if(idx>=0)CACHE.ocorrs[d][idx]=oc;else CACHE.ocorrs[d].push(oc);
@@ -2715,11 +2714,8 @@ async function colabEnviarOcorr(){
   const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   const d=today();
   const ocId='oc_'+Date.now();
-  // Upload fotos para Firebase Storage (sem base64 no Firestore)
-  const [foto,foto2]=await Promise.all([
-    uploadFotoStorage(window._colabFoto1,'ocorrencias/'+ocId+'/foto'),
-    uploadFotoStorage(window._colabFoto2,'ocorrencias/'+ocId+'/foto2')
-  ]);
+  const foto=window._colabFoto1||null;
+  const foto2=window._colabFoto2||null;
   window._colabFoto1=null;window._colabFoto2=null;
   await saveOcorrDoc({id:ocId,data:d,tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,mat_err,nome_err,foto,foto2});
   tocarNotificacao();
