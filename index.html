@@ -684,7 +684,7 @@ const firebaseConfig={
 
 // ── CACHE & FIRESTORE ────────────────────────────────────────────────────────
 let fdb,storage;
-const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{},vales:{}};
+const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{},vales:{},ocorrs:{}};
 let _unsubDay=null;
 
 // Comprime imagem antes de salvar (max 800px, 60% qualidade → ~40-80KB)
@@ -739,6 +739,48 @@ function saveDD(d,data,onError){
   });
 }
 function allDays(){return Object.keys(CACHE.dias).sort();}
+// ── OCORRÊNCIAS — coleção separada ──────────────────────────────────────────
+function getOcorrs(d){
+  const novo=CACHE.ocorrs[d]||[];
+  const legado=(CACHE.dias[d]?.ocorrs||[]).map((o,idx)=>({id:o.id||'leg_'+d+'_'+idx,data:d,...o}));
+  const merged=[...novo];
+  legado.forEach(o=>{if(!merged.find(x=>x.id===o.id))merged.push(o);});
+  return merged;
+}
+async function saveOcorrDoc(oc,onErr){
+  if(!CACHE.ocorrs[oc.data])CACHE.ocorrs[oc.data]=[];
+  const idx=CACHE.ocorrs[oc.data].findIndex(o=>o.id===oc.id);
+  if(idx>=0)CACHE.ocorrs[oc.data][idx]=oc;else CACHE.ocorrs[oc.data].push(oc);
+  if(!fdb)return;
+  return fdb.collection('ocorrencias').doc(oc.id).set(sanitize(oc)).catch(e=>{
+    console.error('[saveOcorrDoc]',e);
+    alert('⚠️ Erro ao salvar ocorrência: '+e.message);
+    if(onErr)onErr(e);
+  });
+}
+function delOcorrDoc(id,d){
+  if(CACHE.ocorrs[d])CACHE.ocorrs[d]=CACHE.ocorrs[d].filter(o=>o.id!==id);
+  if(fdb)fdb.collection('ocorrencias').doc(id).delete().catch(e=>console.error('[delOcorr]',e));
+}
+async function uploadFotoStorage(base64,path){
+  if(!storage||!base64)return null;
+  try{
+    const ref=storage.ref(path);
+    await ref.putString(base64,'data_url');
+    return await ref.getDownloadURL();
+  }catch(e){console.error('[uploadFoto]',e);return null;}
+}
+let _unsubOcorrs=null;
+function subscribeOcorrs(d){
+  if(_unsubOcorrs)_unsubOcorrs();
+  _unsubOcorrs=fdb.collection('ocorrencias').where('data','==',d)
+    .onSnapshot({includeMetadataChanges:true},snap=>{
+      if(snap.metadata.hasPendingWrites)return;
+      const ocs=[];snap.forEach(doc=>ocs.push(doc.data()));
+      CACHE.ocorrs[d]=ocs;
+      if(document.getElementById('adm-app').style.display!=='none'&&d===getDataL())renderOcorrDia();
+    });
+}
 function getSetoresAtivos(){return CACHE.setores||[];}
 function saveSetoresAtivos(s){CACHE.setores=s;fdb&&fdb.collection('config').doc('setores').set({data:sanitize(s)});}
 function getCiclos(){return CACHE.ciclos||[];}
@@ -759,7 +801,7 @@ function calcValeStatus(vale,d){
   const cod=vale.cod;if(!cod)return'aberto';
   const dias=Object.entries(CACHE.dias);
   for(const[dia,dd] of dias){
-    const oc=(dd.ocorrs||[]).find(o=>o.cod&&o.cod.trim()===cod.trim());
+    const oc=getOcorrs(dia).find(o=>o.cod&&o.cod.trim()===cod.trim());
     if(oc){return dia<d?'antes':dia>d?'depois':'antes';}
   }
   return'aberto';
@@ -878,7 +920,7 @@ function subscribeToDay(d){
     if(document.getElementById('adm-app').style.display!=='none'&&d===getDataL()){
       renderColab(data.cols);
       renderObsDia(data.obs);
-      renderOcorrDia(data.ocorrs);
+      renderOcorrDia();
       document.getElementById('fer-aviso').style.display=data.feriado?'flex':'none';
       renderTrendAlerts();
       const resTab=document.getElementById('tab-resumo');
@@ -975,7 +1017,26 @@ async function initFirebase(){
     // Carrega todos os dias
     const diasSnap=await fdb.collection('dias').get();
     const noFirestore=new Set();
-    diasSnap.forEach(doc=>{CACHE.dias[doc.id]=normalizeDD(doc.data());noFirestore.add(doc.id);});
+    diasSnap.forEach(doc=>{
+      const data=normalizeDD(doc.data());
+      CACHE.dias[doc.id]=data;
+      noFirestore.add(doc.id);
+      // Migra ocorrs legadas para CACHE.ocorrs (sem sobrescrever)
+      if(Array.isArray(data.ocorrs)&&data.ocorrs.length){
+        if(!CACHE.ocorrs[doc.id])CACHE.ocorrs[doc.id]=[];
+        data.ocorrs.forEach((o,idx)=>{
+          const leg={id:o.id||'leg_'+doc.id+'_'+idx,data:doc.id,...o};
+          if(!CACHE.ocorrs[doc.id].find(x=>x.id===leg.id))CACHE.ocorrs[doc.id].push(leg);
+        });
+      }
+    });
+    // Carrega coleção ocorrencias separada
+    const ocSnap=await fdb.collection('ocorrencias').get();
+    ocSnap.forEach(doc=>{
+      const oc=doc.data();if(!oc.data)return;
+      if(!CACHE.ocorrs[oc.data])CACHE.ocorrs[oc.data]=[];
+      if(!CACHE.ocorrs[oc.data].find(o=>o.id===oc.id))CACHE.ocorrs[oc.data].push(oc);
+    });
     // Carrega vales
     const valesSnap=await fdb.collection('vales').get();
     valesSnap.forEach(doc=>{CACHE.vales[doc.id]=doc.data();});
@@ -1099,10 +1160,8 @@ function renderMinhasOcorr(){
   const cont=document.getElementById('minhoc-list');if(!cont)return;
   const tipos=getTipos();
   const ocList=[];
-  Object.keys(CACHE.dias).sort().reverse().forEach(d=>{
-    const data=CACHE.dias[d];
-    if(!Array.isArray(data.ocorrs))return;
-    data.ocorrs.forEach((oc,idx)=>{
+  Object.keys(CACHE.ocorrs).sort().reverse().forEach(d=>{
+    (CACHE.ocorrs[d]||[]).forEach((oc,idx)=>{
       if(oc.resp===u.mat)ocList.push({...oc,_day:d,_idx:idx});
     });
   });
@@ -1142,8 +1201,8 @@ function renderMinhasOcorr(){
     }).join('')+'</div>';
 }
 function editMinhaOcorr(day,ocKey){
-  const data=CACHE.dias[day];if(!data||!Array.isArray(data.ocorrs))return;
-  const oc=data.ocorrs.find(o=>o.id===ocKey)||data.ocorrs[parseInt(ocKey.split('_').pop())];
+  const ocs=getOcorrs(day);
+  const oc=ocs.find(o=>o.id===ocKey)||ocs[parseInt(ocKey.split('_').pop())];
   if(!oc)return;
   document.getElementById('edit-oc-day').value=day;
   document.getElementById('edit-oc-id').value=ocKey;
@@ -1161,15 +1220,13 @@ function salvarEditOc(){
   const u=getCU();if(!u)return;
   const day=document.getElementById('edit-oc-day').value;
   const ocKey=document.getElementById('edit-oc-id').value;
-  const data=getDD(day);
-  const idx=data.ocorrs.findIndex(o=>o.id===ocKey);
-  const realIdx=idx>=0?idx:parseInt(ocKey.split('_').pop());
-  if(realIdx<0||realIdx>=data.ocorrs.length)return;
-  const oc=data.ocorrs[realIdx];
+  const ocs=getOcorrs(day);
+  const oc=ocs.find(o=>o.id===ocKey)||ocs[parseInt(ocKey.split('_').pop())];
+  if(!oc){alert('Ocorrência não encontrada.');return;}
   if(oc.resp!==u.mat){alert('Você não pode editar ocorrências de outros colaboradores.');return;}
   const now=new Date();
   const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  data.ocorrs[realIdx]={...oc,
+  const updated={...oc,
     secao:document.getElementById('edit-oc-sec').value.trim(),
     rua:document.getElementById('edit-oc-rua').value.trim(),
     cod:document.getElementById('edit-oc-cod').value.trim(),
@@ -1179,7 +1236,7 @@ function salvarEditOc(){
     desc:document.getElementById('edit-oc-desc').value.trim(),
     _editado:hora
   };
-  saveDD(day,data);
+  saveOcorrDoc(updated);
   document.getElementById('edit-oc-modal').style.display='none';
   renderMinhasOcorr();
 }
@@ -1245,11 +1302,11 @@ function carregarDia(){
   if(!data.obs){data.obs=[];changed=true;}
   if(!data.ocorrs){data.ocorrs=[];changed=true;}
   if(changed)saveDD(d,data);
-  if(fdb)subscribeToDay(d);
+  if(fdb){subscribeToDay(d);subscribeOcorrs(d);}
   document.getElementById('fer-aviso').style.display=data.feriado?'flex':'none';
   renderColab(data.cols);
   renderObsDia(data.obs);
-  renderOcorrDia(data.ocorrs);
+  renderOcorrDia();
   renderTrendAlerts();
   renderCicloDash();
 }
@@ -1312,70 +1369,88 @@ function cancelarObs(){document.getElementById('obs-input-wrap').style.display='
 function remObs(i){const d=getDataL(),data=getDD(d);if(!Array.isArray(data.obs))data.obs=[];data.obs.splice(i,1);saveDD(d,data);renderObsDia(data.obs);}
 
 // ── OCORR DIA ──────────────────────────────────────────────────────────────────
-function renderOcorrDia(ocorrs,isFiltered){
-  if(!isFiltered)_ocorrAll=ocorrs||[];
+function renderOcorrDia(ocorrsParam,isFiltered){
+  const d=getDataL();
+  const ocorrs=ocorrsParam!=null?ocorrsParam:getOcorrs(d);
+  if(!isFiltered)_ocorrAll=[...ocorrs];
   const cont=document.getElementById('lista-ocorr-dia');
   const tipos=getTipos();const users=getUsers();
-  if(!ocorrs||!ocorrs.length){cont.innerHTML='<div style="font-size:12px;color:var(--text-s);padding:4px 0">Nenhuma ocorrência hoje.</div>';return;}
-  cont.innerHTML=ocorrs.map((o,i)=>{
+  if(!ocorrs.length){cont.innerHTML='<div style="font-size:12px;color:var(--text-s);padding:4px 0">Nenhuma ocorrência hoje.</div>';return;}
+  cont.innerHTML=ocorrs.map(o=>{
+    const id=o.id;
     const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'—';
     const resp=users.find(u=>u.mat===o.resp)?.nome||o.resp_nome||'—';
+    const endVal=o.cod?catalogEnd(o.cod):'';
     return`<div class="ocorr-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div style="display:flex;align-items:center;gap:8px"><span class="badge bg-red">${tn}</span><span style="font-size:11px;color:var(--text-s)">${o.hora||''} · ${resp}</span></div>
-        <button class="btn-ghost" onclick="remOcorr(${i})" style="color:#dc2626">✕</button>
+        <button class="btn-ghost" onclick="remOcorrById('${id}')" style="color:#dc2626">✕</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px">
-        <div class="fg"><label>Tipo</label><select onchange="upOcorr(${i},'tipo_id',this.value)"><option value="">—</option>${tipos.map(t=>`<option value="${t.id}" ${o.tipo_id===t.id?'selected':''}>${t.nome}</option>`).join('')}</select></div>
-        <div class="fg"><label>Setor</label><select onchange="upOcorr(${i},'setor',this.value)"><option value="">—</option>${SETORES_CD.map(s=>`<option value="${s}" ${o.setor===s?'selected':''}>${s}</option>`).join('')}</select></div>
-        <div class="fg"><label>Subtipo</label><select onchange="upOcorr(${i},'subtipo',this.value)"><option value="">—</option>${SUBTIPOS_CD.map(s=>`<option value="${s}" ${o.subtipo===s?'selected':''}>${s}</option>`).join('')}</select></div>
-        <div class="fg"><label>Responsável</label><select onchange="upOcorr(${i},'resp',this.value)"><option value="">—</option>${users.filter(u=>!u.admin).map(u=>`<option value="${u.mat}" ${o.resp===u.mat?'selected':''}>${u.nome.split(' ')[0]}</option>`).join('')}</select></div>
+        <div class="fg"><label>Tipo</label><select onchange="upOcorrById('${id}','tipo_id',this.value)"><option value="">—</option>${tipos.map(t=>`<option value="${t.id}" ${o.tipo_id===t.id?'selected':''}>${t.nome}</option>`).join('')}</select></div>
+        <div class="fg"><label>Setor</label><select onchange="upOcorrById('${id}','setor',this.value)"><option value="">—</option>${SETORES_CD.map(s=>`<option value="${s}" ${o.setor===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="fg"><label>Subtipo</label><select onchange="upOcorrById('${id}','subtipo',this.value)"><option value="">—</option>${SUBTIPOS_CD.map(s=>`<option value="${s}" ${o.subtipo===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="fg"><label>Responsável</label><select onchange="upOcorrById('${id}','resp',this.value)"><option value="">—</option>${users.filter(u=>!u.admin).map(u=>`<option value="${u.mat}" ${o.resp===u.mat?'selected':''}>${u.nome.split(' ')[0]}</option>`).join('')}</select></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 3fr;gap:8px;margin-bottom:8px">
-        <div class="fg"><label>Seção</label><input type="text" value="${o.secao||''}" placeholder="ex: 31" oninput="db('os${i}',()=>upOcorr(${i},'secao',this.value))"></div>
-        <div class="fg"><label>Descrição</label><input type="text" value="${o.desc||''}" placeholder="Detalhes adicionais..." oninput="db('od${i}',()=>upOcorr(${i},'desc',this.value))"></div>
+        <div class="fg"><label>Seção</label><input id="oadm-sec-${id}" type="text" value="${o.secao||''}" placeholder="ex: 31" oninput="db('os${id}',()=>upOcorrById('${id}','secao',this.value))"></div>
+        <div class="fg"><label>Descrição</label><input type="text" value="${o.desc||''}" placeholder="Detalhes adicionais..." oninput="db('od${id}',()=>upOcorrById('${id}','desc',this.value))"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
-        <div class="fg"><label>Código</label><input type="text" value="${o.cod||''}" placeholder="ex: 760901" oninput="db('oc${i}',()=>upOcorr(${i},'cod',this.value))" onchange="autoOcorrAdmCod(${i},this.value)"></div>
-        <div class="fg"><label>Quantidade</label><input type="number" value="${o.qtd||''}" placeholder="0" oninput="db('oq${i}',()=>upOcorr(${i},'qtd',parseInt(this.value)||0))"></div>
+        <div class="fg"><label>Código</label><input type="text" value="${o.cod||''}" placeholder="ex: 760901" oninput="db('oc${id}',()=>upOcorrById('${id}','cod',this.value))" onchange="autoOcorrAdmCod('${id}',this.value)"></div>
+        <div class="fg"><label>Quantidade</label><input type="number" value="${o.qtd||''}" placeholder="0" oninput="db('oq${id}',()=>upOcorrById('${id}','qtd',parseInt(this.value)||0))"></div>
       </div>
-      <div id="oadm-end-${i}" style="display:${o.cod&&catalogEnd(o.cod)?'block':'none'};margin-bottom:4px;padding:4px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:11px;color:#15803d">${o.cod&&catalogEnd(o.cod)?'📍 End. padrão: '+catalogEnd(o.cod):''}</div>
+      <div id="oadm-end-${id}" style="display:${endVal?'block':'none'};margin-bottom:4px;padding:4px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:11px;color:#15803d">${endVal?'📍 End. padrão: '+endVal:''}</div>
       <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:8px">
-        <div class="fg"><label>Nome do item</label><input id="oadm-item-${i}" type="text" value="${o.item||o.cod&&catalogNome(o.cod)||''}" placeholder="Preenchido pelo código..." oninput="db('oi${i}',()=>upOcorr(${i},'item',this.value))"></div>
-        <div class="fg"><label>Rua</label><input type="text" value="${o.rua||''}" placeholder="ex: 03" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'');db('or${i}',()=>upOcorr(${i},'rua',this.value))"></div>
+        <div class="fg"><label>Nome do item</label><input id="oadm-item-${id}" type="text" value="${o.item||o.cod&&catalogNome(o.cod)||''}" placeholder="Preenchido pelo código..." oninput="db('oi${id}',()=>upOcorrById('${id}','item',this.value))"></div>
+        <div class="fg"><label>Rua</label><input type="text" value="${o.rua||''}" placeholder="ex: 03" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'');db('or${id}',()=>upOcorrById('${id}','rua',this.value))"></div>
       </div>
       <div style="display:flex;align-items:flex-end;gap:10px">
         <div style="display:flex;gap:6px"><div>
           <label style="font-size:12px;font-weight:500;color:var(--text-s);display:block;margin-bottom:3px">Foto 1</label>
-          <label style="cursor:pointer">${o.foto?`<img src="${o.foto}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFoto(${i},'foto',this)"></label>
+          <label style="cursor:pointer">${o.foto?`<img src="${o.foto}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFotoById('${id}','foto',this)"></label>
         </div><div>
           <label style="font-size:12px;font-weight:500;color:var(--text-s);display:block;margin-bottom:3px">Foto 2</label>
-          <label style="cursor:pointer">${o.foto2?`<img src="${o.foto2}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFoto(${i},'foto2',this)"></label>
+          <label style="cursor:pointer">${o.foto2?`<img src="${o.foto2}" class="foto-img" onclick="verFoto(this.src)">`:`<div class="foto-box">📷<span style="font-size:9px">Foto</span></div>`}<input type="file" accept="image/*" style="display:none" onchange="upOcorrFotoById('${id}','foto2',this)"></label>
         </div></div>
       </div>
     </div>`;
   }).join('');
 }
 function addOcorr(){
-  // Expande seção se estiver colapsada
   const body=document.getElementById('body-ocorr');
   if(body&&body.style.display==='none'){toggleSec('ocorr');}
-  const d=getDataL(),data=getDD(d);
-  if(!data.ocorrs)data.ocorrs=[];
+  const d=getDataL();
   const now=new Date();const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  data.ocorrs.push({tipo_id:'',resp:'',resp_nome:'',hora,setor:'',subtipo:'',secao:'',rua:'',item:'',cod:'',qtd:0,desc:'',foto:null,foto2:null});
-  saveDD(d,data);renderOcorrDia(data.ocorrs);
-  setTimeout(()=>{const el=document.getElementById('lista-ocorr-dia');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},100);
+  const id='oc_'+Date.now()+'_adm';
+  saveOcorrDoc({id,data:d,tipo_id:'',resp:'',resp_nome:'',hora,setor:'',subtipo:'',secao:'',rua:'',item:'',cod:'',qtd:0,desc:'',mat_err:'',nome_err:'',foto:null,foto2:null});
+  renderOcorrDia();
+  setTimeout(()=>{const el=document.getElementById('lista-ocorr-dia');if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},200);
 }
-function upOcorr(i,field,val){const d=getDataL(),data=getDD(d);if(!data.ocorrs)data.ocorrs=[];data.ocorrs[i][field]=val;saveDD(d,data);}
-function remOcorr(i){const d=getDataL(),data=getDD(d);data.ocorrs.splice(i,1);saveDD(d,data);renderOcorrDia(data.ocorrs);}
-async function upOcorrFoto(i,field,input){
+function upOcorrById(id,field,val){
+  const d=getDataL();const ocs=getOcorrs(d);
+  const oc=ocs.find(o=>o.id===id);if(!oc)return;
+  oc[field]=val;
+  if(!CACHE.ocorrs[d])CACHE.ocorrs[d]=[];
+  const idx=CACHE.ocorrs[d].findIndex(o=>o.id===id);
+  if(idx>=0)CACHE.ocorrs[d][idx]=oc;else CACHE.ocorrs[d].push(oc);
+  saveOcorrDoc(oc);
+}
+function remOcorrById(id){
+  const d=getDataL();delOcorrDoc(id,d);renderOcorrDia();
+}
+async function upOcorrFotoById(id,field,input){
   if(!input.files||!input.files[0])return;
   const compressed=await compressImage(input.files[0]);
   if(!compressed)return;
-  const d=getDataL(),data=getDD(d);
-  data.ocorrs[i][field]=compressed;
-  saveDD(d,data);renderOcorrDia(data.ocorrs);
+  const d=getDataL();const ocs=getOcorrs(d);
+  const oc=ocs.find(o=>o.id===id);if(!oc)return;
+  const url=await uploadFotoStorage(compressed,'ocorrencias/'+id+'/'+field+'_'+Date.now());
+  oc[field]=url||compressed;
+  if(!CACHE.ocorrs[d])CACHE.ocorrs[d]=[];
+  const idx=CACHE.ocorrs[d].findIndex(o=>o.id===id);
+  if(idx>=0)CACHE.ocorrs[d][idx]=oc;else CACHE.ocorrs[d].push(oc);
+  saveOcorrDoc(oc);renderOcorrDia();
 }
 function toggleSec(id){
   const body=document.getElementById('body-'+id);
@@ -1386,26 +1461,28 @@ function toggleSec(id){
   if(arr)arr.textContent=open?'▼':'▲';
 }
 
-function autoOcorrAdmCod(i,cod){
+function autoOcorrAdmCod(id,cod){
   const nome=catalogNome(cod);
   const end=catalogEnd(cod);
-  const d=getDataL(),data=getDD(d);
-  if(!data.ocorrs[i])return;
+  const d=getDataL();const ocs=getOcorrs(d);
+  const oc=ocs.find(o=>o.id===id);if(!oc)return;
   let changed=false;
-  if(nome&&!data.ocorrs[i].item){data.ocorrs[i].item=nome;changed=true;}
+  if(nome&&!oc.item){oc.item=nome;changed=true;}
   if(end){
     const sec=(end.split('.')[1]||'').replace(/^0+/,'');
-    if(sec&&!data.ocorrs[i].secao){data.ocorrs[i].secao=sec;changed=true;}
-    const secEl=document.getElementById('oadm-sec-'+i);
+    if(sec&&!oc.secao){oc.secao=sec;changed=true;}
+    const secEl=document.getElementById('oadm-sec-'+id);
     if(secEl&&!secEl.value&&sec)secEl.value=sec;
   }
-  if(changed)saveDD(d,data);
-  const endEl=document.getElementById('oadm-end-'+i);
-  if(endEl){
-    if(end){endEl.style.display='block';endEl.textContent='📍 End. padrão: '+end;}
-    else endEl.style.display='none';
+  if(changed){
+    if(!CACHE.ocorrs[d])CACHE.ocorrs[d]=[];
+    const idx=CACHE.ocorrs[d].findIndex(o=>o.id===id);
+    if(idx>=0)CACHE.ocorrs[d][idx]=oc;else CACHE.ocorrs[d].push(oc);
+    saveOcorrDoc(oc);
   }
-  const itemInput=document.getElementById('oadm-item-'+i);
+  const endEl=document.getElementById('oadm-end-'+id);
+  if(endEl){if(end){endEl.style.display='block';endEl.textContent='📍 End. padrão: '+end;}else endEl.style.display='none';}
+  const itemInput=document.getElementById('oadm-item-'+id);
   if(itemInput&&!itemInput.value&&nome)itemInput.value=nome;
 }
 
@@ -1459,7 +1536,7 @@ function renderCicloDash(){
   dias.forEach(d=>{
     const data=getDD(d);if(data.feriado)return;
     data.cols.forEach(c=>{if(c.status==='Trabalhando'){const r=calcColabTotal(c);totSku+=r.totalSkus;}});
-    totOcorr+=(data.ocorrs||[]).length;
+    totOcorr+=getOcorrs(d).length;
     if((data.cols||[]).some(c=>c.status==='Trabalhando'))diasTrab++;
   });
   const kpi=(lbl,val,cor)=>`<div style="flex:1;min-width:100px;text-align:center"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:3px">${lbl}</div><div style="font-size:20px;font-weight:700;color:${cor}">${val}</div></div>`;
@@ -1681,13 +1758,13 @@ function renderResumo(){
       return`<tr style="background:#fffbeb"><td style="font-weight:600">${ti===0?c.nome:''}</td><td><span class="badge bg-amber">${atv.nome}</span></td><td style="text-align:center;font-weight:600">${realH>0?realH+'h':'—'}</td><td style="text-align:center;color:var(--text-s)">${metaH>0?metaH+'h':'—'}</td><td>${metaH>0?`<span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ Dentro do prazo':'⚠️ Acima do esperado'}</span>`:''} ${t.desc||''}</td></tr>`;
     }).join('')).join('')}
     </tbody></table></div>`:''} 
-    ${(data.ocorrs||[]).length?`
+    ${(()=>{const _oc=getOcorrs(d);return _oc.length?`
     ${(()=>{
       const tipos=getTipos();const porTipo={};
-      (data.ocorrs||[]).forEach(o=>{const n=tipos.find(t=>t.id===o.tipo_id)?.nome||'Sem tipo';porTipo[n]=(porTipo[n]||0)+1;});
+      _oc.forEach(o=>{const n=tipos.find(t=>t.id===o.tipo_id)?.nome||'Sem tipo';porTipo[n]=(porTipo[n]||0)+1;});
       const ent=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]);const mx=ent[0]?.[1]||1;
       return`<div style="background:white;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">⚠️ Ocorrências hoje — ${data.ocorrs.length} registro${data.ocorrs.length>1?'s':''}</div>
+        <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">⚠️ Ocorrências hoje — ${_oc.length} registro${_oc.length>1?'s':''}</div>
         <div style="display:flex;flex-direction:column;gap:6px">
         ${ent.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px">
           <span style="font-size:12px;color:#475569;width:130px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
@@ -1697,7 +1774,7 @@ function renderResumo(){
         </div>
       </div>`;
     })()}
-    ${buildOcorrTable(data.ocorrs)}`:''}`;
+    ${buildOcorrTable(_oc)}`:'';})()}`;
   }catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px;font-size:13px">Erro ao renderizar: '+e.message+'</div>';console.error('renderResumo error:',e);}
 }
 function buildOcorrTable(ocorrs){
@@ -1728,7 +1805,6 @@ function calcMensal(mes){
     // Normalize obs format for old data
     if(typeof data.obs==='string')data.obs=data.obs.trim()?[{texto:data.obs,hora:''}]:[];
     if(!Array.isArray(data.obs))data.obs=[];
-    if(!Array.isArray(data.ocorrs))data.ocorrs=[];
     const wk='S'+Math.ceil(new Date(d).getDate()/7);
     if(!semanas[wk])semanas[wk]={skus:0,meta:0,hInd:0,indDias:0};
     if(data.feriado)return;
@@ -1760,7 +1836,7 @@ function calcMensal(mes){
   });
   // Ocorrências
   const ocorrs=[];
-  dias.forEach(d=>{const data=getDD(d);if(data.feriado)return;(data.ocorrs||[]).forEach(o=>ocorrs.push({...o,data:d}));});
+  dias.forEach(d=>{const data=getDD(d);if(data.feriado)return;getOcorrs(d).forEach(o=>ocorrs.push(o));});
   // Observações
   const obsAll=[];
   dias.forEach(d=>{const data=getDD(d);if(data.feriado)return;(data.obs||[]).forEach(o=>obsAll.push({...o,data:d}));});
@@ -1988,7 +2064,7 @@ function renderMensal(){
         const cod=v.cod;if(!cod)return;
         let ocDia=null;
         Object.entries(CACHE.dias).forEach(([dia,dd])=>{
-          const oc=(dd.ocorrs||[]).find(o=>o.cod&&o.cod.trim()===cod.trim());
+          const oc=getOcorrs(dia).find(o=>o.cod&&o.cod.trim()===cod.trim());
           if(oc)ocDia=dia;
         });
         if(ocDia){const diff=Math.abs(new Date(ocDia)-new Date(v.data))/(1000*60*60*24);somaD+=diff;cntD++;}
@@ -2632,16 +2708,15 @@ async function colabEnviarOcorr(){
   const nome_err=document.getElementById('co-nome-err').value.trim();
   const now=new Date();
   const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
-  const foto=window._colabFoto1||null;
-  const foto2=window._colabFoto2||null;
-  window._colabFoto1=null;window._colabFoto2=null;
-  const d=today();const data=getDD(d);
-  if(!data.ocorrs)data.ocorrs=[];
+  const d=today();
   const ocId='oc_'+Date.now();
-  data.ocorrs.push({id:ocId,tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,mat_err,nome_err,foto,foto2});
-  saveDD(d,data,err=>{
-    alert('❌ Erro ao salvar ocorrência: '+err.message+'\nVerifique a conexão com internet.');
-  });
+  // Upload fotos para Firebase Storage (sem base64 no Firestore)
+  const [foto,foto2]=await Promise.all([
+    uploadFotoStorage(window._colabFoto1,'ocorrencias/'+ocId+'/foto'),
+    uploadFotoStorage(window._colabFoto2,'ocorrencias/'+ocId+'/foto2')
+  ]);
+  window._colabFoto1=null;window._colabFoto2=null;
+  await saveOcorrDoc({id:ocId,data:d,tipo_id,resp:cu.mat,resp_nome:cu.nome,hora,setor,subtipo,secao,rua,item,cod,qtd,desc,mat_err,nome_err,foto,foto2});
   tocarNotificacao();
   ['co-tipo','co-setor','co-sub'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['co-sec','co-rua','co-item','co-cod','co-qtd','co-desc','co-mat-err','co-nome-err'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
