@@ -2694,7 +2694,8 @@ async function colabFoto(n,input){
   prev.innerHTML=`<img src="${compressed}" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #334155">`;
 }
 async function colabEnviarOcorr(){
-  const cu=getCU();if(!cu)return;
+  try{
+  const cu=getCU();if(!cu){alert('Erro: sessão não encontrada. Faça login novamente.');return;}
   const tipo_id=document.getElementById('co-tipo').value;
   const setor=document.getElementById('co-setor').value;
   const subtipo=document.getElementById('co-sub').value;
@@ -2723,6 +2724,7 @@ async function colabEnviarOcorr(){
   document.getElementById('co-foto-preview').innerHTML='';
   document.getElementById('co-foto2-preview').innerHTML='';
   const suc=document.getElementById('co-success');suc.style.display='block';setTimeout(()=>suc.style.display='none',3000);
+  }catch(e){console.error('[colabEnviarOcorr]',e);alert('⚠️ Erro ao registrar ocorrência: '+e.message);}
 }
 function renderColabObs(){
   const d=today();const data=getDD(d);
