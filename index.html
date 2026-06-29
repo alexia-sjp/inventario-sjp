@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 <title>Inventário SJP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -26,15 +28,23 @@
 </style>
 <style>
 :root{
-  --bg:#f0f2f5;--bg-card:#fff;--bg-card2:#f7f8fa;--bg-side:#1a1f2e;--bg-side2:#252b3b;
-  --accent:#3b82f6;--accent-d:#2563eb;--accent-l:#eff6ff;
-  --green:#16a34a;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;
-  --amber:#d97706;--amber-bg:#fef3c7;--purple:#7c3aed;--purple-bg:#f3e8ff;
-  --text:#111827;--text-s:#6b7280;--text-side:#9ca3af;
-  --border:#e5e7eb;--border-d:#d1d5db;--radius:8px;--shadow:0 1px 3px rgba(0,0,0,.08);
+  --bg:#f1f4f8;--bg-card:#fff;--bg-card2:#f8fafc;--bg-side:#0d1117;--bg-side2:#1a2030;
+  --accent:#3b82f6;--accent-d:#2563eb;--accent-l:#eff6ff;--accent-hover:#1d4ed8;
+  --green:#16a34a;--green-bg:#dcfce7;--green-d:#15803d;
+  --red:#dc2626;--red-bg:#fee2e2;--red-d:#b91c1c;
+  --amber:#d97706;--amber-bg:#fef3c7;--amber-d:#b45309;
+  --purple:#7c3aed;--purple-bg:#f3e8ff;
+  --text:#0f172a;--text-s:#64748b;--text-m:#94a3b8;--text-side:#8b9bb4;
+  --border:#e2e8f0;--border-d:#cbd5e1;--border-s:#f1f5f9;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.05);
+  --shadow:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+  --shadow-md:0 4px 6px rgba(0,0,0,.05),0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg:0 10px 25px rgba(0,0,0,.08),0 4px 6px rgba(0,0,0,.04);
+  --radius:8px;--radius-lg:12px;
+  --transition:.18s cubic-bezier(.4,0,.2,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 
 /* LOGIN */
 .login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 60% 40%,#1e2d4a 0%,#0f172a 70%)}
@@ -56,80 +66,116 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* LAYOUT */
 .adm-wrap{display:flex;min-height:100vh}
-.sidebar{width:225px;background:var(--bg-side);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto;flex-shrink:0}
-.sl{padding:20px 18px 16px;border-bottom:1px solid #2d3448}
-.sl-icon{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.sidebar{width:232px;background:var(--bg-side);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto;flex-shrink:0;border-right:1px solid rgba(255,255,255,.05);transition:transform var(--transition)}
+.sl{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.06)}
+.sl-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent-d));border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:9px;box-shadow:0 4px 12px rgba(59,130,246,.3)}
 .sl-icon svg{width:18px;height:18px;fill:white}
-.sl-title{font-size:15px;font-weight:600;color:white}
-.sl-sub{font-size:12px;color:var(--text-side);margin-top:1px}
-.snav{padding:10px 10px;flex:1}
-.nlbl{font-size:11px;font-weight:600;color:#4b5563;text-transform:uppercase;letter-spacing:.08em;padding:0 8px;margin:12px 0 5px}
-.nb{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:6px;cursor:pointer;color:var(--text-side);font-size:13px;font-weight:500;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;transition:all .15s}
-.nb:hover{background:var(--bg-side2);color:#d1d5db}
-.nb.on{background:var(--accent);color:white}
-.nb svg{width:15px;height:15px;flex-shrink:0}
-.sb-bot{padding:12px 10px;border-bottom:1px solid #2d3448}
-.sb-user{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#252b3b;border-radius:6px}
-.sb-avatar{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0}
-.sb-uname{font-size:12px;font-weight:600;color:#d1d5db;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sb-urole{font-size:10px;color:#64748b}
-.sb-logout{margin-left:auto;background:none;border:none;cursor:pointer;color:#64748b;font-size:18px;padding:2px 4px}
-.sb-logout:hover{color:#f87171}
+.sl-title{font-size:14px;font-weight:600;color:#f1f5f9;letter-spacing:-.01em}
+.sl-sub{font-size:11px;color:#475569;margin-top:2px;letter-spacing:.02em}
+.snav{padding:8px 8px;flex:1}
+.nlbl{font-size:10px;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.1em;padding:0 10px;margin:14px 0 4px}
+.nb{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;color:var(--text-side);font-size:13px;font-weight:500;margin-bottom:1px;border:none;background:transparent;width:100%;text-align:left;transition:background var(--transition),color var(--transition),box-shadow var(--transition)}
+.nb:hover{background:rgba(255,255,255,.07);color:#d1d5db}
+.nb.on{background:rgba(59,130,246,.13);color:#93c5fd;box-shadow:inset 2px 0 0 var(--accent);font-weight:600}
+.nb svg{width:15px;height:15px;flex-shrink:0;opacity:.8}
+.nb.on svg{opacity:1}
+.sb-bot{padding:10px 8px;border-top:1px solid rgba(255,255,255,.06);margin-top:auto}
+.sb-user{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(255,255,255,.05);border-radius:8px;border:1px solid rgba(255,255,255,.06)}
+.sb-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-d));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:white;flex-shrink:0}
+.sb-uname{font-size:12px;font-weight:600;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-urole{font-size:10px;color:#475569}
+.sb-logout{margin-left:auto;background:none;border:none;cursor:pointer;color:#4b5563;padding:4px;border-radius:5px;display:flex;align-items:center;transition:color var(--transition),background var(--transition)}
+.sb-logout:hover{color:#f87171;background:rgba(248,113,113,.1)}
+.sb-logout svg{width:14px;height:14px}
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;backdrop-filter:blur(3px)}
+#sidebar-overlay.on{display:block}
+#hamburger{display:none;background:none;border:none;cursor:pointer;padding:6px;border-radius:6px;color:var(--text-s);align-items:center;justify-content:center;transition:background var(--transition)}
+#hamburger:hover{background:var(--bg-card2)}
 .main{flex:1;display:flex;flex-direction:column;min-width:0}
-.topbar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:11px 22px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.topbar-title{font-size:18px;font-weight:600}
-.topbar-r{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.dp{display:flex;align-items:center;gap:6px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 11px;font-size:13px;font-weight:500}
-.dp input[type=date]{border:none;background:transparent;font-size:13px;font-weight:500;color:var(--text);outline:none}
+.topbar{background:var(--bg-card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;box-shadow:var(--shadow-sm)}
+.topbar-title{font-size:16px;font-weight:600;letter-spacing:-.01em}
+.topbar-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.dp{display:flex;align-items:center;gap:6px;background:var(--bg-card);border:1px solid var(--border-d);border-radius:7px;padding:6px 11px;font-size:13px;font-weight:500;transition:border-color var(--transition),box-shadow var(--transition)}
+.dp:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.dp input[type=date]{border:none;background:transparent;font-size:13px;font-weight:500;color:var(--text);outline:none;font-family:inherit}
 .content{padding:18px 22px;flex:1}
 .tc{display:none}.tc.on{display:block}
+.empty{text-align:center;padding:32px 24px;color:var(--text-s);font-size:13px}
 
 /* CARDS */
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:12px}
-.card-hd{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
-.card-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:12px}
+.card-hd{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;letter-spacing:-.01em}
 .met-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
-.met-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;box-shadow:var(--shadow)}
-.met-card .ml{font-size:11px;font-weight:500;color:var(--text-s);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.met-card .mv{font-size:24px;font-weight:700}
-.met-card .ms{font-size:11px;color:var(--text-s);margin-top:2px}
+.met-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;box-shadow:var(--shadow);transition:box-shadow var(--transition),border-color var(--transition)}
+.met-card:hover{box-shadow:var(--shadow-md);border-color:var(--border-d)}
+.met-card .ml{font-size:10px;font-weight:600;color:var(--text-m);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.met-card .mv{font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.met-card .ms{font-size:11px;color:var(--text-s);margin-top:4px}
 
 /* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:white;color:var(--text);transition:all .15s;white-space:nowrap}
-.btn:hover{background:var(--bg-card2);border-color:var(--border-d)}
-.btn-primary{background:var(--accent);color:white;border-color:var(--accent)}
-.btn-primary:hover{background:var(--accent-d)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border-d);background:var(--bg-card);color:var(--text);transition:background var(--transition),border-color var(--transition),box-shadow var(--transition);white-space:nowrap;font-family:inherit}
+.btn:hover{background:var(--bg-card2);border-color:var(--border-d);box-shadow:var(--shadow-sm)}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn-primary{background:var(--accent);color:white;border-color:var(--accent);box-shadow:0 1px 2px rgba(59,130,246,.2)}
+.btn-primary:hover{background:var(--accent-d);border-color:var(--accent-d);box-shadow:0 2px 6px rgba(59,130,246,.3)}
 .btn-success{background:var(--green);color:white;border-color:var(--green)}
 .btn-danger{color:var(--red);border-color:#fca5a5}
-.btn-danger:hover{background:var(--red-bg)}
-.btn-ghost{background:transparent;border:none;color:var(--text-s);padding:4px 8px;cursor:pointer;border-radius:4px;font-size:13px}
+.btn-danger:hover{background:var(--red-bg);border-color:var(--red)}
+.btn-ghost{background:transparent;border:none;color:var(--text-s);padding:5px 8px;cursor:pointer;border-radius:6px;font-size:13px;font-family:inherit;transition:background var(--transition),color var(--transition)}
 .btn-ghost:hover{background:var(--bg-card2);color:var(--text)}
-.btn-dashed{border:1.5px dashed var(--border-d);background:transparent;color:var(--text-s);width:100%;justify-content:center;padding:7px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px;margin-top:6px;transition:all .15s}
-.btn-dashed:hover{background:var(--bg-card2);border-color:var(--accent);color:var(--accent)}
+.btn-dashed{border:1.5px dashed var(--border-d);background:transparent;color:var(--text-s);width:100%;justify-content:center;padding:8px;border-radius:8px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:5px;margin-top:6px;transition:all var(--transition);font-family:inherit}
+.btn-dashed:hover{background:var(--accent-l);border-color:var(--accent);color:var(--accent)}
 
 /* FORMS */
 .fg{display:flex;flex-direction:column;gap:3px}
-.fg label{font-size:12px;font-weight:500;color:var(--text-s)}
-.fg select,.fg input[type=text],.fg input[type=number],.fg input[type=time],.fg input[type=date],.fg textarea{font-size:13px;padding:7px 9px;border-radius:6px;border:1px solid var(--border-d);background:white;color:var(--text);width:100%;transition:border-color .15s;font-family:inherit}
-.fg select:focus,.fg input:focus,.fg textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(59,130,246,.1)}
+.fg label{font-size:11px;font-weight:600;color:var(--text-s);letter-spacing:.02em}
+.fg select,.fg input[type=text],.fg input[type=number],.fg input[type=time],.fg input[type=date],.fg textarea{font-size:13px;padding:7px 9px;border-radius:7px;border:1px solid var(--border-d);background:var(--bg-card);color:var(--text);width:100%;transition:border-color var(--transition),box-shadow var(--transition);font-family:inherit}
+.fg select:focus,.fg input:focus,.fg textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,.12)}
 
 /* BADGES */
-.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
-.bg-green{background:var(--green-bg);color:var(--green)}
-.bg-red{background:var(--red-bg);color:var(--red)}
-.bg-amber{background:var(--amber-bg);color:var(--amber)}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap;letter-spacing:.01em}
+.bg-green{background:var(--green-bg);color:var(--green-d)}
+.bg-red{background:var(--red-bg);color:var(--red-d)}
+.bg-amber{background:var(--amber-bg);color:var(--amber-d)}
 .bg-blue{background:var(--accent-l);color:var(--accent-d)}
-.bg-gray{background:#f3f4f6;color:#6b7280}
+.bg-gray{background:#f3f4f6;color:#52525b}
 .bg-purple{background:var(--purple-bg);color:var(--purple)}
 .bg-indigo{background:#e0e7ff;color:#4338ca}
 
 /* TABLES */
-.tbl-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+.tbl-wrap{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:12px}
 .tbl{width:100%;border-collapse:collapse;table-layout:fixed}
-.tbl th{font-size:11px;font-weight:600;color:var(--text-s);text-transform:uppercase;letter-spacing:.05em;padding:9px 11px;text-align:left;background:var(--bg-card2);border-bottom:1px solid var(--border)}
-.tbl td{font-size:12px;padding:10px 11px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl th{font-size:10px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.07em;padding:9px 12px;text-align:left;background:var(--bg-card2);border-bottom:1px solid var(--border)}
+.tbl td{font-size:12px;padding:10px 12px;border-bottom:1px solid var(--border-s);vertical-align:middle}
 .tbl tr:last-child td{border-bottom:none}
-.tbl tr:hover td{background:#fafafa}
+.tbl tr:hover td{background:#f9fafb}
+.tbl tr{transition:background var(--transition)}
+
+/* SKELETON LOADING */
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+.skeleton{background:linear-gradient(90deg,var(--bg-card2) 25%,var(--border) 50%,var(--bg-card2) 75%);background-size:200% auto;animation:shimmer 1.6s ease-in-out infinite;border-radius:6px}
+.sk-line{height:11px;margin-bottom:8px;width:80%}.sk-line.mid{width:55%}.sk-line.short{width:35%}
+.sk-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 24px;color:var(--text-s)}
+.empty-state-icon{width:52px;height:52px;margin:0 auto 14px;background:var(--bg-card2);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center}
+.empty-state-icon svg{width:24px;height:24px;stroke:var(--text-m);fill:none;stroke-width:1.5}
+.empty-state-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
+.empty-state-desc{font-size:12px;color:var(--text-s);line-height:1.6;max-width:260px;margin:0 auto}
+
+/* MOBILE RESPONSIVE */
+@media(max-width:768px){
+  .sidebar{position:fixed;left:0;top:0;z-index:1000;height:100vh;transform:translateX(-100%);box-shadow:none}
+  .sidebar.open{transform:translateX(0);box-shadow:var(--shadow-lg)}
+  #sidebar-overlay.on{display:block}
+  #hamburger{display:flex!important}
+  .met-grid{grid-template-columns:repeat(2,1fr)}
+  .topbar{padding:9px 14px}
+  .content{padding:12px 14px}
+}
 
 /* COLAB BLOCKS */
 .cblock{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden}
@@ -140,12 +186,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cblock-body{padding:12px 14px;background:white}
 .hprod-chip{background:var(--accent-l);color:var(--accent-d);font-weight:600;padding:2px 9px;border-radius:20px;font-size:11px}
 .hind-wrap{background:#fffbeb;border:1px solid #fcd34d;border-radius:6px;padding:10px 12px;margin-bottom:10px}
-.sec-collapse{border:1px solid var(--border-d);border-radius:10px;overflow:hidden;background:white}
-.sec-collapse-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer;background:#f8fafc;user-select:none}
-.sec-collapse-hd:hover{background:#f1f5f9}
-.sec-collapse-hd span:first-child{font-size:13px;font-weight:600;color:#374151}
-.sec-collapse-arrow{font-size:11px;color:#94a3b8;transition:transform .2s}
-.sec-collapse-body{padding:12px 14px}
+.sec-collapse{border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-card);transition:box-shadow var(--transition)}
+.sec-collapse:hover{box-shadow:var(--shadow-sm)}
+.sec-collapse-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer;background:var(--bg-card2);user-select:none;transition:background var(--transition)}
+.sec-collapse-hd:hover{background:var(--border-s)}
+.sec-collapse-hd span:first-child{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:7px}
+.sec-collapse-arrow{font-size:10px;color:var(--text-m);transition:transform .22s cubic-bezier(.4,0,.2,1)}
+.sec-collapse-body{padding:14px 16px}
 .setor-block{background:#f8faff;border:1px solid #dbeafe;border-radius:6px;padding:10px 12px;margin-bottom:8px}
 .hora-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:3px;margin-bottom:8px}
 .hcol{display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -175,10 +222,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .rank-bar-hf{height:100%;border-radius:3px}
 
 /* LANC SUB-TABS */
-.lanc-tabs{display:flex;gap:2px;background:#f1f5f9;border-radius:8px;padding:3px;margin-bottom:12px}
-.lanc-tab{flex:1;padding:8px 10px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:#64748b;border-radius:6px;border:none;background:transparent;transition:all .15s;white-space:nowrap}
-.lanc-tab:hover{background:#e2e8f0;color:#374151}
-.lanc-tab.on{background:white;color:#1e293b;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.lanc-tabs{display:flex;gap:2px;background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:3px;margin-bottom:14px}
+.lanc-tab{flex:1;padding:8px 10px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text-s);border-radius:8px;border:none;background:transparent;transition:all var(--transition);white-space:nowrap;display:flex;align-items:center;justify-content:center;gap:5px;font-family:inherit}
+.lanc-tab svg{opacity:.7;flex-shrink:0}
+.lanc-tab:hover{background:var(--border-s);color:var(--text)}
+.lanc-tab.on{background:var(--bg-card);color:var(--text);box-shadow:var(--shadow-sm);font-weight:600}
+.lanc-tab.on svg{opacity:1}
 .lanc-tab.on.tab-ocorr{color:#dc2626}
 .lanc-tc{display:none}.lanc-tc.on{display:block}
 
@@ -247,9 +296,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <body>
 
 <!-- LOADING -->
-<div id="loading-screen" style="position:fixed;inset:0;background:#0f172a;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
-  <div style="width:44px;height:44px;border:3px solid #334155;border-top-color:#3b82f6;border-radius:50%;animation:sjp-spin .8s linear infinite"></div>
-  <div style="color:#94a3b8;font-size:14px;font-weight:500">Conectando ao servidor...</div>
+<div id="loading-screen" style="position:fixed;inset:0;background:#0d1117;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+    <div style="width:48px;height:48px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:13px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(59,130,246,.35)">
+      <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    </div>
+    <div style="text-align:center">
+      <div style="color:#f1f5f9;font-size:15px;font-weight:600;margin-bottom:4px;font-family:'Inter',sans-serif">Inventário SJP</div>
+      <div style="color:#475569;font-size:12px;font-family:'Inter',sans-serif">Carregando...</div>
+    </div>
+    <div style="display:flex;gap:5px;margin-top:4px">
+      <div style="width:5px;height:5px;border-radius:50%;background:#3b82f6;animation:sjp-spin .9s ease-in-out infinite alternate"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#3b82f6;animation:sjp-spin .9s ease-in-out .2s infinite alternate"></div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#3b82f6;animation:sjp-spin .9s ease-in-out .4s infinite alternate"></div>
+    </div>
+  </div>
 </div>
 
 <!-- LOGIN -->
@@ -262,13 +323,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <label class="login-label">Matrícula</label>
     <div class="login-field">
-      <span class="login-field-icon">🪪</span>
+      <span class="login-field-icon"><svg width="15" height="15" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span>
       <input class="login-input" type="tel" inputmode="numeric" id="l-mat" placeholder="" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('l-sen').focus();}">
     </div>
     <label class="login-label">Senha</label>
     <div class="login-field">
-      <span class="login-field-icon">🔒</span>
+      <span class="login-field-icon"><svg width="15" height="15" fill="none" stroke="#475569" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></span>
       <input class="login-input" type="password" inputmode="numeric" id="l-sen" placeholder="" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();login();}">
+      <button type="button" id="senha-toggle" onclick="toggleSenha()" style="position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#475569;padding:4px;border-radius:4px;display:flex;align-items:center;transition:color .15s" title="Mostrar/ocultar senha">
+        <svg id="senha-eye" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
     </div>
     <button class="login-btn" onclick="login()">Entrar</button>
     <div class="login-err" id="l-err">Matrícula ou senha incorretos.</div>
@@ -293,27 +357,34 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nb" onclick="goTab('config',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>Configurações</button>
       <button class="nb" onclick="goTab('setores',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Setores</button>
       <div class="nlbl">Painel</div>
-      <button class="nb" onclick="abrirTV()" style="background:#0f172a;color:#38bdf8;border:1px solid #334155"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>Modo TV 📺</button>
+      <button class="nb" onclick="abrirTV()" style="background:rgba(56,189,248,.08);color:#38bdf8;border:1px solid rgba(56,189,248,.15)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>Modo TV</button>
     </nav>
     <div class="sb-bot">
       <div class="sb-user">
         <div class="sb-avatar" id="sb-av"></div>
         <div><div class="sb-uname" id="sb-nm"></div><div class="sb-urole" id="sb-role"></div></div>
-        <button class="sb-logout" onclick="logout()" title="Sair">⏻</button>
+        <button class="sb-logout" onclick="logout()" title="Sair"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
       </div>
     </div>
   </aside>
   <div class="main">
+<!-- Overlay mobile sidebar -->
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div class="topbar">
-      <div class="topbar-title" id="page-title">Lançamento</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button id="hamburger" onclick="toggleSidebar()" aria-label="Menu">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+        <div class="topbar-title" id="page-title">Lançamento</div>
+      </div>
       <div class="topbar-r">
         <div style="display:flex;align-items:center;gap:4px">
           <button class="btn" onclick="navDay(-1)" style="padding:6px 9px;font-size:13px">◀</button>
           <div class="dp"><svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><input type="date" id="data-lanc" onchange="carregarDia()"></div>
           <button class="btn" onclick="navDay(1)" style="padding:6px 9px;font-size:13px">▶</button>
         </div>
-        <button class="btn" onclick="marcarFer()">🚩 Feriado</button>
-        <button class="btn btn-primary" id="btn-salvar" onclick="salvarDia()">💾 Salvar</button>
+        <button class="btn" onclick="marcarFer()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>Feriado</button>
+        <button class="btn btn-primary" id="btn-salvar" onclick="salvarDia()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvar</button>
       </div>
     </div>
     <div class="content">
@@ -324,9 +395,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div id="trend-alerts"></div>
         <!-- Sub-abas do Lançamento -->
         <div class="lanc-tabs">
-          <button class="lanc-tab on" id="ltab-colab" onclick="lancGoTab('colab',this)">👥 Colaboradores</button>
-          <button class="lanc-tab tab-ocorr" id="ltab-ocorr" onclick="lancGoTab('ocorr',this)">⚠️ Ocorrências <span id="ltab-ocorr-cnt" style="display:none;background:#dc2626;color:white;border-radius:99px;padding:1px 6px;font-size:10px;margin-left:3px"></span></button>
-          <button class="lanc-tab" id="ltab-obs" onclick="lancGoTab('obs',this)">📝 Observações</button>
+          <button class="lanc-tab on" id="ltab-colab" onclick="lancGoTab('colab',this)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Colaboradores</button>
+          <button class="lanc-tab tab-ocorr" id="ltab-ocorr" onclick="lancGoTab('ocorr',this)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Ocorrências <span id="ltab-ocorr-cnt" style="display:none;background:#dc2626;color:white;border-radius:99px;padding:1px 6px;font-size:10px;margin-left:3px"></span></button>
+          <button class="lanc-tab" id="ltab-obs" onclick="lancGoTab('obs',this)"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Observações</button>
         </div>
         <!-- Aba: Colaboradores -->
         <div class="lanc-tc on" id="ltc-colab">
@@ -367,8 +438,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
           <select id="sel-mes" onchange="renderMensal()" style="font-size:13px;padding:7px 11px;border-radius:6px;border:1px solid var(--border-d);background:white"></select>
           <div style="display:flex;gap:7px">
-            <button class="btn btn-primary" onclick="exportarExcel()">📊 Excel</button>
-            <button class="btn" onclick="imprimirMensal()" style="border-color:#7c3aed;color:#7c3aed">🖨️ PDF</button>
+            <button class="btn btn-primary" onclick="exportarExcel()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Excel</button>
+            <button class="btn" onclick="imprimirMensal()" style="border-color:#7c3aed;color:#7c3aed"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>PDF</button>
           </div>
         </div>
         <div id="men-print-header"></div>
@@ -384,10 +455,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div style="display:flex;gap:7px;flex-wrap:wrap">
             <button class="btn btn-danger" onclick="addValeItem()">+ Adicionar item</button>
             <label style="cursor:pointer" title="Importar planilha com colunas: Código, Data, Quantidade, Motivo">
-              <span class="btn" style="border-color:#7c3aed;color:#7c3aed">📥 Importar planilha</span>
+              <span class="btn" style="border-color:#7c3aed;color:#7c3aed"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Importar</span>
               <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importarValesPlanilha(this)">
             </label>
-            <button class="btn btn-primary" onclick="exportarValesExcel()">📊 Excel</button>
+            <button class="btn btn-primary" onclick="exportarValesExcel()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Excel</button>
           </div>
         </div>
         <div id="vales-status-bar" style="display:none;margin-bottom:12px"></div>
@@ -1133,6 +1204,24 @@ function isOnVacation(u,d){if(!u.ferias||!u.ferias.length)return false;return u.
 const _T={};
 function db(k,fn,ms=600){clearTimeout(_T[k]);_T[k]=setTimeout(fn,ms);}
 
+// ── UI UTILS ─────────────────────────────────────────────────────────────────
+function toggleSenha(){
+  const inp=document.getElementById('l-sen');
+  const ico=document.getElementById('senha-eye');
+  const show=inp.type==='password';
+  inp.type=show?'text':'password';
+  ico.innerHTML=show
+    ?'<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    :'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+}
+function toggleSidebar(){
+  const sb=document.querySelector('.sidebar');
+  const ov=document.getElementById('sidebar-overlay');
+  const open=sb.classList.toggle('open');
+  ov.classList.toggle('on',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 function login(){
   const mat=document.getElementById('l-mat').value.trim();
@@ -1171,6 +1260,8 @@ function iniciarApp(u){
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
 function goTab(t,btn){
+  const sb=document.querySelector('.sidebar');
+  if(sb&&sb.classList.contains('open')){sb.classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('on');document.body.style.overflow='';}
   document.querySelectorAll('.tc').forEach(e=>e.classList.remove('on'));
   document.querySelectorAll('.nb').forEach(e=>e.classList.remove('on'));
   const tab=document.getElementById('tab-'+t);
