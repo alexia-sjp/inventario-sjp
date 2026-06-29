@@ -166,6 +166,32 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .empty-state-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
 .empty-state-desc{font-size:12px;color:var(--text-s);line-height:1.6;max-width:260px;margin:0 auto}
 
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.tc.on{animation:fadeUp .22s cubic-bezier(.4,0,.2,1) both}
+.anim-in{animation:fadeUp .28s cubic-bezier(.4,0,.2,1) both}
+.anim-in-d1{animation:fadeUp .28s .05s cubic-bezier(.4,0,.2,1) both}
+.anim-in-d2{animation:fadeUp .28s .1s cubic-bezier(.4,0,.2,1) both}
+.anim-in-d3{animation:fadeUp .28s .15s cubic-bezier(.4,0,.2,1) both}
+
+/* MET-CARD ACCENT */
+.met-card.mc-blue{border-top:3px solid var(--accent)}
+.met-card.mc-green{border-top:3px solid var(--green)}
+.met-card.mc-amber{border-top:3px solid var(--amber)}
+.met-card.mc-red{border-top:3px solid var(--red)}
+.met-card.mc-purple{border-top:3px solid var(--purple)}
+
+/* DASHBOARD INÍCIO */
+.dash-header{padding:22px 0 18px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.dash-title{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.dash-sub{font-size:13px;color:var(--text-s);margin-top:3px}
+.quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.qa-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 10px;cursor:pointer;transition:all var(--transition);display:flex;flex-direction:column;align-items:center;gap:8px;font-family:inherit}
+.qa-card:hover{box-shadow:var(--shadow-md);border-color:var(--border-d);transform:translateY(-2px)}
+.qa-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qa-label{font-size:12px;font-weight:600;color:var(--text);text-align:center}
+.dash-section-title{font-size:11px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
 /* MOBILE RESPONSIVE */
 @media(max-width:768px){
   .sidebar{position:fixed;left:0;top:0;z-index:1000;height:100vh;transform:translateX(-100%);box-shadow:none}
@@ -349,7 +375,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
     </div>
     <nav class="snav">
       <div class="nlbl">Menu</div>
-      <button class="nb on" onclick="goTab('lanc',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>Lançamento</button>
+      <button class="nb on" id="nav-inicio" onclick="goTab('inicio',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Início</button>
+      <button class="nb" onclick="goTab('lanc',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>Lançamento</button>
       <button class="nb" onclick="goTab('resumo',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Resumo do Dia</button>
       <button class="nb" onclick="goTab('mensal',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Fechamento Mensal</button>
       <button class="nb" onclick="goTab('vales',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 14l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Vales</button>
@@ -378,19 +405,26 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
         <div class="topbar-title" id="page-title">Lançamento</div>
       </div>
       <div class="topbar-r">
-        <div style="display:flex;align-items:center;gap:4px">
-          <button class="btn" onclick="navDay(-1)" style="padding:6px 9px;font-size:13px">◀</button>
-          <div class="dp"><svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><input type="date" id="data-lanc" onchange="carregarDia()"></div>
-          <button class="btn" onclick="navDay(1)" style="padding:6px 9px;font-size:13px">▶</button>
+        <div id="topbar-lanc-ctrl" style="display:none;align-items:center;gap:7px">
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="btn" onclick="navDay(-1)" style="padding:6px 9px;font-size:13px">◀</button>
+            <div class="dp"><svg width="13" height="13" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg><input type="date" id="data-lanc" onchange="carregarDia()"></div>
+            <button class="btn" onclick="navDay(1)" style="padding:6px 9px;font-size:13px">▶</button>
+          </div>
+          <button class="btn" onclick="marcarFer()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>Feriado</button>
+          <button class="btn btn-primary" id="btn-salvar" onclick="salvarDia()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvar</button>
         </div>
-        <button class="btn" onclick="marcarFer()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>Feriado</button>
-        <button class="btn btn-primary" id="btn-salvar" onclick="salvarDia()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Salvar</button>
       </div>
     </div>
     <div class="content">
-      <div id="tab-lanc" class="tc on">
+      <!-- DASHBOARD INÍCIO -->
+      <div id="tab-inicio" class="tc on">
+        <div id="inicio-content"></div>
+      </div>
+
+      <div id="tab-lanc" class="tc">
         <div id="ciclo-dash" style="display:none;background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:10px;padding:12px 16px;margin-bottom:12px;display:flex;gap:16px;flex-wrap:wrap"></div>
-        <div id="fer-aviso" style="display:none" class="fer-bar">🚩 <strong style="color:#f9fafb">Feriado marcado</strong><button onclick="desmarcarFer()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af;text-decoration:underline">Desmarcar</button></div>
+        <div id="fer-aviso" style="display:none" class="fer-bar"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg> <strong style="color:#f9fafb">Feriado marcado</strong><button onclick="desmarcarFer()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af;text-decoration:underline">Desmarcar</button></div>
         <div id="ativind-live" style="display:none;margin-bottom:10px"></div>
         <div id="trend-alerts"></div>
         <!-- Sub-abas do Lançamento -->
@@ -763,7 +797,7 @@ const FRASES=[
   {t:'Qualidade + Velocidade.',s:'O equilíbrio certo para um inventário preciso. ✅'},
   {t:'Cada pausa é uma recarga.',s:'Volte com tudo para o próximo bloco! ⚡'},
 ];
-const PAGE_TITLES={lanc:'Lançamento de Produção',resumo:'Resumo do Dia',mensal:'Fechamento Mensal',vales:'Vales',config:'Configurações',setores:'Setores'};
+const PAGE_TITLES={inicio:'Início',lanc:'Lançamento de Produção',resumo:'Resumo do Dia',mensal:'Fechamento Mensal',vales:'Vales',config:'Configurações',setores:'Setores'};
 const USERS_DEFAULT=[
   {mat:'10380',senha:'1234',nome:'Administrador',cargo:'ADM',admin:true,ferias:[]},
   {mat:'10275',senha:'1234',nome:'Eduardo Afonso Lapuinka',cargo:'Operador',admin:false,ferias:[]},
@@ -1250,6 +1284,7 @@ function iniciarApp(u){
     document.getElementById('sb-nm').textContent=u.nome;
     document.getElementById('sb-role').textContent=u.admin?'Administrador':u.cargo;
     initDate();initMes();
+    setTimeout(()=>renderInicio(),200);
   } else {
     document.getElementById('colab-app').style.display='flex';
     document.getElementById('colab-nome').textContent=u.nome.split(' ')[0];
@@ -1268,12 +1303,139 @@ function goTab(t,btn){
   if(tab)tab.classList.add('on');
   if(btn)btn.classList.add('on');
   document.getElementById('page-title').textContent=PAGE_TITLES[t]||t;
+  const lctrl=document.getElementById('topbar-lanc-ctrl');
+  if(lctrl)lctrl.style.display=t==='lanc'?'flex':'none';
+  if(t==='inicio')renderInicio();
   if(t==='resumo'){document.getElementById('data-res').value=document.getElementById('data-lanc').value;renderResumo();}
   if(t==='mensal'){initMes();renderMensal();}
   if(t==='vales'){initValeDate();renderVales();}
   if(t==='config')renderConfig();
   if(t==='setores')renderSetoresGestao();
 }
+function quickNav(t){
+  const btn=Array.from(document.querySelectorAll('.nb')).find(b=>(b.getAttribute('onclick')||'').includes("'"+t+"'"))||null;
+  goTab(t,btn);
+}
+function renderInicio(){
+  const cont=document.getElementById('inicio-content');
+  if(!cont)return;
+  const hoje=today();
+  const u=getCU();
+  const nome=u?u.nome.split(' ')[0]:'';
+  const agora=new Date();
+  const h=agora.getHours();
+  const saud=h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';
+  const dataEx=agora.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+  const dataFmt=dataEx.charAt(0).toUpperCase()+dataEx.slice(1);
+  let d;try{d=getDD(hoje);}catch(e){d={cols:[],obs:[],feriado:false};}
+  const trab=(d.cols||[]).filter(c=>c.status==='Trabalhando'||c.status==='Trabalhando + Indireta');
+  const inds=(d.cols||[]).filter(c=>c.status==='Atividade Indireta');
+  const aus=(d.cols||[]).filter(c=>['Falta','Atestado','Férias','Licença'].includes(c.status));
+  let totSku=0,bat=0,metaTot=0,somaH=0,cntH=0;
+  trab.forEach(c=>{try{const r=calcColabTotal(c);totSku+=r.totalSkus;metaTot+=r.metaPond*(r.hUsed||0);if(r.skuh!=null){somaH+=r.skuh;cntH++;}if(r.bateu)bat++;}catch(e){}});
+  const med=cntH>0?(somaH/cntH).toFixed(1):'—';
+  const pctMeta=metaTot>0?Math.round(totSku/metaTot*100):0;
+  const mcol=pctMeta>=100?'var(--green)':pctMeta>=80?'var(--amber)':'var(--red)';
+  let ocs=[];try{ocs=getOcorrs(hoje);}catch(e){}
+  const trabOrd=[...trab].sort((a,b)=>{try{return(calcColabTotal(b).skuh||0)-(calcColabTotal(a).skuh||0);}catch(e){return 0;}}).slice(0,3);
+  const medalCor=['#f59e0b','#94a3b8','#b45309'];
+
+  cont.innerHTML=`
+  <div class="dash-header anim-in">
+    <div class="dash-title">${saud}, ${nome}!</div>
+    <div class="dash-sub">${dataFmt}</div>
+  </div>
+  <div class="met-grid anim-in-d1">
+    <div class="met-card mc-blue">
+      <div class="ml">Produzindo hoje</div>
+      <div class="mv" style="color:var(--accent)">${trab.length}</div>
+      <div class="ms">${inds.length} em indireta · ${aus.length} ausente${aus.length!==1?'s':''}</div>
+    </div>
+    <div class="met-card mc-green">
+      <div class="ml">Meta coletiva</div>
+      <div class="mv" style="color:${pctMeta>0?mcol:'var(--text-m)'}">${pctMeta>0?pctMeta+'%':'—'}</div>
+      <div class="ms">${totSku.toLocaleString('pt-BR')} SKUs lançados</div>
+    </div>
+    <div class="met-card mc-amber">
+      <div class="ml">Média SKU/h</div>
+      <div class="mv" style="color:${parseFloat(med)>=26?'var(--green)':med==='—'?'var(--text-m)':'var(--amber)'}">${med}</div>
+      <div class="ms">${bat} colaborador${bat!==1?'es':''} bateu a meta</div>
+    </div>
+    <div class="met-card mc-red">
+      <div class="ml">Ocorrências</div>
+      <div class="mv" style="color:${ocs.length>0?'var(--red)':'var(--green)'}">${ocs.length}</div>
+      <div class="ms">registradas hoje</div>
+    </div>
+  </div>
+  <div class="dash-section-title anim-in-d2">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    Ações rápidas
+  </div>
+  <div class="quick-actions anim-in-d2">
+    <button class="qa-card" onclick="quickNav('lanc')">
+      <div class="qa-icon" style="background:var(--accent-l)"><svg width="18" height="18" fill="none" stroke="var(--accent-d)" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg></div>
+      <div class="qa-label">Lançamento</div>
+    </button>
+    <button class="qa-card" onclick="quickNav('resumo')">
+      <div class="qa-icon" style="background:var(--green-bg)"><svg width="18" height="18" fill="none" stroke="var(--green-d)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10"/></svg></div>
+      <div class="qa-label">Resumo do Dia</div>
+    </button>
+    <button class="qa-card" onclick="quickNav('mensal')">
+      <div class="qa-icon" style="background:var(--purple-bg)"><svg width="18" height="18" fill="none" stroke="var(--purple)" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>
+      <div class="qa-label">Fechamento Mensal</div>
+    </button>
+  </div>
+  ${trabOrd.length?`
+  <div class="dash-section-title anim-in-d3">
+    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    Top performers hoje
+  </div>
+  <div class="card anim-in-d3" style="margin-bottom:16px">
+    ${trabOrd.map((c,i)=>{
+      let r;try{r=calcColabTotal(c);}catch(e){r={skuh:null,bateu:false,pct:0,totalSkus:0};}
+      const setNomes=(c.setores||[]).filter(s=>s.setor).map(s=>s.setor).join(', ')||'—';
+      return`<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border-s)">
+        <div style="width:26px;height:26px;border-radius:50%;background:${medalCor[i]};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nome}</div>
+          <div style="font-size:11px;color:var(--text-s)">${setNomes}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:18px;font-weight:700;color:${r.bateu?'var(--green)':'var(--text)'};line-height:1">${r.skuh!=null?r.skuh.toFixed(1):'—'}</div>
+          <div style="font-size:10px;color:var(--text-m)">SKU/h</div>
+        </div>
+        <span class="badge ${r.bateu?'bg-green':r.pct>=80?'bg-amber':'bg-blue'}" style="flex-shrink:0">${r.pct||0}%</span>
+      </div>`;
+    }).join('')}
+    <div style="padding:10px 16px">
+      <button class="btn" onclick="quickNav('resumo')" style="width:100%;justify-content:center;font-size:12px">Ver ranking completo →</button>
+    </div>
+  </div>`
+  :d.feriado?`<div class="fer-bar anim-in-d2"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg><strong style="color:#f9fafb">Feriado hoje</strong></div>`
+  :`<div class="empty-state anim-in-d2">
+    <div class="empty-state-icon"><svg viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg></div>
+    <div class="empty-state-title">Nenhum dado lançado hoje</div>
+    <div class="empty-state-desc">Registre a produção do dia para ver os indicadores aqui.</div>
+    <button class="btn btn-primary" onclick="quickNav('lanc')" style="margin-top:14px">Ir para Lançamento</button>
+  </div>`}
+  ${ocs.length>0?`
+  <div class="dash-section-title anim-in-d3" style="margin-top:4px">
+    <svg width="13" height="13" fill="none" stroke="#dc2626" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span style="color:#dc2626">Ocorrências hoje (${ocs.length})</span>
+  </div>
+  <div class="card anim-in-d3">
+    ${ocs.slice(0,3).map(o=>{
+      let tn='Ocorrência';try{tn=getTipos().find(t=>t.id===o.tipo_id)?.nome||tn;}catch(e){}
+      return`<div style="display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border-s)">
+        <span class="badge bg-red">${tn}</span>
+        <span style="font-size:12px;color:var(--text-s);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.item||o.desc||'—'}</span>
+        <span style="font-size:11px;color:var(--text-m);flex-shrink:0">${o.hora||''}</span>
+      </div>`;
+    }).join('')}
+    ${ocs.length>3?`<div style="padding:10px 16px"><button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12px" onclick="quickNav('lanc');setTimeout(()=>lancGoTab('ocorr',document.getElementById('ltab-ocorr')),150)">Ver todas as ${ocs.length} ocorrências →</button></div>`:''}
+  </div>`:''}`;
+}
+
 function colabGoTab(t,el){
   document.querySelectorAll('.colab-tc').forEach(e=>e.classList.remove('on'));
   document.querySelectorAll('.colab-tab').forEach(e=>e.classList.remove('on'));
