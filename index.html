@@ -295,28 +295,65 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .tv-ref{font-size:10px;color:#334155;margin-top:4px;text-align:center}
 
 /* COLABORADOR SCREEN */
-.colab-wrap{min-height:100vh;background:#0f172a;display:flex;flex-direction:column}
-.colab-hd{background:#1e293b;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #334155}
-.colab-hd-title{font-size:15px;font-weight:700;color:white}
-.colab-tabs{display:flex;background:#1e293b;border-bottom:1px solid #334155}
-.colab-tab{flex:1;padding:12px;text-align:center;cursor:pointer;font-size:13px;font-weight:500;color:#64748b;border-bottom:2px solid transparent;transition:all .15s}
+.colab-wrap{min-height:100vh;background:#0b0f1a;display:flex;flex-direction:column;font-family:'Inter',-apple-system,sans-serif}
+.colab-hd{background:#111827;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);gap:8px}
+.colab-hd-left{display:flex;align-items:center;gap:10px}
+.colab-hd-logo{width:32px;height:32px;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(59,130,246,.3)}
+.colab-hd-logo svg{width:16px;height:16px;fill:white}
+.colab-hd-info{display:flex;flex-direction:column;gap:1px}
+.colab-hd-title{font-size:14px;font-weight:700;color:#f1f5f9;letter-spacing:-.01em;line-height:1}
+.colab-hd-user{font-size:11px;color:#475569;line-height:1}
+.colab-hd-right{display:flex;align-items:center;gap:8px}
+.colab-logout{background:none;border:none;cursor:pointer;color:#475569;padding:6px;border-radius:7px;display:flex;align-items:center;transition:color .15s,background .15s}
+.colab-logout:hover{color:#f87171;background:rgba(248,113,113,.1)}
+.colab-logout svg{width:16px;height:16px}
+.colab-tabs{display:flex;background:#111827;border-bottom:1px solid rgba(255,255,255,.07)}
+.colab-tab{flex:1;padding:11px 6px 10px;text-align:center;cursor:pointer;font-size:11px;font-weight:500;color:#475569;border-bottom:2px solid transparent;transition:all .18s;display:flex;flex-direction:column;align-items:center;gap:4px;line-height:1}
+.colab-tab svg{width:16px;height:16px;opacity:.6;transition:opacity .18s}
 .colab-tab.on{color:#38bdf8;border-bottom-color:#38bdf8}
-.colab-content{flex:1;overflow-y:auto;padding:16px}
-.colab-tc{display:none}.colab-tc.on{display:block}
-.colab-card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px 16px;margin-bottom:10px}
-.colab-card-title{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
-.colab-input{width:100%;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:10px 12px;font-size:14px;color:#f1f5f9;font-family:inherit;margin-bottom:8px}
-.colab-input:focus{outline:none;border-color:#38bdf8}
-.colab-select{width:100%;background:#0f172a;border:1px solid #334155;border-radius:7px;padding:10px 12px;font-size:14px;color:#f1f5f9;font-family:inherit;margin-bottom:8px}
-.colab-btn{width:100%;background:#3b82f6;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px}
-.colab-btn:hover{background:#2563eb}
-.mini-rank{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #334155}
+.colab-tab.on svg{opacity:1}
+.colab-content{flex:1;overflow-y:auto;padding:14px}
+.colab-tc{display:none}.colab-tc.on{display:block;animation:fadeUp .2s cubic-bezier(.4,0,.2,1) both}
+.colab-card{background:#161f30;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.colab-card-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.colab-card-title svg{width:14px;height:14px;opacity:.7}
+.colab-input{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;font-size:14px;color:#f1f5f9;font-family:inherit;transition:border-color .18s,box-shadow .18s}
+.colab-input:focus{outline:none;border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+.colab-select{width:100%;background:#0d1117;border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:11px 12px;font-size:14px;color:#f1f5f9;font-family:inherit;transition:border-color .18s,box-shadow .18s;cursor:pointer}
+.colab-select:focus{outline:none;border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.12)}
+.colab-btn{width:100%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:white;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:opacity .18s,transform .1s;box-shadow:0 4px 14px rgba(59,130,246,.3);display:flex;align-items:center;justify-content:center;gap:7px}
+.colab-btn:hover{opacity:.92}
+.colab-btn:active{transform:scale(.98)}
+.colab-btn:disabled{opacity:.55;cursor:not-allowed}
+.colab-btn-sec{width:100%;background:transparent;color:#64748b;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:all .18s;margin-top:8px}
+.colab-btn-sec:hover{background:rgba(255,255,255,.05);color:#94a3b8}
+.colab-field-group{margin-bottom:12px}
+.colab-fg-label{font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:5px;letter-spacing:.02em}
+.colab-fg-grid{display:grid;gap:8px}
+/* STEP FORM */
+.ocorr-steps{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px}
+.ocorr-sdot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:all .25s;flex-shrink:0}
+.ocorr-sdot.pend{background:#1e293b;color:#475569;border:1.5px solid #334155}
+.ocorr-sdot.act{background:#3b82f6;color:white;box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+.ocorr-sdot.done{background:#16a34a;color:white}
+.ocorr-sline{flex:1;height:2px;background:#1e293b;max-width:40px;transition:background .25s}
+.ocorr-sline.done{background:#16a34a}
+.ocorr-panel{display:none}
+.ocorr-panel.act{display:block;animation:fadeUp .2s cubic-bezier(.4,0,.2,1) both}
+.ocorr-step-nav{display:flex;gap:8px;margin-top:16px}
+/* TOAST */
+.colab-toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%) translateY(12px);background:#16a34a;color:white;padding:11px 22px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:all .28s cubic-bezier(.4,0,.2,1);z-index:9998;pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.colab-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.colab-toast.err{background:#dc2626}
+/* RANKING */
+.mini-rank{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}
 .mini-rank:last-child{border-bottom:none}
-.mini-rank-name{font-size:14px;font-weight:600;color:#e2e8f0;width:85px;flex-shrink:0}
-.mini-rank-bar{flex:1;height:8px;background:#334155;border-radius:4px;overflow:hidden}
-.mini-rank-fill{height:100%;border-radius:4px}
-.mini-rank-val{font-size:16px;font-weight:700;width:52px;text-align:right;flex-shrink:0}
-.mini-rank-bipes{font-size:11px;color:#64748b;width:60px;text-align:right;flex-shrink:0}
+.mini-rank-pos{width:22px;height:22px;border-radius:50%;background:#1e293b;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#64748b;flex-shrink:0}
+.mini-rank-name{font-size:13px;font-weight:600;color:#e2e8f0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-rank-bar{flex:1;height:6px;background:#1e293b;border-radius:3px;overflow:hidden}
+.mini-rank-fill{height:100%;border-radius:3px;transition:width .5s}
+.mini-rank-val{font-size:15px;font-weight:700;width:48px;text-align:right;flex-shrink:0}
+.mini-rank-bipes{font-size:10px;color:#475569;width:55px;text-align:right;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -592,115 +629,230 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <!-- COLABORADOR APP -->
 <div class="colab-wrap" id="colab-app" style="display:none">
   <div class="colab-hd">
-    <div class="colab-hd-title">📦 Inventário SJP</div>
-    <button onclick="logout()" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:13px">Sair ⏻</button>
-  </div>
-  <div style="padding:10px 16px;background:#1e293b;border-bottom:1px solid #334155;font-size:13px;color:#94a3b8">
-    Olá, <strong id="colab-nome" style="color:#e2e8f0"></strong> 👋
+    <div class="colab-hd-left">
+      <div class="colab-hd-logo"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg></div>
+      <div class="colab-hd-info">
+        <div class="colab-hd-title">Inventário SJP</div>
+        <div class="colab-hd-user">Olá, <strong id="colab-nome" style="color:#94a3b8"></strong></div>
+      </div>
+    </div>
+    <div class="colab-hd-right">
+      <button class="colab-logout" onclick="logout()" title="Sair">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
   </div>
   <div class="colab-tabs">
-    <div class="colab-tab on" onclick="colabGoTab('painel',this)">📊 Painel</div>
-    <div class="colab-tab" onclick="colabGoTab('ativind',this)">⚡ Atividade</div>
-    <div class="colab-tab" onclick="colabGoTab('ocorr',this)">⚠️ Ocorrência</div>
-    <div class="colab-tab" onclick="colabGoTab('obs',this)">📝 Obs.</div>
-    <div class="colab-tab" onclick="colabGoTab('minhoc',this)">📋 Minhas</div>
+    <div class="colab-tab on" onclick="colabGoTab('painel',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Painel
+    </div>
+    <div class="colab-tab" onclick="colabGoTab('ativind',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Atividade
+    </div>
+    <div class="colab-tab" onclick="colabGoTab('ocorr',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Ocorrência
+    </div>
+    <div class="colab-tab" onclick="colabGoTab('obs',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Obs.
+    </div>
+    <div class="colab-tab" onclick="colabGoTab('minhoc',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>Minhas
+    </div>
   </div>
   <div class="colab-content">
+    <!-- PAINEL -->
     <div id="colab-tc-painel" class="colab-tc on">
       <div class="colab-card">
-        <div class="colab-card-title">🎯 Meta Coletiva do Dia</div>
-        <div style="text-align:center;padding:10px 0">
-          <div style="font-size:52px;font-weight:800;color:#60a5fa" id="cm-pct">—</div>
-          <div style="font-size:12px;color:#64748b;margin-bottom:8px">da meta do time atingida</div>
-          <div style="height:10px;background:#334155;border-radius:5px;overflow:hidden"><div id="cm-bar" style="height:100%;border-radius:5px;width:0%;transition:width .5s"></div></div>
-          <div style="font-size:12px;color:#64748b;margin-top:4px" id="cm-nums"></div>
+        <div class="colab-card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Meta Coletiva do Dia</div>
+        <div style="text-align:center;padding:12px 0 8px">
+          <div style="font-size:56px;font-weight:800;color:#60a5fa;letter-spacing:-.03em;line-height:1" id="cm-pct">—</div>
+          <div style="font-size:12px;color:#475569;margin-bottom:10px;margin-top:4px">da meta do time atingida</div>
+          <div style="height:8px;background:#1e293b;border-radius:4px;overflow:hidden"><div id="cm-bar" style="height:100%;border-radius:4px;width:0%;transition:width .6s cubic-bezier(.4,0,.2,1)"></div></div>
+          <div style="font-size:12px;color:#475569;margin-top:6px" id="cm-nums"></div>
         </div>
       </div>
       <div class="colab-card">
-        <div class="colab-card-title">⚡ Ranking do Time</div>
+        <div class="colab-card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Ranking do Time</div>
         <div id="colab-ranking"></div>
       </div>
     </div>
+    <!-- ATIVIDADE INDIRETA -->
     <div id="colab-tc-ativind" class="colab-tc">
       <div class="colab-card">
-        <div class="colab-card-title">⚡ Atividade Indireta</div>
+        <div class="colab-card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Atividade Indireta</div>
         <div id="ativind-em-andamento" style="display:none"></div>
         <div id="ativind-form">
-          <div class="fg" style="margin-bottom:10px"><label>Selecionar atividade</label>
-            <select class="colab-select" id="ai-sel" style="margin:0" onchange="aiFotoRequired()">
+          <div class="colab-field-group">
+            <label class="colab-fg-label">Selecionar atividade</label>
+            <select class="colab-select" id="ai-sel" onchange="aiFotoRequired()">
               <option value="">— escolha uma atividade —</option>
             </select>
           </div>
-          <div id="ai-outra-wrap" style="display:none;margin-bottom:10px">
-            <div class="fg"><label>Descreva a atividade</label>
-              <input type="text" class="colab-input" id="ai-outra-desc" placeholder="Ex: Reorganização de prateleiras..." style="margin:0">
+          <div id="ai-outra-wrap" style="display:none">
+            <div class="colab-field-group">
+              <label class="colab-fg-label">Descreva a atividade</label>
+              <input type="text" class="colab-input" id="ai-outra-desc" placeholder="Ex: Reorganização de prateleiras...">
             </div>
           </div>
-          <button class="colab-btn" onclick="aiIniciar()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6)">▶ Iniciar Atividade</button>
+          <button class="colab-btn" onclick="aiIniciar()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Iniciar Atividade
+          </button>
         </div>
-        <div id="ativind-success" style="display:none;text-align:center;padding:12px;color:#22c55e;font-weight:600;font-size:14px;margin-top:8px"></div>
+        <div id="ativind-success" style="display:none;text-align:center;padding:14px;color:#22c55e;font-weight:600;font-size:14px;margin-top:8px"></div>
       </div>
-      <div class="colab-card" style="margin-top:10px">
-        <div class="colab-card-title">📋 Histórico do Mês</div>
+      <div class="colab-card">
+        <div class="colab-card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/></svg>Histórico do Mês</div>
         <div id="ativind-historico"></div>
       </div>
     </div>
+    <!-- OCORRÊNCIA — FORM 3 PASSOS -->
     <div id="colab-tc-ocorr" class="colab-tc">
       <div class="colab-card">
-        <div class="colab-card-title">⚠️ Registrar Ocorrência</div>
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;line-height:1.5">Erros operacionais: item errado, quantidade divergente, produto vencido, avaria. <strong style="color:#64748b">Não é sobre obstáculos — para isso use Observação.</strong></div>
-        <div id="co-resp-badge" style="margin-bottom:10px;padding:6px 10px;background:#1e293b;border-radius:7px;font-size:12px;color:#94a3b8">👤 Responsável: <strong style="color:#e2e8f0" id="co-resp-nome">—</strong></div>
-        <div class="fg" style="margin-bottom:8px"><label>Tipo de ocorrência</label><select class="colab-select" id="co-tipo" style="margin:0"></select></div>
-        <div class="fg" style="margin-bottom:8px"><label>Setor operacional</label><select class="colab-select" id="co-setor" style="margin:0"></select></div>
-        <div class="fg" style="margin-bottom:8px"><label>Subtipo do produto</label><select class="colab-select" id="co-sub" style="margin:0"></select></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label>Seção</label><input type="tel" inputmode="numeric" class="colab-input" id="co-sec" placeholder="ex: 31" style="margin:0"></div>
-          <div class="fg"><label>Rua</label><input type="tel" class="colab-input" id="co-rua" placeholder="ex: 03" inputmode="decimal" style="margin:0" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div>
+        <div class="colab-card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Registrar Ocorrência</div>
+        <!-- Indicador de passos -->
+        <div class="ocorr-steps">
+          <div class="ocorr-sdot act" id="osdot-1">1</div>
+          <div class="ocorr-sline" id="osline-1"></div>
+          <div class="ocorr-sdot pend" id="osdot-2">2</div>
+          <div class="ocorr-sline" id="osline-2"></div>
+          <div class="ocorr-sdot pend" id="osdot-3">3</div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label>Código interno</label><input type="tel" inputmode="numeric" class="colab-input" id="co-cod" placeholder="ex: 760901" style="margin:0" onchange="autoOcorrCod(this.value)"></div>
-          <div class="fg"><label>Quantidade</label><input type="number" class="colab-input" id="co-qtd" placeholder="0" style="margin:0"></div>
-        </div>
-        <div class="fg" style="margin-bottom:4px"><label>Nome do item</label><input type="text" class="colab-input" id="co-item" placeholder="Preenchido automaticamente pelo código..." style="margin:0"></div>
-        <div id="co-end-padrao" style="display:none;margin-bottom:8px;padding:6px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;font-size:11px;color:#15803d"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label>Mat. de quem errou</label><input type="tel" inputmode="numeric" class="colab-input" id="co-mat-err" placeholder="ex: 12345" style="margin:0" onchange="autoNomeErr(this.value,'co-nome-err')"></div>
-          <div class="fg"><label>Nome</label><input type="text" class="colab-input" id="co-nome-err" placeholder="Preenchido auto..." style="margin:0"></div>
-        </div>
-        <div class="fg" style="margin-bottom:10px"><label>Descrição</label><input type="text" class="colab-input" id="co-desc" placeholder="Detalhes adicionais..." style="margin:0"></div>
-        <div style="margin-bottom:12px">
-          <label style="font-size:12px;font-weight:500;color:#94a3b8;display:block;margin-bottom:6px">Fotos</label>
-          <div style="display:flex;gap:10px;margin-bottom:8px">
-            <div><div id="co-foto-preview" style="margin-bottom:4px"></div>
-              <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:#334155;color:#94a3b8;padding:8px 14px;border-radius:7px;font-size:13px">📷 Foto 1<input type="file" accept="image/*" capture="environment" style="display:none" onchange="colabFoto(1,this)"></label>
+        <!-- Passo 1: Identificação -->
+        <div class="ocorr-panel act" id="ocorr-panel-1">
+          <div style="font-size:12px;font-weight:600;color:#38bdf8;margin-bottom:12px">Passo 1 — O que aconteceu?</div>
+          <div id="co-resp-badge" style="margin-bottom:12px;padding:8px 12px;background:#0d1117;border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:12px;color:#64748b;display:flex;align-items:center;gap:6px">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Responsável: <strong style="color:#e2e8f0" id="co-resp-nome">—</strong>
+          </div>
+          <div class="colab-field-group">
+            <label class="colab-fg-label">Tipo de ocorrência</label>
+            <select class="colab-select" id="co-tipo"></select>
+          </div>
+          <div class="colab-field-group">
+            <label class="colab-fg-label">Setor operacional</label>
+            <select class="colab-select" id="co-setor"></select>
+          </div>
+          <div class="colab-field-group">
+            <label class="colab-fg-label">Subtipo do produto</label>
+            <select class="colab-select" id="co-sub"></select>
+          </div>
+          <div class="colab-fg-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+            <div class="colab-field-group" style="margin-bottom:0">
+              <label class="colab-fg-label">Seção</label>
+              <input type="tel" inputmode="numeric" class="colab-input" id="co-sec" placeholder="ex: 31">
             </div>
-            <div><div id="co-foto2-preview" style="margin-bottom:4px"></div>
-              <label style="cursor:pointer;display:inline-flex;align-items:center;gap:6px;background:#334155;color:#94a3b8;padding:8px 14px;border-radius:7px;font-size:13px">📷 Foto 2<input type="file" accept="image/*" capture="environment" style="display:none" onchange="colabFoto(2,this)"></label>
+            <div class="colab-field-group" style="margin-bottom:0">
+              <label class="colab-fg-label">Rua</label>
+              <input type="tel" class="colab-input" id="co-rua" placeholder="ex: 03" inputmode="decimal" oninput="this.value=this.value.replace(/[^0-9.]/g,'')">
             </div>
           </div>
+          <div class="colab-fg-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+            <div class="colab-field-group" style="margin-bottom:0">
+              <label class="colab-fg-label">Código interno</label>
+              <input type="tel" inputmode="numeric" class="colab-input" id="co-cod" placeholder="ex: 760901" onchange="autoOcorrCod(this.value)">
+            </div>
+            <div class="colab-field-group" style="margin-bottom:0">
+              <label class="colab-fg-label">Quantidade</label>
+              <input type="number" class="colab-input" id="co-qtd" placeholder="0">
+            </div>
+          </div>
+          <div class="colab-field-group">
+            <label class="colab-fg-label">Nome do item</label>
+            <input type="text" class="colab-input" id="co-item" placeholder="Preenchido automaticamente pelo código...">
+          </div>
+          <div id="co-end-padrao" style="display:none;margin-bottom:12px;padding:8px 12px;background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.3);border-radius:8px;font-size:11px;color:#4ade80"></div>
+          <div class="ocorr-step-nav">
+            <button class="colab-btn" onclick="ocorrStep(2)">
+              Próximo — Responsável
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
         </div>
-        <button class="colab-btn" onclick="colabEnviarOcorr()">✅ Registrar Ocorrência</button>
-        <div id="co-success" style="display:none;text-align:center;padding:12px;color:#22c55e;font-weight:600;font-size:14px;margin-top:8px">✅ Ocorrência registrada com sucesso!</div>
+        <!-- Passo 2: Responsável -->
+        <div class="ocorr-panel" id="ocorr-panel-2">
+          <div style="font-size:12px;font-weight:600;color:#38bdf8;margin-bottom:12px">Passo 2 — Quem foi o responsável?</div>
+          <div class="colab-fg-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+            <div class="colab-field-group" style="margin-bottom:0">
+              <label class="colab-fg-label">Matrícula de quem errou</label>
+              <input type="tel" inputmode="numeric" class="colab-input" id="co-mat-err" placeholder="ex: 12345" onchange="autoNomeErr(this.value,'co-nome-err')">
+            </div>
+            <div class="colab-field-group" style="margin-bottom:0">
+              <label class="colab-fg-label">Nome</label>
+              <input type="text" class="colab-input" id="co-nome-err" placeholder="Auto...">
+            </div>
+          </div>
+          <div class="colab-field-group">
+            <label class="colab-fg-label">Descrição adicional</label>
+            <input type="text" class="colab-input" id="co-desc" placeholder="Detalhes do ocorrido...">
+          </div>
+          <div class="ocorr-step-nav">
+            <button class="colab-btn-sec" onclick="ocorrStep(1)">← Voltar</button>
+            <button class="colab-btn" onclick="ocorrStep(3)">
+              Próximo — Fotos
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Passo 3: Fotos e envio -->
+        <div class="ocorr-panel" id="ocorr-panel-3">
+          <div style="font-size:12px;font-weight:600;color:#38bdf8;margin-bottom:12px">Passo 3 — Evidência fotográfica</div>
+          <div style="font-size:11px;color:#475569;margin-bottom:14px">Opcional, mas recomendado para ocorrências com produto físico.</div>
+          <div style="display:flex;gap:12px;margin-bottom:16px">
+            <div style="flex:1">
+              <div id="co-foto-preview" style="margin-bottom:8px"></div>
+              <label style="cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;background:#0d1117;border:1px dashed rgba(255,255,255,.15);color:#64748b;padding:12px;border-radius:10px;font-size:13px;font-weight:500;transition:all .18s" onmouseover="this.style.borderColor='#38bdf8';this.style.color='#38bdf8'" onmouseout="this.style.borderColor='rgba(255,255,255,.15)';this.style.color='#64748b'">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Foto 1
+                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="colabFoto(1,this)">
+              </label>
+            </div>
+            <div style="flex:1">
+              <div id="co-foto2-preview" style="margin-bottom:8px"></div>
+              <label style="cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;background:#0d1117;border:1px dashed rgba(255,255,255,.15);color:#64748b;padding:12px;border-radius:10px;font-size:13px;font-weight:500;transition:all .18s" onmouseover="this.style.borderColor='#38bdf8';this.style.color='#38bdf8'" onmouseout="this.style.borderColor='rgba(255,255,255,.15)';this.style.color='#64748b'">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Foto 2
+                <input type="file" accept="image/*" capture="environment" style="display:none" onchange="colabFoto(2,this)">
+              </label>
+            </div>
+          </div>
+          <button class="colab-btn" onclick="colabEnviarOcorr()">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            Registrar Ocorrência
+          </button>
+          <button class="colab-btn-sec" onclick="ocorrStep(2)">← Voltar</button>
+          <div id="co-success" style="display:none"></div>
+        </div>
       </div>
     </div>
+    <!-- OBSERVAÇÃO -->
     <div id="colab-tc-obs" class="colab-tc">
       <div class="colab-card">
-        <div class="colab-card-title">📝 Observação do Dia</div>
-        <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;line-height:1.5">Obstáculos que atrasam ou atrapalham a operação: equipamento parado, sistema lento, falta de insumo, risco de SLA. <strong style="color:#64748b">Não é sobre erro de produto — para isso use Ocorrência.</strong></div>
-        <textarea class="colab-input" id="co-obs-txt" rows="4" placeholder="Descreva o que aconteceu hoje..." style="margin-bottom:10px;resize:none"></textarea>
-        <button class="colab-btn" onclick="colabEnviarObs()">✅ Enviar Observação</button>
-        <div id="co-obs-success" style="display:none;text-align:center;padding:12px;color:#22c55e;font-weight:600;font-size:14px;margin-top:8px">✅ Observação registrada!</div>
-        <div style="margin-top:14px">
-          <div class="colab-card-title">Observações de hoje</div>
+        <div class="colab-card-title"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg>Observação do Dia</div>
+        <div style="font-size:11px;color:#475569;margin-bottom:12px;line-height:1.6">Obstáculos operacionais: equipamento parado, sistema lento, falta de insumo, risco de SLA. <strong style="color:#64748b">Não é sobre erro de produto.</strong></div>
+        <div class="colab-field-group">
+          <label class="colab-fg-label">O que aconteceu?</label>
+          <textarea class="colab-input" id="co-obs-txt" rows="4" placeholder="Descreva o obstáculo operacional..." style="resize:none"></textarea>
+        </div>
+        <button class="colab-btn" onclick="colabEnviarObs()">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Enviar Observação
+        </button>
+        <div id="co-obs-success" style="display:none"></div>
+        <div style="margin-top:16px;border-top:1px solid rgba(255,255,255,.06);padding-top:14px">
+          <div class="colab-card-title" style="margin-bottom:10px">Observações de hoje</div>
           <div id="co-obs-list"></div>
         </div>
       </div>
     </div>
+    <!-- MINHAS OCORRÊNCIAS -->
     <div id="colab-tc-minhoc" class="colab-tc">
       <div id="minhoc-list"></div>
     </div>
   </div>
 </div>
+<!-- Toast de notificação -->
+<div class="colab-toast" id="colab-toast-el"></div>
 
 <!-- Modal editar ocorrência -->
 <div id="edit-oc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
@@ -1436,6 +1588,34 @@ function renderInicio(){
   </div>`:''}`;
 }
 
+function showColabToast(msg,type='success'){
+  const t=document.getElementById('colab-toast-el');
+  if(!t)return;
+  t.textContent=msg;
+  t.className='colab-toast'+(type==='err'?' err':'');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>t.classList.add('show')));
+  clearTimeout(t._tm);
+  t._tm=setTimeout(()=>t.classList.remove('show'),3200);
+}
+function ocorrStep(n){
+  const panels=document.querySelectorAll('.ocorr-panel');
+  const dots=document.querySelectorAll('.ocorr-sdot');
+  const lines=document.querySelectorAll('.ocorr-sline');
+  if(n===2){
+    const tipo=document.getElementById('co-tipo')?.value;
+    if(!tipo){showColabToast('Selecione o tipo de ocorrência.','err');return;}
+  }
+  panels.forEach((p,i)=>{p.classList.toggle('act',i+1===n);});
+  dots.forEach((d,i)=>{
+    d.classList.remove('act','done','pend');
+    d.classList.add(i+1===n?'act':i+1<n?'done':'pend');
+  });
+  lines.forEach((l,i)=>l.classList.toggle('done',i+1<n));
+  document.getElementById('colab-tc-ocorr')?.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function resetOcorrSteps(){
+  ocorrStep(1);
+}
 function colabGoTab(t,el){
   document.querySelectorAll('.colab-tc').forEach(e=>e.classList.remove('on'));
   document.querySelectorAll('.colab-tab').forEach(e=>e.classList.remove('on'));
@@ -3126,15 +3306,16 @@ function renderColabPainel(){
     const r=calcColabTotal(c);const sf=r.skuh!=null?r.skuh.toFixed(1):'—';
     const barPct=r.skuh!=null?Math.round((r.skuh/maxSkuh)*100):0;
     const bc=r.bateu?'#22c55e':r.pct!=null&&r.pct>=80?'#f59e0b':'#818cf8';
-    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+    const posCor=i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b45309':'#1e293b';
+    const posTxt=i===0?'1':i===1?'2':i===2?'3':(i+1)+'';
     return`<div class="mini-rank">
-      <div style="font-size:${i<3?'16px':'12px'};width:24px;text-align:center">${medal}</div>
+      <div class="mini-rank-pos" style="background:${posCor};color:${i<3?'white':'#64748b'}">${posTxt}</div>
       <div class="mini-rank-name">${nomeCurto(c.nome)}</div>
       <div class="mini-rank-bar"><div class="mini-rank-fill" style="width:${barPct}%;background:${bc}"></div></div>
       <div class="mini-rank-val" style="color:${bc}">${sf}</div>
-      <div class="mini-rank-bipes">${r.totalSkus} bipes</div>
+      <div class="mini-rank-bipes">${r.totalSkus}</div>
     </div>`;
-  }).join('')+data.cols.filter(c=>c.status==='Atividade Indireta').map(c=>`<div class="mini-rank"><div style="font-size:16px;width:24px;text-align:center">⚡</div><div style="font-size:13px;font-weight:600;color:#f59e0b;flex:1">${nomeCurto(c.nome)}</div><div style="font-size:11px;color:#92400e">Indireta</div></div>`).join('');
+  }).join('')+data.cols.filter(c=>c.status==='Atividade Indireta').map(c=>`<div class="mini-rank"><div class="mini-rank-pos" style="background:#f59e0b;color:white"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div><div class="mini-rank-name" style="color:#fbbf24">${nomeCurto(c.nome)}</div><div style="font-size:11px;color:#92400e;flex-shrink:0">Indireta</div></div>`).join('');
 }
 async function colabFoto(n,input){
   if(!input.files||!input.files[0])return;
@@ -3175,8 +3356,10 @@ async function colabEnviarOcorr(){
   document.getElementById('co-foto-preview').innerHTML='';
   document.getElementById('co-foto2-preview').innerHTML='';
   resetBtn();
-  const suc=document.getElementById('co-success');suc.style.display='block';setTimeout(()=>suc.style.display='none',3000);
-  }catch(e){resetBtn();console.error('[colabEnviarOcorr]',e);alert('⚠️ Erro ao registrar ocorrência: '+e.message);}
+  showColabToast('Ocorrência registrada com sucesso!');
+  resetOcorrSteps();
+  window._colabFoto1=null;window._colabFoto2=null;
+  }catch(e){resetBtn();console.error('[colabEnviarOcorr]',e);showColabToast('Erro ao registrar: '+e.message,'err');}
 }
 function renderColabObs(){
   const d=today();const data=getDD(d);
@@ -3201,7 +3384,7 @@ function colabEnviarObs(){
   data.obs.push({texto:txt,hora,autor:cu.nome.split(' ')[0]});
   saveDD(d,data);
   document.getElementById('co-obs-txt').value='';
-  const suc=document.getElementById('co-obs-success');suc.style.display='block';setTimeout(()=>suc.style.display='none',2500);
+  showColabToast('Observação registrada!');
   renderColabObs();
 }
 
