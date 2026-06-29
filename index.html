@@ -174,6 +174,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .rank-bar-h{flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden}
 .rank-bar-hf{height:100%;border-radius:3px}
 
+/* LANC SUB-TABS */
+.lanc-tabs{display:flex;gap:2px;background:#f1f5f9;border-radius:8px;padding:3px;margin-bottom:12px}
+.lanc-tab{flex:1;padding:8px 10px;text-align:center;cursor:pointer;font-size:12px;font-weight:600;color:#64748b;border-radius:6px;border:none;background:transparent;transition:all .15s;white-space:nowrap}
+.lanc-tab:hover{background:#e2e8f0;color:#374151}
+.lanc-tab.on{background:white;color:#1e293b;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.lanc-tab.on.tab-ocorr{color:#dc2626}
+.lanc-tc{display:none}.lanc-tc.on{display:block}
+
 /* EQUIPE */
 .eq-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
 .eq-row:last-child{border-bottom:none}
@@ -255,12 +263,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <label class="login-label">Matrícula</label>
     <div class="login-field">
       <span class="login-field-icon">🪪</span>
-      <input class="login-input" type="text" id="l-mat" placeholder="" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('l-sen').focus();}">
+      <input class="login-input" type="tel" inputmode="numeric" id="l-mat" placeholder="" autocomplete="username" onkeydown="if(event.key==='Enter'){event.preventDefault();document.getElementById('l-sen').focus();}">
     </div>
     <label class="login-label">Senha</label>
     <div class="login-field">
       <span class="login-field-icon">🔒</span>
-      <input class="login-input" type="password" id="l-sen" placeholder="" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();login();}">
+      <input class="login-input" type="password" inputmode="numeric" id="l-sen" placeholder="" autocomplete="current-password" onkeydown="if(event.key==='Enter'){event.preventDefault();login();}">
     </div>
     <button class="login-btn" onclick="login()">Entrar</button>
     <div class="login-err" id="l-err">Matrícula ou senha incorretos.</div>
@@ -314,52 +322,38 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div id="fer-aviso" style="display:none" class="fer-bar">🚩 <strong style="color:#f9fafb">Feriado marcado</strong><button onclick="desmarcarFer()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:11px;color:#9ca3af;text-decoration:underline">Desmarcar</button></div>
         <div id="ativind-live" style="display:none;margin-bottom:10px"></div>
         <div id="trend-alerts"></div>
-        <!-- Seção colapsável: Colaboradores -->
-        <div class="sec-collapse" id="sec-colab">
-          <div class="sec-collapse-hd" onclick="toggleSec('colab')">
-            <span>👥 Colaboradores do dia</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <button class="btn" onclick="event.stopPropagation();addLinha()" style="font-size:12px">+ Colaborador</button>
-              <span class="sec-collapse-arrow" id="arr-colab">▲</span>
-            </div>
-          </div>
-          <div class="sec-collapse-body" id="body-colab">
-            <div id="linhas-colab"></div>
-          </div>
+        <!-- Sub-abas do Lançamento -->
+        <div class="lanc-tabs">
+          <button class="lanc-tab on" id="ltab-colab" onclick="lancGoTab('colab',this)">👥 Colaboradores</button>
+          <button class="lanc-tab tab-ocorr" id="ltab-ocorr" onclick="lancGoTab('ocorr',this)">⚠️ Ocorrências <span id="ltab-ocorr-cnt" style="display:none;background:#dc2626;color:white;border-radius:99px;padding:1px 6px;font-size:10px;margin-left:3px"></span></button>
+          <button class="lanc-tab" id="ltab-obs" onclick="lancGoTab('obs',this)">📝 Observações</button>
         </div>
-        <!-- Seção colapsável: Observações -->
-        <div class="sec-collapse" id="sec-obs" style="margin-top:8px">
-          <div class="sec-collapse-hd" onclick="toggleSec('obs')">
-            <span>📝 Observações do dia</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <button class="btn" onclick="event.stopPropagation();addObs()" style="font-size:12px">+ Adicionar</button>
-              <span class="sec-collapse-arrow" id="arr-obs">▼</span>
-            </div>
+        <!-- Aba: Colaboradores -->
+        <div class="lanc-tc on" id="ltc-colab">
+          <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+            <button class="btn" onclick="addLinha()" style="font-size:12px">+ Colaborador</button>
           </div>
-          <div class="sec-collapse-body" id="body-obs" style="display:none">
-            <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Obstáculos operacionais: equipamento parado, sistema lento, falta de insumo, risco de SLA. Não é sobre erro de produto.</div>
-            <div id="lista-obs-dia"></div>
-            <div id="obs-input-wrap" style="display:none;margin-top:8px;display:flex;gap:8px">
-              <input type="text" id="obs-input" placeholder="Descreva a observação..." style="flex:1;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d)" onkeydown="if(event.key==='Enter')confirmarObs()">
-              <button class="btn btn-primary" onclick="confirmarObs()">Adicionar</button>
-              <button class="btn" onclick="cancelarObs()">✕</button>
-            </div>
-          </div>
+          <div id="linhas-colab"></div>
         </div>
-        <!-- Seção colapsável: Ocorrências -->
-        <div class="sec-collapse" id="sec-ocorr" style="margin-top:8px">
-          <div class="sec-collapse-hd" onclick="toggleSec('ocorr')" style="border-color:#fecaca">
-            <span style="color:#dc2626">⚠️ Ocorrências do dia</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <button class="btn btn-danger" onclick="event.stopPropagation();addOcorr()" style="font-size:12px">+ Registrar</button>
-              <span class="sec-collapse-arrow" id="arr-ocorr">▼</span>
-            </div>
+        <!-- Aba: Ocorrências -->
+        <div class="lanc-tc" id="ltc-ocorr">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Erros operacionais: divergência de quantidade, item errado, produto vencido, avaria. Não é sobre obstáculos.</div>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="text" id="ocorr-busca" placeholder="🔍 Buscar ocorrência..." oninput="filtrarOcorr(this.value)" style="flex:1;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d);background:white;box-sizing:border-box">
+            <button class="btn btn-danger" onclick="addOcorr()" style="font-size:12px">+ Registrar</button>
           </div>
-          <div class="sec-collapse-body" id="body-ocorr" style="display:none">
-            <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Erros operacionais: divergência de quantidade, item errado, produto vencido, avaria. Não é sobre obstáculos.</div>
-            <div style="margin-bottom:8px"><input type="text" id="ocorr-busca" placeholder="🔍 Buscar ocorrência..." oninput="filtrarOcorr(this.value)" style="width:100%;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d);background:white;box-sizing:border-box"></div>
-            <div id="lista-ocorr-dia"></div>
+          <div id="lista-ocorr-dia"></div>
+        </div>
+        <!-- Aba: Observações -->
+        <div class="lanc-tc" id="ltc-obs">
+          <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Obstáculos operacionais: equipamento parado, sistema lento, falta de insumo, risco de SLA. Não é sobre erro de produto.</div>
+          <div id="lista-obs-dia"></div>
+          <div id="obs-input-wrap" style="display:none;margin-top:8px;gap:8px">
+            <input type="text" id="obs-input" placeholder="Descreva a observação..." style="flex:1;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d)" onkeydown="if(event.key==='Enter')confirmarObs()">
+            <button class="btn btn-primary" onclick="confirmarObs()">Adicionar</button>
+            <button class="btn" onclick="cancelarObs()">✕</button>
           </div>
+          <button class="btn" onclick="addObs()" style="font-size:12px;margin-top:4px">+ Adicionar observação</button>
         </div>
       </div>
       <div id="tab-resumo" class="tc">
@@ -400,9 +394,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div id="lista-vales"></div>
       </div>
       <div id="tab-config" class="tc">
-        <div class="card" style="margin-bottom:10px">
-          <div class="card-hd"><div class="card-title">📦 Catálogo de Produtos</div></div>
-          <div style="padding:14px 17px">
+        <!-- 👥 Equipe -->
+        <div class="sec-collapse" style="margin-bottom:8px">
+          <div class="sec-collapse-hd" onclick="toggleCfg('eq',this)">
+            <span>👥 Equipe</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn btn-primary" onclick="event.stopPropagation();addColabForm()" style="font-size:12px">+ Colaborador</button>
+              <span class="sec-collapse-arrow cfg-arr">▼</span>
+            </div>
+          </div>
+          <div id="cfg-body-eq" style="display:none" class="sec-collapse-body"><div id="lista-eq"></div></div>
+        </div>
+        <!-- ⚡ Atividades Indiretas -->
+        <div class="sec-collapse" style="margin-bottom:8px">
+          <div class="sec-collapse-hd" onclick="toggleCfg('ativs',this)">
+            <span>⚡ Atividades Indiretas</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn btn-primary" onclick="event.stopPropagation();addAtiv()" style="font-size:12px">+ Nova</button>
+              <span class="sec-collapse-arrow cfg-arr">▼</span>
+            </div>
+          </div>
+          <div id="cfg-body-ativs" style="display:none" class="sec-collapse-body">
+            <div id="lista-ativs"></div>
+            <div style="margin-top:10px" id="cfg-sugeridas-wrap">
+              <div style="font-size:12px;font-weight:600;color:var(--text-s);margin-bottom:6px">💡 Atividades Sugeridas <span style="font-weight:400">(enviadas pelos colaboradores)</span></div>
+              <div id="lista-sugeridas"><div class="empty">Nenhuma atividade sugerida.</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- ⚠️ Tipos de Ocorrência -->
+        <div class="sec-collapse" style="margin-bottom:8px">
+          <div class="sec-collapse-hd" onclick="toggleCfg('tipos',this)">
+            <span>⚠️ Tipos de Ocorrência <span style="font-size:11px;font-weight:400;color:var(--text-s)">(só ADM edita)</span></span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="btn btn-primary" onclick="event.stopPropagation();addTipoOcorr()" style="font-size:12px">+ Novo tipo</button>
+              <span class="sec-collapse-arrow cfg-arr">▼</span>
+            </div>
+          </div>
+          <div id="cfg-body-tipos" style="display:none" class="sec-collapse-body"><div id="lista-tipos"></div></div>
+        </div>
+        <!-- 📦 Catálogo de Produtos -->
+        <div class="sec-collapse" style="margin-bottom:8px">
+          <div class="sec-collapse-hd" onclick="toggleCfg('catalog',this)">
+            <span>📦 Catálogo de Produtos</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="sec-collapse-arrow cfg-arr">▼</span>
+            </div>
+          </div>
+          <div id="cfg-body-catalog" style="display:none" class="sec-collapse-body">
             <div style="font-size:12px;color:#64748b;margin-bottom:10px">A planilha deve ter colunas: <strong>CODIGO</strong>, <strong>MERCADORIA</strong>, <strong>END. PADRAO</strong>. Ao importar, o nome e endereço padrão preenchem automaticamente em Vales e Ocorrências.</div>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <label style="cursor:pointer">
@@ -414,21 +453,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div style="margin-top:8px;font-size:11px;color:#94a3b8" id="catalog-count"></div>
           </div>
         </div>
-        <div class="card" style="margin-bottom:10px">
-          <div class="card-hd"><div class="card-title">👥 Equipe</div><button class="btn btn-primary" onclick="addColabForm()">+ Colaborador</button></div>
-          <div style="padding:14px 17px"><div id="lista-eq"></div></div>
-        </div>
-        <div class="card" style="margin-bottom:10px">
-          <div class="card-hd"><div class="card-title">📋 Atividades Indiretas</div><button class="btn btn-primary" onclick="addAtiv()">+ Nova</button></div>
-          <div style="padding:14px 17px"><div id="lista-ativs"></div></div>
-        </div>
-        <div class="card" style="margin-bottom:10px">
-          <div class="card-hd"><div class="card-title">💡 Atividades Sugeridas <span style="font-size:11px;font-weight:400;color:var(--text-s)">(enviadas pelos colaboradores)</span></div></div>
-          <div style="padding:14px 17px"><div id="lista-sugeridas"><div class="empty">Nenhuma atividade sugerida.</div></div></div>
-        </div>
-        <div class="card">
-          <div class="card-hd"><div class="card-title">⚠️ Tipos de Ocorrência <span style="font-size:11px;font-weight:400;color:var(--text-s)">(só ADM edita)</span></div><button class="btn btn-primary" onclick="addTipoOcorr()">+ Novo tipo</button></div>
-          <div style="padding:14px 17px"><div id="lista-tipos"></div></div>
+        <!-- 🏷️ Matrículas CD -->
+        <div class="sec-collapse" style="margin-bottom:8px">
+          <div class="sec-collapse-hd" onclick="toggleCfg('mats',this)">
+            <span>🏷️ Matrículas CD</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="sec-collapse-arrow cfg-arr">▼</span>
+            </div>
+          </div>
+          <div id="cfg-body-mats" style="display:none" class="sec-collapse-body">
+            <div style="font-size:12px;color:#64748b;margin-bottom:10px">Planilha com colunas <strong>MATRICULA</strong> e <strong>NOME</strong>. Usado para autopreenchimento do nome ao informar a matrícula nas ocorrências.</div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <label style="cursor:pointer">
+                <span class="btn btn-primary">📥 Importar / Atualizar matrículas (.xlsx)</span>
+                <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importarMats(this)">
+              </label>
+              <span id="mats-import-status" style="font-size:13px;color:#16a34a"></span>
+            </div>
+            <div style="margin-top:8px;font-size:11px;color:#94a3b8" id="mats-count"></div>
+          </div>
         </div>
       </div>
       <div id="tab-setores" class="tc">
@@ -506,17 +549,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="fg" style="margin-bottom:8px"><label>Setor operacional</label><select class="colab-select" id="co-setor" style="margin:0"></select></div>
         <div class="fg" style="margin-bottom:8px"><label>Subtipo do produto</label><select class="colab-select" id="co-sub" style="margin:0"></select></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label>Seção</label><input type="text" class="colab-input" id="co-sec" placeholder="ex: 31" style="margin:0"></div>
-          <div class="fg"><label>Rua</label><input type="text" class="colab-input" id="co-rua" placeholder="ex: 03" inputmode="decimal" style="margin:0" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div>
+          <div class="fg"><label>Seção</label><input type="tel" inputmode="numeric" class="colab-input" id="co-sec" placeholder="ex: 31" style="margin:0"></div>
+          <div class="fg"><label>Rua</label><input type="tel" class="colab-input" id="co-rua" placeholder="ex: 03" inputmode="decimal" style="margin:0" oninput="this.value=this.value.replace(/[^0-9.]/g,'')"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label>Código interno</label><input type="text" class="colab-input" id="co-cod" placeholder="ex: 760901" style="margin:0" onchange="autoOcorrCod(this.value)"></div>
+          <div class="fg"><label>Código interno</label><input type="tel" inputmode="numeric" class="colab-input" id="co-cod" placeholder="ex: 760901" style="margin:0" onchange="autoOcorrCod(this.value)"></div>
           <div class="fg"><label>Quantidade</label><input type="number" class="colab-input" id="co-qtd" placeholder="0" style="margin:0"></div>
         </div>
         <div class="fg" style="margin-bottom:4px"><label>Nome do item</label><input type="text" class="colab-input" id="co-item" placeholder="Preenchido automaticamente pelo código..." style="margin:0"></div>
         <div id="co-end-padrao" style="display:none;margin-bottom:8px;padding:6px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:7px;font-size:11px;color:#15803d"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-          <div class="fg"><label>Mat. de quem errou</label><input type="text" class="colab-input" id="co-mat-err" placeholder="ex: 12345" style="margin:0" onchange="autoNomeErr(this.value,'co-nome-err')"></div>
+          <div class="fg"><label>Mat. de quem errou</label><input type="tel" inputmode="numeric" class="colab-input" id="co-mat-err" placeholder="ex: 12345" style="margin:0" onchange="autoNomeErr(this.value,'co-nome-err')"></div>
           <div class="fg"><label>Nome</label><input type="text" class="colab-input" id="co-nome-err" placeholder="Preenchido auto..." style="margin:0"></div>
         </div>
         <div class="fg" style="margin-bottom:10px"><label>Descrição</label><input type="text" class="colab-input" id="co-desc" placeholder="Detalhes adicionais..." style="margin:0"></div>
@@ -631,7 +674,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 // ── CONSTANTS ──────────────────────────────────────────────────────────────
 const SETORES_META={'Baixíssimo':35,'Alto Giro':16,'Médio Giro':26,'Porta Pallet':26};
-const STATUS_OPTS=['Trabalhando','Atividade Indireta','Falta','Atestado','Férias','Licença'];
+const STATUS_OPTS=['Trabalhando','Trabalhando + Indireta','Atividade Indireta','Falta','Atestado','Férias','Licença'];
 const HORAS_BASE=8;
 const SLOTS=[
   {k:'h07',l:'07–08h',p:0},{k:'h08',l:'08–09h',p:0},{k:'h09',l:'09–9:15',p:0},
@@ -848,7 +891,7 @@ function renderVales(){
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div class="fg"><label style="font-size:11px;color:#94a3b8;font-weight:600">CÓDIGO</label>
-          <input type="text" class="fg input" value="${v.cod||''}" placeholder="ex: 760901"
+          <input type="tel" inputmode="numeric" class="fg input" value="${v.cod||''}" placeholder="ex: 760901"
             oninput="upValeItem(${i},'cod',this.value)" onchange="autoNomeVale(${i},this.value)"
             style="font-size:14px;font-weight:700;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box"></div>
         <div class="fg"><label style="font-size:11px;color:#94a3b8;font-weight:600">QUANTIDADE</label>
@@ -1264,7 +1307,7 @@ function initMes(){
 
 // ── CALC ───────────────────────────────────────────────────────────────────────
 function calcColabTotal(c){
-  if(c.status!=='Trabalhando')return{totalSkus:0,skuh:null,pct:null,bateu:null,horasProd:0,metaPond:0,hUsed:0};
+  if(c.status!=='Trabalhando'&&c.status!=='Trabalhando + Indireta')return{totalSkus:0,skuh:null,pct:null,bateu:null,horasProd:0,metaPond:0,hUsed:0};
   const setores=c.setores||[];
   let totalSkus=0,totalH=0,metaPeso=0;
   setores.forEach(s=>{
@@ -1347,8 +1390,7 @@ function renderObsDia(obs){
   }).join('');
 }
 function addObs(){
-  const body=document.getElementById('body-obs');
-  if(body&&body.style.display==='none'){toggleSec('obs');}
+  lancGoTab('obs');
   const w=document.getElementById('obs-input-wrap');
   w.style.display='flex';
   document.getElementById('obs-input').focus();
@@ -1376,7 +1418,7 @@ function renderOcorrDia(ocorrsParam,isFiltered){
   if(!isFiltered)_ocorrAll=[...ocorrs];
   const cont=document.getElementById('lista-ocorr-dia');
   const tipos=getTipos();const users=getUsers();
-  if(!ocorrs.length){cont.innerHTML='<div style="font-size:12px;color:var(--text-s);padding:4px 0">Nenhuma ocorrência hoje.</div>';return;}
+  if(!ocorrs.length){cont.innerHTML='<div style="font-size:12px;color:var(--text-s);padding:4px 0">Nenhuma ocorrência hoje.</div>';lancUpdateOcorrCnt();return;}
   cont.innerHTML=ocorrs.map(o=>{
     const id=o.id;
     const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'—';
@@ -1394,11 +1436,11 @@ function renderOcorrDia(ocorrsParam,isFiltered){
         <div class="fg"><label>Responsável</label><select onchange="upOcorrById('${id}','resp',this.value)"><option value="">—</option>${users.filter(u=>!u.admin).map(u=>`<option value="${u.mat}" ${o.resp===u.mat?'selected':''}>${u.nome.split(' ')[0]}</option>`).join('')}</select></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 3fr;gap:8px;margin-bottom:8px">
-        <div class="fg"><label>Seção</label><input id="oadm-sec-${id}" type="text" value="${o.secao||''}" placeholder="ex: 31" oninput="db('os${id}',()=>upOcorrById('${id}','secao',this.value))"></div>
+        <div class="fg"><label>Seção</label><input id="oadm-sec-${id}" type="tel" inputmode="numeric" value="${o.secao||''}" placeholder="ex: 31" oninput="db('os${id}',()=>upOcorrById('${id}','secao',this.value))"></div>
         <div class="fg"><label>Descrição</label><input type="text" value="${o.desc||''}" placeholder="Detalhes adicionais..." oninput="db('od${id}',()=>upOcorrById('${id}','desc',this.value))"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px">
-        <div class="fg"><label>Código</label><input type="text" value="${o.cod||''}" placeholder="ex: 760901" oninput="db('oc${id}',()=>upOcorrById('${id}','cod',this.value))" onchange="autoOcorrAdmCod('${id}',this.value)"></div>
+        <div class="fg"><label>Código</label><input type="tel" inputmode="numeric" value="${o.cod||''}" placeholder="ex: 760901" oninput="db('oc${id}',()=>upOcorrById('${id}','cod',this.value))" onchange="autoOcorrAdmCod('${id}',this.value)"></div>
         <div class="fg"><label>Quantidade</label><input type="number" value="${o.qtd||''}" placeholder="0" oninput="db('oq${id}',()=>upOcorrById('${id}','qtd',parseInt(this.value)||0))"></div>
       </div>
       <div id="oadm-end-${id}" style="display:${endVal?'block':'none'};margin-bottom:4px;padding:4px 10px;background:#f0fdf4;border:1px solid #86efac;border-radius:6px;font-size:11px;color:#15803d">${endVal?'📍 End. padrão: '+endVal:''}</div>
@@ -1417,10 +1459,10 @@ function renderOcorrDia(ocorrsParam,isFiltered){
       </div>
     </div>`;
   }).join('');
+  lancUpdateOcorrCnt();
 }
 function addOcorr(){
-  const body=document.getElementById('body-ocorr');
-  if(body&&body.style.display==='none'){toggleSec('ocorr');}
+  lancGoTab('ocorr');
   const d=getDataL();
   const now=new Date();const hora=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
   const id='oc_'+Date.now()+'_adm';
@@ -1460,6 +1502,29 @@ function toggleSec(id){
   body.style.display=open?'none':'block';
   if(arr)arr.textContent=open?'▼':'▲';
 }
+function toggleCfg(id,hd){
+  const body=document.getElementById('cfg-body-'+id);
+  if(!body)return;
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  const arr=hd?hd.querySelector('.cfg-arr'):null;
+  if(arr)arr.textContent=open?'▼':'▲';
+}
+function lancGoTab(tab,btn){
+  document.querySelectorAll('.lanc-tc').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.lanc-tab').forEach(el=>el.classList.remove('on'));
+  const tc=document.getElementById('ltc-'+tab);
+  const tb=btn||document.getElementById('ltab-'+tab);
+  if(tc)tc.classList.add('on');
+  if(tb)tb.classList.add('on');
+}
+function lancUpdateOcorrCnt(){
+  const cnt=document.getElementById('lista-ocorr-dia');
+  const badge=document.getElementById('ltab-ocorr-cnt');
+  if(!badge||!cnt)return;
+  const n=cnt.querySelectorAll('.ocorr-card').length;
+  if(n>0){badge.style.display='inline';badge.textContent=n;}else{badge.style.display='none';}
+}
 
 function autoOcorrAdmCod(id,cod){
   const nome=catalogNome(cod);
@@ -1494,6 +1559,7 @@ function navDay(n){
   carregarDia();
 }
 let _ocorrAll=[];
+let _mensalFiltros={dataIni:'',dataFim:'',setor:'',tipo:'',secao:''};
 function filtrarOcorr(q){
   const term=q.toLowerCase().trim();
   const tipos=getTipos();const users=getUsers();
@@ -1535,9 +1601,9 @@ function renderCicloDash(){
   let totSku=0,totOcorr=0,diasTrab=0;
   dias.forEach(d=>{
     const data=getDD(d);if(data.feriado)return;
-    data.cols.forEach(c=>{if(c.status==='Trabalhando'){const r=calcColabTotal(c);totSku+=r.totalSkus;}});
+    data.cols.forEach(c=>{if(c.status==='Trabalhando'||c.status==='Trabalhando + Indireta'){const r=calcColabTotal(c);totSku+=r.totalSkus;}});
     totOcorr+=getOcorrs(d).length;
-    if((data.cols||[]).some(c=>c.status==='Trabalhando'))diasTrab++;
+    if((data.cols||[]).some(c=>c.status==='Trabalhando'||c.status==='Trabalhando + Indireta'))diasTrab++;
   });
   const kpi=(lbl,val,cor)=>`<div style="flex:1;min-width:100px;text-align:center"><div style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#64748b;margin-bottom:3px">${lbl}</div><div style="font-size:20px;font-weight:700;color:${cor}">${val}</div></div>`;
   el.style.display='flex';
@@ -1561,16 +1627,16 @@ function renderColab(lista){
   const users=getUsers();const ativs=getAtivs();
   cont.innerHTML=lista.map((c,i)=>{
     const isInd=c.status==='Atividade Indireta';
+    const isHybrid=c.status==='Trabalhando + Indireta';
     const isAus=['Falta','Atestado','Férias','Licença'].includes(c.status);
     const r=calcColabTotal(c);
     const userOpts=users.filter(u=>!u.admin).map(u=>`<option value="${u.mat}" ${c.mat===u.mat?'selected':''}>${u.nome}</option>`).join('');
     const statusOpts=STATUS_OPTS.map(s=>`<option value="${s}" ${c.status===s?'selected':''}>${s}</option>`).join('');
     let corpo='';
-    if(isInd){
+    if(isInd||isHybrid){
       const tasks=c.tasks||[];
-      corpo=`<div class="cblock-body">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-          <span style="font-size:13px;font-weight:600;color:#92400e">⚡ Atividades do dia</span>
+      const tasksHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:600;color:#92400e">⚡ ${isHybrid?'Atividades indiretas do dia':'Atividades do dia'}</span>
           <button class="btn" style="font-size:11px;color:#d97706;border-color:#fcd34d" onclick="addTask(${i})">+ Atividade</button>
         </div>
         ${tasks.map((t,ti)=>{
@@ -1585,8 +1651,65 @@ function renderColab(lista){
             <button class="btn-ghost" onclick="remTask(${i},${ti})" style="color:#dc2626">✕</button>
           </div>`;
         }).join('')}
-        ${!tasks.length?'<div class="empty" style="padding:10px">Nenhuma atividade. Clique em "+ Atividade".</div>':''}
-      </div>`;
+        ${!tasks.length?'<div class="empty" style="padding:10px">Nenhuma atividade. Clique em "+ Atividade".</div>':''}`;
+
+      if(isInd){
+        corpo=`<div class="cblock-body">${tasksHTML}</div>`;
+      } else {
+        // Hybrid: setores first, then tasks
+        const setores=c.setores||[];
+        const setoresHTML=setores.map((s,si)=>{
+          const metaS=SETORES_META[s.setor]||0;
+          const modoAtual=s.modo||'total';
+          const skuReal=s._skus!=null?s._skus:(modoAtual==='hora'?PROD_SLOTS.reduce((a,sl)=>{const v=s.horas_h&&s.horas_h[sl.k];return a+(v&&!isNaN(Number(v))?Number(v):0);},0):parseInt(s.skus)||0);
+          const hS=parseFloat(s.horas)||0;
+          const skuhS=hS>0&&skuReal>0?skuReal/hS:null;
+          const pctS=skuhS!=null&&metaS>0?Math.round(skuhS/metaS*100):null;
+          const batS=pctS!=null&&pctS>=100;
+          const setorOpts=Object.keys(SETORES_META).map(st=>`<option value="${st}" ${s.setor===st?'selected':''}>${st} · ${SETORES_META[st]}/h</option>`).join('');
+          let inputArea='';
+          if(modoAtual==='total'){
+            inputArea=`<div style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
+              <div class="fg" style="flex:0 0 150px"><label>SKUs realizados</label><input type="number" min="0" value="${s.skus||''}" placeholder="Total do dia" style="font-size:17px;font-weight:700;text-align:center;padding:7px" oninput="db('sk${i}_${si}',()=>upSetor(${i},${si},'skus',parseInt(this.value)||0))"></div>
+              <div class="fg" style="flex:0 0 90px"><label>Horas no setor</label><input type="number" min="0" max="8" step=".5" value="${s.horas||''}" placeholder="h" oninput="db('sh${i}_${si}',()=>upSetor(${i},${si},'horas',parseFloat(this.value)||0))"></div>
+              ${skuhS!=null?`<div style="font-size:12px;padding-bottom:8px"><span style="color:var(--text-s)">SKU/h: </span><strong style="color:${batS?'#16a34a':'#dc2626'}">${skuhS.toFixed(1)}</strong> <span class="badge ${batS?'bg-green':'bg-red'}" style="font-size:10px">${pctS}%</span></div>`:''}
+            </div>`;
+          } else {
+            const cells=SLOTS.map(sl=>{
+              if(sl.p)return`<div class="hcol"><div class="hlbl">${sl.l}</div><div class="hinput pausa" style="padding:4px 0;font-size:8px">${sl.l.includes('Café')?'Café':'Almoço'}</div></div>`;
+              const val=s.horas_h&&s.horas_h[sl.k]!=null?s.horas_h[sl.k]:'';
+              const isNum=val!==''&&!isNaN(Number(val))&&Number(val)>0;
+              return`<div class="hcol"><div class="hlbl">${sl.l}</div><input class="hinput${isNum?' filled':''}" type="text" inputmode="numeric" value="${val}" placeholder="—" oninput="db('hh${i}_${si}_${sl.k}',()=>upSetorH(${i},${si},'${sl.k}',this.value))"></div>`;
+            }).join('');
+            inputArea=`<div class="hora-grid">${cells}</div>
+              <div class="fg" style="max-width:110px;margin-top:4px"><label>Horas no setor</label><input type="number" min="0" max="8" step=".5" value="${s.horas||''}" placeholder="h" oninput="db('sh${i}_${si}',()=>upSetor(${i},${si},'horas',parseFloat(this.value)||0))"></div>`;
+          }
+          return`<div class="setor-block">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+              <div class="fg" style="flex:0 0 190px"><label>Setor</label><select onchange="db('ss${i}_${si}',()=>upSetor(${i},${si},'setor',this.value))"><option value="">— setor —</option>${setorOpts}</select></div>
+              <button onclick="toggleModoSetor(${i},${si})" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border-d);background:white;cursor:pointer;color:var(--accent)">${modoAtual==='total'?'🕐 Hora a hora':'📊 Total do dia'}</button>
+              ${setores.length>1?`<button class="btn-ghost" onclick="remSetorC(${i},${si})" style="color:#dc2626;margin-left:auto">✕ Remover</button>`:''}
+            </div>
+            ${inputArea}
+          </div>`;
+        }).join('');
+        const pctColor=r.pct!=null?(r.bateu?'#16a34a':r.pct>=80?'#d97706':'#dc2626'):'#6b7280';
+        corpo=`<div class="cblock-body">
+          ${setoresHTML}
+          <button class="btn-dashed" onclick="addSetorC(${i})" style="margin-bottom:8px">+ Outro setor</button>
+          <div class="sum-bar">
+            <div class="sum-item"><div class="sum-lbl">SKUs</div><div class="sum-val" style="color:#3b82f6">${r.totalSkus}</div></div>
+            <div class="sum-item"><div class="sum-lbl">SKU/h</div><div class="sum-val" style="color:${pctColor}">${r.skuh!=null?r.skuh.toFixed(1):'—'}</div><div class="sum-sub">meta: ${r.metaPond>0?r.metaPond.toFixed(1):'—'}</div></div>
+            <div class="sum-item"><div class="sum-lbl">Atingimento</div><div class="sum-val" style="color:${pctColor}">${r.pct!=null?r.pct+'%':'—'}</div></div>
+            <div class="sum-item"><div class="sum-lbl">H. produtivas</div><div class="sum-val" style="color:var(--text-s)">${r.hUsed.toFixed(1)}h</div></div>
+          </div>
+          ${r.metaPond>0?`<div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(r.pct||0,100)}%;background:${r.bateu?'#16a34a':'#dc2626'}"></div></div>`:''}
+          <div class="hind-wrap" style="margin-top:10px">
+            <div style="font-size:12px;font-weight:600;color:#92400e;margin-bottom:8px">⚡ Atividades indiretas do dia <span style="font-size:11px;font-weight:400;color:#a16207">(horas descontadas do produtivo)</span></div>
+            ${tasksHTML}
+          </div>
+        </div>`;
+      }
     } else if(isAus){
       const u=users.find(u=>u.mat===c.mat);
       const fer=u?.ferias?.find(f=>f.ini&&f.fim&&getDataL()>=f.ini&&getDataL()<=f.fim);
@@ -1642,7 +1765,7 @@ function renderColab(lista){
         ${r.metaPond>0?`<div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(r.pct||0,100)}%;background:${r.bateu?'#16a34a':'#dc2626'}"></div></div>`:''}
       </div>`;
     }
-    return`<div class="cblock ${isInd?'ind':''}">
+    return`<div class="cblock ${isInd||isHybrid?'ind':''}">
       <div class="cblock-hd">
         <div class="fg"><label>Colaborador</label><select onchange="upColabSel(${i},this)"><option value="">— selecione —</option>${userOpts}</select></div>
         <div class="fg"><label>Status</label><select onchange="upC(${i},'status',this.value)">${statusOpts}</select></div>
@@ -1656,7 +1779,11 @@ function renderColab(lista){
 // ── COLAB UPDATE HELPERS ───────────────────────────────────────────────────────
 function upC(i,field,val){
   const d=getDataL(),data=getDD(d);data.cols[i][field]=val;
-  if(field==='status'){if(val==='Atividade Indireta'){data.cols[i].tasks=data.cols[i].tasks||[];data.cols[i].horas_ind=0;}if(['Falta','Atestado','Férias','Licença'].includes(val))data.cols[i].horas_ind=0;}
+  if(field==='status'){
+    if(val==='Atividade Indireta'){data.cols[i].tasks=data.cols[i].tasks||[];data.cols[i].horas_ind=0;}
+    if(val==='Trabalhando + Indireta'){data.cols[i].tasks=data.cols[i].tasks||[];data.cols[i].setores=data.cols[i].setores||[{setor:'',skus:0,horas:0,modo:'total',horas_h:{}}];}
+    if(['Falta','Atestado','Férias','Licença'].includes(val))data.cols[i].horas_ind=0;
+  }
   saveDD(d,data);renderColab(data.cols);
 }
 function upColabSel(i,sel){
@@ -1716,13 +1843,15 @@ function renderResumo(){
   let data;try{data=getDD(d);}catch(e){cont.innerHTML='<div class="empty">Erro ao carregar dados.</div>';return;}
   if(data.feriado){cont.innerHTML='<div class="fer-bar">🚩 <strong style="color:#f9fafb">Feriado</strong></div>';return;}
   if(!data.cols||!data.cols.length){cont.innerHTML='<div class="empty">Sem dados para esta data.</div>';return;}
-  const trab=data.cols.filter(c=>c.status==='Trabalhando');
+  const trab=data.cols.filter(c=>c.status==='Trabalhando'||c.status==='Trabalhando + Indireta');
   const inds=data.cols.filter(c=>c.status==='Atividade Indireta');
   let totSku=0,bat=0,metaTot=0,somaH=0,cntH=0;
   trab.forEach(c=>{const r=calcColabTotal(c);totSku+=r.totalSkus;metaTot+=r.metaPond*(r.hUsed||0);if(r.skuh!=null){somaH+=r.skuh;cntH++;}if(r.bateu)bat++;});
   const med=cntH>0?(somaH/cntH).toFixed(1):'—';
   const pctMeta=metaTot>0?Math.round(totSku/metaTot*100):0;
-  const hIndTot=inds.length*HORAS_BASE+trab.reduce((a,c)=>a+(parseFloat(c.horas_ind)||0),0);
+  // horas indiretas: colaboradores 100% indiretos + parciais (Trabalhando com horas_ind) + híbridos (tarefas indiretas)
+  const hIndHibrido=trab.filter(c=>c.status==='Trabalhando + Indireta').reduce((a,c)=>{return a+(c.tasks||[]).reduce((s,t)=>s+(parseFloat(t.horas)||0),0);},0);
+  const hIndTot=inds.length*HORAS_BASE+trab.reduce((a,c)=>a+(parseFloat(c.horas_ind)||0),0)+hIndHibrido;
   const pctInd=data.cols.length*HORAS_BASE>0?Math.round(hIndTot/(data.cols.length*HORAS_BASE)*100):0;
   const trabOrd=[...trab].sort((a,b)=>(calcColabTotal(b).skuh||0)-(calcColabTotal(a).skuh||0));
   const mc=pctMeta>=100?'#16a34a':pctMeta>=80?'#d97706':'#dc2626';
@@ -1746,18 +1875,22 @@ function renderResumo(){
         const medal=idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':idx+1;
         return`<tr><td style="text-align:center;font-weight:700">${medal}</td><td style="font-weight:600">${c.nome}</td><td>${sNomes||'—'}</td><td style="text-align:center">${r.hUsed.toFixed(1)}h</td><td style="text-align:center;font-weight:600">${r.totalSkus}</td><td style="text-align:center;font-weight:700;color:${bateu?'#16a34a':proximo?'#d97706':'#4338ca'}">${r.skuh!=null?r.skuh.toFixed(1):'—'}</td><td style="text-align:center;color:var(--text-s)">${r.metaPond>0?r.metaPond.toFixed(1):'—'}</td><td>${badge}</td></tr>`;
       }).join('')}
-      ${data.cols.filter(c=>!['Trabalhando','Atividade Indireta'].includes(c.status)).map(c=>`<tr><td>—</td><td style="font-weight:600">${c.nome}</td><td colspan="5">—</td><td><span class="badge bg-gray">${c.status}</span></td></tr>`).join('')}
+      ${data.cols.filter(c=>!['Trabalhando','Trabalhando + Indireta','Atividade Indireta'].includes(c.status)).map(c=>`<tr><td>—</td><td style="font-weight:600">${c.nome}</td><td colspan="5">—</td><td><span class="badge bg-gray">${c.status}</span></td></tr>`).join('')}
       </tbody></table>
     </div>
-    ${inds.length?`
-    <div style="font-size:12px;font-weight:600;color:var(--text-s);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em">⚡ Atividades Indiretas</div>
-    <div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:20%">Colaborador</th><th style="width:28%">Atividade</th><th style="width:10%">H. dedicadas</th><th style="width:10%">Meta</th><th>Resultado</th></tr></thead><tbody>
-    ${inds.map(c=>(c.tasks&&c.tasks.length?c.tasks:[{atv_id:'',horas:0,desc:c.desc_ind||''}]).map((t,ti)=>{
-      const ativs=getAtivs();const atv=ativs.find(a=>a.id===t.atv_id)||{nome:'Atividade indireta'};
-      const metaH=parseFloat(atv.metaVal)||0;const realH=parseFloat(t.horas)||0;const ok=metaH>0&&realH<=metaH;
-      return`<tr style="background:#fffbeb"><td style="font-weight:600">${ti===0?c.nome:''}</td><td><span class="badge bg-amber">${atv.nome}</span></td><td style="text-align:center;font-weight:600">${realH>0?realH+'h':'—'}</td><td style="text-align:center;color:var(--text-s)">${metaH>0?metaH+'h':'—'}</td><td>${metaH>0?`<span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ Dentro do prazo':'⚠️ Acima do esperado'}</span>`:''} ${t.desc||''}</td></tr>`;
-    }).join('')).join('')}
-    </tbody></table></div>`:''} 
+    ${(()=>{
+      const indAll=[...inds,...trab.filter(c=>c.status==='Trabalhando + Indireta'&&c.tasks&&c.tasks.length)];
+      return indAll.length?`
+      <div style="font-size:12px;font-weight:600;color:var(--text-s);margin-bottom:7px;text-transform:uppercase;letter-spacing:.04em">⚡ Atividades Indiretas</div>
+      <div class="tbl-wrap"><table class="tbl"><thead><tr><th style="width:20%">Colaborador</th><th style="width:28%">Atividade</th><th style="width:10%">H. dedicadas</th><th style="width:10%">Meta</th><th>Resultado</th></tr></thead><tbody>
+      ${indAll.map(c=>(c.tasks&&c.tasks.length?c.tasks:[{atv_id:'',horas:0,desc:c.desc_ind||''}]).map((t,ti)=>{
+        const ativs=getAtivs();const atv=ativs.find(a=>a.id===t.atv_id)||{nome:'Atividade indireta'};
+        const metaH=parseFloat(atv.metaVal)||0;const realH=parseFloat(t.horas)||0;const ok=metaH>0&&realH<=metaH;
+        const rowBg=c.status==='Trabalhando + Indireta'?'#f0fdf4':'#fffbeb';
+        return`<tr style="background:${rowBg}"><td style="font-weight:600">${ti===0?c.nome+(c.status==='Trabalhando + Indireta'?'<span class="badge bg-green" style="font-size:9px;margin-left:4px">+prod</span>':''):''}</td><td><span class="badge bg-amber">${atv.nome}</span></td><td style="text-align:center;font-weight:600">${realH>0?realH+'h':'—'}</td><td style="text-align:center;color:var(--text-s)">${metaH>0?metaH+'h':'—'}</td><td>${metaH>0?`<span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ Dentro do prazo':'⚠️ Acima do esperado'}</span>`:''} ${t.desc||''}</td></tr>`;
+      }).join('')).join('')}
+      </tbody></table></div>`:''})()}
+
     ${(()=>{const _oc=getOcorrs(d);return _oc.length?`
     ${(()=>{
       const tipos=getTipos();const porTipo={};
@@ -1811,11 +1944,21 @@ function calcMensal(mes){
     let diaTemInd=false;
     data.cols.forEach(c=>{
       const st=stats[c.mat];if(!st)return;
-      if(c.status==='Trabalhando'){
+      if(c.status==='Trabalhando'||c.status==='Trabalhando + Indireta'){
         const r=calcColabTotal(c);st.dias++;st.totalSkus+=r.totalSkus;st.hInd+=parseFloat(c.horas_ind)||0;
         semanas[wk].skus+=r.totalSkus;semanas[wk].meta+=r.metaPond*(r.hUsed||0);semanas[wk].hInd+=parseFloat(c.horas_ind)||0;
         if(r.skuh!=null){st.somaSKUH+=r.skuh;st.cntSKUH++;}
         if(r.pct!=null){st.somaPct+=r.pct;st.cntPct++;}
+        if(c.status==='Trabalhando + Indireta'&&c.tasks&&c.tasks.length){
+          const hInd=(c.tasks||[]).reduce((s,t)=>s+(parseFloat(t.horas)||0),0);
+          st.hInd+=hInd;semanas[wk].hInd+=hInd;
+          c.tasks.forEach(t=>{
+            const atv=getAtivs().find(a=>a.id===t.atv_id)||{nome:'Indireta'};
+            const ex=st.tasks.find(x=>x.atv_id===t.atv_id);
+            if(ex){ex.horas+=parseFloat(t.horas)||0;ex.count++;}
+            else st.tasks.push({atv_id:t.atv_id,nome:atv.nome,metaVal:parseFloat(atv.metaVal)||0,horas:parseFloat(t.horas)||0,count:1});
+          });
+        }
       } else if(c.status==='Falta')st.faltas++;
       else if(c.status==='Atestado')st.atestados++;
       else if(c.status==='Férias')st.ferias++;
@@ -1847,7 +1990,16 @@ function renderMensal(){
   const mes=document.getElementById('sel-mes').value;if(!mes)return;
   const cont=document.getElementById('men-content');
   let _d;try{_d=calcMensal(mes);}catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px">Erro: '+e.message+'</div>';return;}
-  const{stats,semanas,dias,users,ocorrs,obsAll}=_d;
+  const{stats,semanas,dias,users,obsAll}=_d;
+  // Aplicar filtros nas ocorrências
+  let ocorrs=[..._d.ocorrs];
+  const _f=_mensalFiltros;
+  if(_f.dataIni)ocorrs=ocorrs.filter(o=>o.data>=_f.dataIni);
+  if(_f.dataFim)ocorrs=ocorrs.filter(o=>o.data<=_f.dataFim);
+  if(_f.setor)ocorrs=ocorrs.filter(o=>o.setor===_f.setor);
+  if(_f.tipo)ocorrs=ocorrs.filter(o=>o.tipo_id===_f.tipo);
+  if(_f.secao)ocorrs=ocorrs.filter(o=>(o.secao||'').trim()===_f.secao.trim());
+  const _temFiltro=_f.dataIni||_f.dataFim||_f.setor||_f.tipo||_f.secao;
   if(!dias.length){cont.innerHTML='<div class="empty">Nenhum lançamento neste mês.</div>';return;}
   try{
   const diasU=dias.length;
@@ -1978,10 +2130,22 @@ function renderMensal(){
     ${users.map(u=>{const s=stats[u.mat];if(!s||!s.tasks.length)return'';return s.tasks.map((t,ti)=>{const metaT=t.metaVal*t.count;const ok=t.horas<=metaT;return`<tr><td style="font-weight:600">${ti===0?u.nome:''}</td><td><span class="badge bg-amber">${t.nome}</span></td><td style="text-align:center">${t.count}×</td><td style="text-align:center;font-weight:700">${t.horas}h</td><td style="text-align:center;color:#94a3b8">${t.metaVal>0?t.metaVal+'h':'—'}</td><td><span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ OK':'⚠️ Excedeu'}</span></td></tr>`;}).join('');}).join('')}
     </tbody></table></div></div>`:''}
 
+    ${_d.ocorrs.length?sec('⚠️','Ocorrências do Mês',_d.ocorrs.length+' registro'+(_d.ocorrs.length>1?'s':'')):''}
+    ${_d.ocorrs.length?`<div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="fg"><label>Data início</label><input type="date" value="${_f.dataIni}" onchange="_mensalFiltros.dataIni=this.value;renderMensal()" style="font-size:12px;padding:5px 8px"></div>
+        <div class="fg"><label>Data fim</label><input type="date" value="${_f.dataFim}" onchange="_mensalFiltros.dataFim=this.value;renderMensal()" style="font-size:12px;padding:5px 8px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div class="fg"><label>Setor</label><select onchange="_mensalFiltros.setor=this.value;renderMensal()" style="font-size:12px;padding:5px 8px"><option value="">Todos</option>${SETORES_CD.map(s=>`<option value="${s}" ${_f.setor===s?'selected':''}>${s}</option>`).join('')}</select></div>
+        <div class="fg"><label>Tipo</label><select onchange="_mensalFiltros.tipo=this.value;renderMensal()" style="font-size:12px;padding:5px 8px"><option value="">Todos</option>${getTipos().map(t=>`<option value="${t.id}" ${_f.tipo===t.id?'selected':''}>${t.nome}</option>`).join('')}</select></div>
+        <div class="fg"><label>Seção</label><input type="tel" inputmode="numeric" value="${_f.secao}" placeholder="ex: 31" onchange="_mensalFiltros.secao=this.value;renderMensal()" style="font-size:12px;padding:5px 8px"></div>
+      </div>
+      ${_temFiltro?`<div style="margin-top:8px;display:flex;align-items:center;gap:10px"><span style="font-size:12px;color:#64748b">${ocorrs.length} de ${_d.ocorrs.length} ocorrência${_d.ocorrs.length>1?'s':''} encontrada${ocorrs.length!==1?'s':''}</span><button onclick="_mensalFiltros={dataIni:'',dataFim:'',setor:'',tipo:'',secao:''};renderMensal()" style="font-size:12px;padding:4px 12px;border-radius:6px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;cursor:pointer">✕ Limpar filtros</button></div>`:''}
+    </div>`:''}
     ${ocorrs.length?`
-    ${sec('⚠️','Ocorrências do Mês',ocorrs.length+' registro'+(ocorrs.length>1?'s':''))}
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-      <div class="met-card"><div class="ml">Total</div><div class="mv" style="color:#dc2626">${ocorrs.length}</div></div>
+      <div class="met-card"><div class="ml">Total${_temFiltro?' (filtrado)':''}</div><div class="mv" style="color:#dc2626">${ocorrs.length}</div></div>
       <div class="met-card"><div class="ml">Dias afetados</div><div class="mv" style="color:#d97706">${diasComOcorr.size}<span style="font-size:13px;color:#94a3b8"> / ${diasU}</span></div></div>
       <div class="met-card"><div class="ml">Tipo +frequente</div><div class="mv" style="font-size:14px;color:#dc2626">${tipoEnt[0]?.[0]||'—'}</div><div class="ms">${tipoEnt[0]?.[1]||0}×</div></div>
       <div class="met-card"><div class="ml">Setor +crítico</div><div class="mv" style="font-size:14px;color:#d97706">${setorEnt[0]?.[0]||'—'}</div><div class="ms">${setorEnt[0]?.[1]||0}×</div></div>
@@ -2114,7 +2278,7 @@ function exportarExcel(){
   XLSX.utils.book_append_sheet(wb,ws1,'Resumo RH');
   // % Diário
   const dD=[['Colaborador','Data','SKUs','SKU/h','Meta','% do Dia','Setores']];
-  dias.forEach(d=>{const data=getDD(d);if(data.feriado)return;data.cols.forEach(c=>{if(c.status!=='Trabalhando')return;const r=calcColabTotal(c);const sn=(c.setores||[]).filter(s=>s.setor).map(s=>s.setor).join(', ');dD.push([c.nome,fmtDate(d),r.totalSkus,r.skuh!=null?parseFloat(r.skuh.toFixed(1)):0,r.metaPond>0?parseFloat(r.metaPond.toFixed(1)):0,r.pct!=null?r.pct+'%':'—',sn]);});});
+  dias.forEach(d=>{const data=getDD(d);if(data.feriado)return;data.cols.forEach(c=>{if(c.status!=='Trabalhando'&&c.status!=='Trabalhando + Indireta')return;const r=calcColabTotal(c);const sn=(c.setores||[]).filter(s=>s.setor).map(s=>s.setor).join(', ');dD.push([c.nome,fmtDate(d),r.totalSkus,r.skuh!=null?parseFloat(r.skuh.toFixed(1)):0,r.metaPond>0?parseFloat(r.metaPond.toFixed(1)):0,r.pct!=null?r.pct+'%':'—',sn]);});});
   const ws2=XLSX.utils.aoa_to_sheet(dD);ws2['!cols']=[{wch:25},{wch:12},{wch:8},{wch:8},{wch:8},{wch:10},{wch:25}];
   XLSX.utils.book_append_sheet(wb,ws2,'% Diário por Pessoa');
   // Ocorrências
@@ -2140,6 +2304,40 @@ function renderConfig(){
     const n=Object.keys(CATALOG_LOOKUP).length;
     countEl.textContent=n>0?`Catálogo atual: ${n.toLocaleString('pt-BR')} produtos carregados`:'Nenhum catálogo carregado.';
   }
+  const matsEl=document.getElementById('mats-count');
+  if(matsEl&&typeof MATS_LOOKUP!=='undefined'){
+    const n=Object.keys(MATS_LOOKUP).length;
+    matsEl.textContent=n>0?`Matrículas carregadas: ${n.toLocaleString('pt-BR')} colaboradores`:'Nenhuma planilha de matrículas carregada.';
+  }
+}
+function importarMats(input){
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      const lookup={};
+      rows.forEach(r=>{
+        const mat=String(r['MATRICULA']||r['Matricula']||r['matrícula']||r['mat']||'').trim();
+        const nome=String(r['NOME']||r['Nome']||r['nome']||'').trim();
+        if(mat&&nome)lookup[mat]=nome;
+      });
+      const n=Object.keys(lookup).length;
+      if(!n){alert('Nenhuma linha válida encontrada. Verifique se a planilha tem colunas MATRICULA e NOME.');return;}
+      // Salva no Firestore como configuração global
+      if(fdb){fdb.collection('config').doc('mats_lookup').set({data:lookup,updated:new Date().toISOString()})
+        .then(()=>{
+          if(window.MATS_LOOKUP)Object.assign(window.MATS_LOOKUP,lookup);else window.MATS_LOOKUP=lookup;
+          const st=document.getElementById('mats-import-status');
+          if(st){st.textContent=`✅ ${n.toLocaleString('pt-BR')} matrículas importadas`;setTimeout(()=>{st.textContent='';},4000);}
+          renderConfig();
+        }).catch(err=>alert('Erro ao salvar: '+err.message));
+      }
+    }catch(err){alert('Erro ao ler arquivo: '+err.message);}
+  };
+  reader.readAsArrayBuffer(input.files[0]);
 }
 function renderEq(){
   const users=getUsers(),cont=document.getElementById('lista-eq');
@@ -2272,7 +2470,7 @@ function tickClock(){
 }
 function atualizarTV(){
   const d=getDataL();const data=getDD(d);
-  const trab=data.cols.filter(c=>c.status==='Trabalhando');
+  const trab=data.cols.filter(c=>c.status==='Trabalhando'||c.status==='Trabalhando + Indireta');
   const inds=data.cols.filter(c=>c.status==='Atividade Indireta');
   const trabOrd=[...trab].sort((a,b)=>(calcColabTotal(b).skuh||0)-(calcColabTotal(a).skuh||0));
   const maxSkuh=Math.max(...trabOrd.map(c=>calcColabTotal(c).skuh||0),1);
@@ -2336,7 +2534,7 @@ function atualizarTV(){
     if(!semanas[wk])semanas[wk]={skus:0,meta:0,hInd:0,indDias:0};
     let diaTemInd=false;
     dd.cols.forEach(col=>{
-      if(col.status==='Trabalhando'){const r=calcColabTotal(col);semanas[wk].skus+=r.totalSkus;semanas[wk].meta+=r.metaPond*(r.hUsed||0);semanas[wk].hInd+=parseFloat(col.horas_ind)||0;}
+      if(col.status==='Trabalhando'||col.status==='Trabalhando + Indireta'){const r=calcColabTotal(col);semanas[wk].skus+=r.totalSkus;semanas[wk].meta+=r.metaPond*(r.hUsed||0);semanas[wk].hInd+=parseFloat(col.horas_ind)||0;if(col.status==='Trabalhando + Indireta')(col.tasks||[]).forEach(t=>{semanas[wk].hInd+=parseFloat(t.horas)||0;});}
       else if(col.status==='Atividade Indireta'){semanas[wk].hInd+=HORAS_BASE;diaTemInd=true;}
     });
     if(diaTemInd)semanas[wk].indDias++;
@@ -2659,7 +2857,7 @@ async function renderAtivInd(){
 }
 function renderColabPainel(){
   const d=today();const data=getDD(d);
-  const trab=data.cols.filter(c=>c.status==='Trabalhando');
+  const trab=data.cols.filter(c=>c.status==='Trabalhando'||c.status==='Trabalhando + Indireta');
   let totSku=0,metaTot=0;
   trab.forEach(c=>{const r=calcColabTotal(c);totSku+=r.totalSkus;metaTot+=r.metaPond*(r.hUsed||0);});
   const pctMeta=metaTot>0?Math.round(totSku/metaTot*100):0;
