@@ -2553,7 +2553,7 @@ function calcMensal(mes){
   const dias=allDays().filter(d=>d.startsWith(`${y}-${m}`));
   const users=getUsers().filter(u=>!u.admin);
   const stats={};
-  users.forEach(u=>{stats[u.mat]={nome:u.nome,mat:u.mat,dias:0,faltas:0,atestados:0,ferias:0,indDias:0,hInd:0,hIndDia:0,totalSkus:0,somaPct:0,cntPct:0,somaSKUH:0,cntSKUH:0,tasks:[]};});
+  users.forEach(u=>{stats[u.mat]={nome:u.nome,mat:u.mat,dias:0,faltas:0,atestados:0,ferias:0,indDias:0,indMetaDias:0,hInd:0,hIndDia:0,totalSkus:0,somaPct:0,cntPct:0,somaSKUH:0,cntSKUH:0,tasks:[]};});
   const semanas={};
   dias.forEach(d=>{
     const data=getDD(d);
@@ -2572,8 +2572,6 @@ function calcMensal(mes){
         if(r.skuh!=null){st.somaSKUH+=r.skuh;st.cntSKUH++;}
         if(r.pct!=null){st.somaPct+=r.pct;st.cntPct++;}
         if(c.status==='Trabalhando + Indireta'&&c.tasks&&c.tasks.length){
-          const hInd=(c.tasks||[]).reduce((s,t)=>s+(parseFloat(t.horas)||0),0);
-          st.hInd+=hInd;semanas[wk].hInd+=hInd;
           c.tasks.forEach(t=>{
             const atv=getAtivs().find(a=>a.id===t.atv_id)||{nome:'Indireta'};
             const ex=st.tasks.find(x=>x.atv_id===t.atv_id);
@@ -2586,6 +2584,8 @@ function calcMensal(mes){
       else if(c.status==='Férias')st.ferias++;
       else if(c.status==='Atividade Indireta'){
         st.indDias++;st.hIndDia+=HORAS_BASE;diaTemInd=true;
+        const hEntregueInd=(c.tasks||[]).reduce((acc,t)=>acc+(parseFloat(t.horas)||0),0);
+        if(hEntregueInd>=HORAS_BASE)st.indMetaDias++;
         semanas[wk].hInd+=HORAS_BASE;
         if(c.tasks&&c.tasks.length){
           c.tasks.forEach(t=>{
@@ -2627,7 +2627,14 @@ function renderMensal(){
   const diasU=dias.length;
   let totSku=0,totBat=0,totHInd=0;
   const comD=Object.values(stats).filter(s=>s.cntPct>0);
-  Object.values(stats).forEach(s=>{totSku+=s.totalSkus;if(s.cntPct>0&&Math.round(s.somaPct/s.cntPct)>=100)totBat++;totHInd+=s.hInd+s.hIndDia;});
+  Object.values(stats).forEach(s=>{
+    totSku+=s.totalSkus;
+    const _soInd=s.dias===0&&s.indDias>0;
+    const _indBateu=_soInd&&s.indMetaDias>=s.indDias&&s.indDias>0;
+    const _prodBateu=s.cntPct>0&&Math.round(s.somaPct/s.cntPct)>=100;
+    if(_prodBateu||_indBateu)totBat++;
+    totHInd+=s.hInd+s.hIndDia;
+  });
   const medG=comD.length>0?(comD.reduce((a,s)=>a+s.somaSKUH/s.cntSKUH,0)/comD.length).toFixed(1):'—';
   const totalPoss=users.length*diasU*HORAS_BASE;
   const pctInd=totalPoss>0?Math.round(totHInd/totalPoss*100):0;
@@ -2660,18 +2667,26 @@ function renderMensal(){
     const mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
     const bateu=mediaPct!=null&&mediaPct>=100;
     const hIT=s.hInd+s.hIndDia;
-    const pctDisp=Math.round((diasU*HORAS_BASE-hIT)/(diasU*HORAS_BASE)*100);
+    const diasPresentes=s.dias+s.indDias;
+    const pctDisp=diasPresentes>0?Math.round((diasPresentes*HORAS_BASE-hIT)/(diasPresentes*HORAS_BASE)*100):0;
     const soInd=s.dias===0&&s.indDias>0;
+    const indBateu=soInd&&s.indDias>0&&s.indMetaDias>=s.indDias;
+    const indParcial=soInd&&s.indMetaDias>0&&s.indMetaDias<s.indDias;
     let badgeRH,cor;
-    if(soInd){badgeRH='⚡ Só Indireta';cor='#7c3aed';}
-    else if(bateu){badgeRH=`✅ Meta atingida`;cor='#16a34a';}
-    else if(mediaPct!=null){badgeRH=`✗ Não bateu`;cor='#dc2626';}
+    if(soInd){
+      if(indBateu){badgeRH='✅ Meta ind. atingida';cor='#16a34a';}
+      else if(indParcial){badgeRH=`⚡ Ind. ${s.indMetaDias}/${s.indDias}d`;cor='#d97706';}
+      else{badgeRH='✗ Ind. não entregue';cor='#dc2626';}
+    }
+    else if(bateu){badgeRH='✅ Meta atingida';cor='#16a34a';}
+    else if(mediaPct!=null){badgeRH='✗ Não bateu';cor='#dc2626';}
     else{badgeRH='Sem dados';cor='#94a3b8';}
     const initials=u.nome.split(' ').map(n=>n[0]).slice(0,2).join('');
-    const avatarBg=bateu?'#dcfce7':soInd?'#ede9fe':'#fee2e2';
-    const avatarCor=bateu?'#15803d':soInd?'#6d28d9':'#b91c1c';
-    const barPct=mediaPct!=null?Math.min(mediaPct,100):0;
-    const barCor=bateu?'#16a34a':mediaPct!=null&&mediaPct>=80?'#d97706':'#dc2626';
+    const metaOk=bateu||indBateu;
+    const avatarBg=metaOk?'#dcfce7':soInd&&!indBateu?'#ede9fe':'#fee2e2';
+    const avatarCor=metaOk?'#15803d':soInd&&!indBateu?'#6d28d9':'#b91c1c';
+    const barPct=soInd?Math.round(s.indMetaDias/Math.max(s.indDias,1)*100):mediaPct!=null?Math.min(mediaPct,100):0;
+    const barCor=metaOk?'#16a34a':barPct>=80?'#d97706':'#dc2626';
     return`<div style="background:white;border:1px solid #e2e8f0;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:38px;height:38px;border-radius:10px;background:${avatarBg};color:${avatarCor};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">${initials}</div>
@@ -2679,13 +2694,20 @@ function renderMensal(){
         <div style="font-size:11px;font-weight:600;color:${cor};text-align:right">${badgeRH}</div>
       </div>
       ${mediaPct!=null?`<div style="height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden"><div style="height:100%;width:${barPct}%;background:${barCor};border-radius:99px"></div></div>`:''}
+      ${soInd?`
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center">
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Dias ind.</div><div style="font-size:14px;font-weight:700;color:var(--text,#334155)">${s.indDias}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Entregues</div><div style="font-size:14px;font-weight:700;color:${indBateu?'#16a34a':indParcial?'#d97706':'#dc2626'}">${s.indMetaDias}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Faltas</div><div style="font-size:14px;font-weight:700;color:${s.faltas>0?'#dc2626':'#94a3b8'}">${s.faltas||'—'}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">H. ind.</div><div style="font-size:14px;font-weight:700;color:#334155">${s.hIndDia}h</div></div>
+      </div>`:`
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;text-align:center">
-        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Dias</div><div style="font-size:14px;font-weight:700;color:#334155">${s.dias}</div></div>
+        <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Dias</div><div style="font-size:14px;font-weight:700;color:#334155">${s.dias}${s.indDias>0?`<span style="font-size:9px;color:#94a3b8">+${s.indDias}i</span>`:''}</div></div>
         <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Faltas</div><div style="font-size:14px;font-weight:700;color:${s.faltas>0?'#dc2626':'#94a3b8'}">${s.faltas||'—'}</div></div>
         <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Disp.</div><div style="font-size:14px;font-weight:700;color:${pctDisp>=80?'#16a34a':'#d97706'}">${pctDisp}%</div></div>
         <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">SKU/h</div><div style="font-size:14px;font-weight:700;color:${parseFloat(mediaSKUH)>=26?'#16a34a':'#dc2626'}">${mediaSKUH}</div></div>
         <div><div style="font-size:10px;color:#94a3b8;margin-bottom:2px">Média%</div><div style="font-size:14px;font-weight:700;color:${mediaPct!=null?(bateu?'#16a34a':'#dc2626'):'#94a3b8'}">${mediaPct!=null?mediaPct+'%':'—'}</div></div>
-      </div>
+      </div>`}
       ${s.ferias>0||s.atestados>0?`<div style="display:flex;gap:6px;flex-wrap:wrap">${s.ferias>0?`<span style="font-size:11px;padding:2px 8px;background:#f0fdf4;border:1px solid #86efac;border-radius:99px;color:#15803d">🌴 ${s.ferias}d férias</span>`:''} ${s.atestados>0?`<span style="font-size:11px;padding:2px 8px;background:#fff7ed;border:1px solid #fed7aa;border-radius:99px;color:#c2410c">📋 ${s.atestados}d atestado</span>`:''}</div>`:''}
     </div>`;
   }).join('');
