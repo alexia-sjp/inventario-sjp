@@ -330,6 +330,10 @@ body.dark .bg-indigo{background:rgba(99,102,241,.15);color:#a5b4fc}
 .lanc-tab.on svg{opacity:1}
 .lanc-tab.on.tab-ocorr{color:#dc2626}
 .lanc-tc{display:none}.lanc-tc.on{display:block}
+.vnc-tab{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:6px 10px;border-radius:6px;border:none;cursor:pointer;background:transparent;color:var(--text-s);transition:all var(--transition)}
+.vnc-tab.on{background:var(--bg-card);color:var(--text);box-shadow:var(--shadow-sm);font-weight:600}
+.vnc-tab svg{opacity:.7}.vnc-tab.on svg{opacity:1}
+.vnc-tc{display:none}.vnc-tc.on{display:block}
 
 /* EQUIPE */
 .eq-row{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
@@ -485,16 +489,20 @@ body.dark .bg-indigo{background:rgba(99,102,241,.15);color:#a5b4fc}
       <div class="sl-sub">Produtividade</div>
     </div>
     <nav class="snav">
-      <div class="nlbl">Menu</div>
+      <div class="nlbl">📋 Operação</div>
       <button class="nb on" id="nav-inicio" onclick="goTab('inicio',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Início</button>
       <button class="nb" onclick="goTab('lanc',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>Lançamento</button>
       <button class="nb" onclick="goTab('resumo',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>Resumo do Dia</button>
+      <div class="nlbl">📊 Gestão</div>
       <button class="nb" onclick="goTab('mensal',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Fechamento Mensal</button>
       <button class="nb" onclick="goTab('vales',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 14l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Vales</button>
-      <div class="nlbl">Configurações</div>
-      <button class="nb" onclick="goTab('config',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>Configurações</button>
+      <div class="nlbl">🔍 Qualidade</div>
+      <button class="nb" onclick="goTab('vencidos',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Vencidos</button>
+      <div class="nlbl">📍 Inventário</div>
       <button class="nb" onclick="goTab('setores',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>Setores</button>
-      <div class="nlbl">Painel</div>
+      <div class="nlbl">⚙️ Sistema</div>
+      <button class="nb" onclick="goTab('config',this)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>Configurações</button>
+      <div class="nlbl">📺 Painel</div>
       <button class="nb" onclick="abrirTV()" style="background:rgba(56,189,248,.08);color:#38bdf8;border:1px solid rgba(56,189,248,.15)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>Modo TV</button>
     </nav>
     <div class="sb-bot">
@@ -705,6 +713,7 @@ body.dark .bg-indigo{background:rgba(99,102,241,.15);color:#a5b4fc}
           <div style="padding:14px 17px"><div id="ciclo-info" style="margin-bottom:10px"></div><div id="setores-lista"></div></div>
         </div>
       </div>
+      <div id="tab-vencidos" class="tc"></div>
     </div>
   </div>
 </div>
@@ -1046,7 +1055,7 @@ const FRASES=[
   {t:'Qualidade + Velocidade.',s:'O equilíbrio certo para um inventário preciso. ✅'},
   {t:'Cada pausa é uma recarga.',s:'Volte com tudo para o próximo bloco! ⚡'},
 ];
-const PAGE_TITLES={inicio:'Início',lanc:'Lançamento de Produção',resumo:'Resumo do Dia',mensal:'Fechamento Mensal',vales:'Vales',config:'Configurações',setores:'Setores'};
+const PAGE_TITLES={inicio:'Início',lanc:'Lançamento de Produção',resumo:'Resumo do Dia',mensal:'Fechamento Mensal',vales:'Vales',config:'Configurações',setores:'Setores',vencidos:'Vencidos'};
 const USERS_DEFAULT=[
   {mat:'10380',senha:'1234',nome:'Administrador',cargo:'ADM',admin:true,ferias:[]},
   {mat:'10275',senha:'1234',nome:'Eduardo Afonso Lapuinka',cargo:'Operador',admin:false,ferias:[]},
@@ -1081,7 +1090,7 @@ const firebaseConfig={
 
 // ── CACHE & FIRESTORE ────────────────────────────────────────────────────────
 let fdb,storage;
-const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{},vales:{},ocorrs:{}};
+const CACHE={users:null,ativs:null,tipos:null,setores:null,ciclos:null,cicloAt:null,dias:{},vales:{},ocorrs:{},vencidos:null};
 let _unsubDay=null;
 
 // Comprime imagem antes de salvar (max 800px, 60% qualidade → ~40-80KB)
@@ -1560,6 +1569,7 @@ function goTab(t,btn){
   if(t==='vales'){initValeDate();renderVales();}
   if(t==='config')renderConfig();
   if(t==='setores')renderSetoresGestao();
+  if(t==='vencidos')renderVencidos();
 }
 // ── DARK MODE ─────────────────────────────────────────────────────────────────
 function toggleDark(){
@@ -2961,6 +2971,37 @@ async function renderMensal(){
       </div>`:''}`;
     })()}
 
+    ${await(async()=>{
+      if(!fdb)return'';
+      try{
+        const[yv,mv]=mes.split('-');
+        const ini=`${yv}-${mv}-01`,fim=`${yv}-${mv}-31`;
+        const snap=await fdb.collection('vencidos').where('dataRegistro','>=',ini+'T00:00:00').where('dataRegistro','<=',fim+'T23:59:59').get();
+        const vncs=[];snap.forEach(d=>vncs.push(d.data()));
+        if(!vncs.length)return'';
+        const fin=vncs.filter(v=>v.status==='finalizado');
+        const pend=vncs.filter(v=>v.status!=='finalizado');
+        let mediaD=0;if(fin.length){const soma=fin.reduce((a,v)=>a+vncDias(v),0);mediaD=Math.round(soma/fin.length);}
+        const labs={};vncs.forEach(v=>{if(v.laboratorio)labs[v.laboratorio]=(labs[v.laboratorio]||0)+1;});
+        const topLabs=Object.entries(labs).sort((a,b)=>b[1]-a[1]).slice(0,3);
+        return`
+          ${sec('🗓️','Vencidos do Mês',vncs.length+' item'+(vncs.length>1?'s':''))}
+          <div class="met-grid" style="margin-bottom:12px">
+            <div class="met-card"><div class="ml">Registrados</div><div class="mv" style="color:var(--accent)">${vncs.length}</div></div>
+            <div class="met-card"><div class="ml">Finalizados</div><div class="mv" style="color:var(--green)">${fin.length}</div></div>
+            <div class="met-card"><div class="ml">Pendentes</div><div class="mv" style="color:var(--red)">${pend.length}</div></div>
+            <div class="met-card"><div class="ml">Média dias</div><div class="mv" style="color:var(--amber)">${mediaD||'—'}</div><div class="ms">dos finalizados</div></div>
+          </div>
+          ${topLabs.length?`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
+            <div style="font-size:11px;font-weight:700;color:var(--text-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Laboratórios com mais itens</div>
+            ${topLabs.map(([lab,n],i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-size:11px;color:var(--text-m);width:16px;text-align:right">${i+1}.</span>
+              <span style="font-size:13px;color:var(--text);flex:1">${lab}</span>
+              <span style="font-size:13px;font-weight:700;color:var(--accent)">${n}</span>
+            </div>`).join('')}
+          </div>`:''}`;
+      }catch(e){return'';}
+    })()}
     <div style="font-size:11px;color:#94a3b8;margin-top:16px;padding:10px 0;border-top:1px solid var(--border-s)">* Média % mês = soma dos % diários ÷ dias produtivos. Meta = ≥100%.</div>`;
   }catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px;font-size:13px">Erro ao renderizar: '+e.message+'</div>';console.error('renderMensal error:',e);}
 }
@@ -3019,6 +3060,346 @@ async function exportarExcel(){
   XLSX.utils.book_append_sheet(wb,ws4,'Observações');
   const nomeMes=new Date(parseInt(y),parseInt(m)-1,1).toLocaleString('pt-BR',{month:'long',year:'numeric'}).replace(' de ',' ');
   XLSX.writeFile(wb,`Produtividade_${nomeMes}.xlsx`);
+}
+
+// ── VENCIDOS ─────────────────────────────────────────────────────────────────────
+const VENCIDOS_SETORES_LIST=['OFICIAL','RESERVA','FLOW PERFUMARIA','FLOW MEDICAMENTO','PP PERFUMARIA','PP MEDICAMENTO','PSICTERMONCOFRALDA'];
+const VNCST={aguardando:{label:'Aguardando',emoji:'🟡',cor:'#ca8a04'},agendado:{label:'Coleta agendada',emoji:'🔵',cor:'var(--accent)'},processo:{label:'Em processo',emoji:'🟠',cor:'#ea580c'},finalizado:{label:'Finalizado',emoji:'✅',cor:'var(--green)'}};
+let _vncF={busca:'',status:'',setor:'',lab:''};
+
+function vncDias(item){if(!item.dataRegistro)return 0;return Math.max(0,Math.floor((Date.now()-new Date(item.dataRegistro).getTime())/86400000));}
+function vncCor(d){return d<=7?'var(--green)':d<=15?'var(--amber)':d<=30?'#f97316':'var(--red)';}
+function vncBg(d){return d<=7?'var(--green-bg)':d<=15?'var(--amber-bg)':d<=30?'rgba(249,115,22,.15)':'var(--red-bg)';}
+
+async function getVencidos(){
+  if(CACHE.vencidos)return CACHE.vencidos;
+  const arr=[];
+  if(fdb){const snap=await fdb.collection('vencidos').orderBy('dataRegistro','desc').get();snap.forEach(d=>arr.push(d.data()));}
+  CACHE.vencidos=arr;return arr;
+}
+async function _saveVnc(item){
+  if(!fdb)return;
+  const ref=item.id?fdb.collection('vencidos').doc(item.id):fdb.collection('vencidos').doc();
+  if(!item.id)item.id=ref.id;
+  await ref.set(item);CACHE.vencidos=null;
+}
+async function _updateVnc(id,upd){
+  if(!fdb)return;
+  await fdb.collection('vencidos').doc(id).update(upd);
+  if(CACHE.vencidos){const i=CACHE.vencidos.findIndex(v=>v.id===id);if(i>=0)Object.assign(CACHE.vencidos[i],upd);}
+}
+async function _deleteVnc(id){
+  if(!fdb)return;
+  await fdb.collection('vencidos').doc(id).delete();
+  if(CACHE.vencidos)CACHE.vencidos=CACHE.vencidos.filter(v=>v.id!==id);
+}
+
+function vncGoTab(t){
+  document.querySelectorAll('.vnc-tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  document.querySelectorAll('.vnc-tc').forEach(c=>c.classList.toggle('on',c.id==='vnc-tc-'+t));
+  if(t==='geral')renderVncGeral();
+  if(t==='importar')renderVncImportar();
+  if(t==='add')renderVncAdd();
+}
+
+async function renderVencidos(){
+  const el=document.getElementById('tab-vencidos');if(!el)return;
+  el.innerHTML=`
+    <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--bg-card2);padding:4px;border-radius:var(--r-md)">
+      <button class="vnc-tab on" data-tab="geral" onclick="vncGoTab('geral')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Visão Geral</button>
+      <button class="vnc-tab" data-tab="importar" onclick="vncGoTab('importar')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>Importar Planilha</button>
+      <button class="vnc-tab" data-tab="add" onclick="vncGoTab('add')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>Adicionar Item</button>
+    </div>
+    <div id="vnc-tc-geral" class="vnc-tc on"></div>
+    <div id="vnc-tc-importar" class="vnc-tc"></div>
+    <div id="vnc-tc-add" class="vnc-tc"></div>
+    <div id="vnc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeVncModal()">
+      <div id="vnc-modal-body" style="background:var(--bg-card);width:100%;max-width:520px;max-height:88vh;overflow-y:auto;border-radius:16px 16px 0 0;padding:20px 20px 30px"></div>
+    </div>`;
+  renderVncGeral();
+}
+
+async function renderVncGeral(){
+  const el=document.getElementById('vnc-tc-geral');if(!el)return;
+  el.innerHTML='<div class="empty" style="padding:20px">Carregando...</div>';
+  const todos=await getVencidos();
+  const ativos=todos.filter(v=>v.status!=='finalizado');
+  const d30=ativos.filter(v=>vncDias(v)>30);
+  const d15=ativos.filter(v=>{const d=vncDias(v);return d>15&&d<=30;});
+  const d7=ativos.filter(v=>vncDias(v)<=15);
+  let lista=[...todos];
+  if(_vncF.status)lista=lista.filter(v=>v.status===_vncF.status||(v.status==null&&_vncF.status==='aguardando'?false:false));
+  if(_vncF.status)lista=lista.filter(v=>(v.status||'aguardando')===_vncF.status);
+  if(_vncF.setor)lista=lista.filter(v=>v.setor===_vncF.setor);
+  if(_vncF.lab)lista=lista.filter(v=>(v.laboratorio||'').toLowerCase().includes(_vncF.lab.toLowerCase()));
+  if(_vncF.busca){const b=_vncF.busca.toLowerCase();lista=lista.filter(v=>(v.produto||'').toLowerCase().includes(b)||(v.codigo||'').toLowerCase().includes(b));}
+  const setores=[...new Set(todos.map(v=>v.setor||'').filter(Boolean))].sort();
+  el.innerHTML=`
+    <div class="met-grid" style="margin-bottom:16px">
+      <div class="met-card"><div class="ml">Ativos</div><div class="mv">${ativos.length}</div><div class="ms">total em aberto</div></div>
+      <div class="met-card"><div class="ml" style="color:var(--red)">+30 dias 🔴</div><div class="mv" style="color:var(--red)">${d30.length}</div><div class="ms">ação urgente</div></div>
+      <div class="met-card"><div class="ml" style="color:#f97316">15–30 dias 🟠</div><div class="mv" style="color:#f97316">${d15.length}</div><div class="ms">atenção</div></div>
+      <div class="met-card"><div class="ml" style="color:var(--green)">Até 15 dias 🟢</div><div class="mv" style="color:var(--green)">${d7.length}</div><div class="ms">sob controle</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input type="text" placeholder="🔍 Buscar produto ou código..." value="${_vncF.busca}" oninput="_vncF.busca=this.value;renderVncGeral()" style="flex:1;min-width:180px;font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
+      <select onchange="_vncF.status=this.value;renderVncGeral()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
+        <option value="">Todos status</option>
+        <option value="aguardando" ${_vncF.status==='aguardando'?'selected':''}>🟡 Aguardando</option>
+        <option value="agendado" ${_vncF.status==='agendado'?'selected':''}>🔵 Coleta agendada</option>
+        <option value="processo" ${_vncF.status==='processo'?'selected':''}>🟠 Em processo</option>
+        <option value="finalizado" ${_vncF.status==='finalizado'?'selected':''}>✅ Finalizado</option>
+      </select>
+      <select onchange="_vncF.setor=this.value;renderVncGeral()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
+        <option value="">Todos setores</option>
+        ${setores.map(s=>`<option value="${s}" ${_vncF.setor===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input type="text" placeholder="Laboratório..." value="${_vncF.lab}" oninput="_vncF.lab=this.value;renderVncGeral()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text);width:130px">
+    </div>
+    ${lista.length===0?'<div class="empty">Nenhum item encontrado.</div>':''}
+    ${lista.length>0?`<div class="tbl-wrap"><table class="tbl">
+      <thead><tr><th>Letra</th><th>Pallet</th><th>Código</th><th>Produto</th><th>Qtd</th><th>Validade</th><th>Dias parados</th><th>Status</th><th></th></tr></thead>
+      <tbody>${lista.map(v=>{
+        const d=vncDias(v);
+        return`<tr>
+          <td style="font-weight:700;color:var(--accent)">${v.letra||'—'}</td>
+          <td style="font-size:12px">${v.pallet||'—'}</td>
+          <td style="font-size:11px;color:var(--text-m)">${v.codigo||'—'}</td>
+          <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.produto||''}">${v.produto||'—'}</td>
+          <td style="text-align:center;font-weight:600">${v.quantidade||'—'}</td>
+          <td style="font-size:11px;white-space:nowrap">${v.validade||'—'}</td>
+          <td style="text-align:center"><span style="background:${vncBg(d)};color:${vncCor(d)};padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700">${d}d</span></td>
+          <td><select onchange="vncAtualizarStatus('${v.id}',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border-d);border-radius:5px;background:var(--bg-card);color:var(--text);cursor:pointer">
+            <option value="aguardando" ${(v.status||'aguardando')==='aguardando'?'selected':''}>🟡 Aguardando</option>
+            <option value="agendado" ${v.status==='agendado'?'selected':''}>🔵 Agendada</option>
+            <option value="processo" ${v.status==='processo'?'selected':''}>🟠 Em processo</option>
+            <option value="finalizado" ${v.status==='finalizado'?'selected':''}>✅ Finalizado</option>
+          </select></td>
+          <td><button onclick="openVncDetalhe('${v.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border-d);border-radius:5px;background:none;cursor:pointer;color:var(--accent)">Detalhes</button></td>
+        </tr>`;
+      }).join('')}</tbody></table></div>`:''}`;
+}
+
+async function vncAtualizarStatus(id,status){
+  await _updateVnc(id,{status});
+}
+
+function renderVncImportar(){
+  const el=document.getElementById('vnc-tc-importar');if(!el)return;
+  el.innerHTML=`
+    <div class="card">
+      <div class="card-hd"><div class="card-title">📥 Importar Planilha de Vencidos</div></div>
+      <div style="padding:16px">
+        <div style="font-size:13px;color:var(--text-s);margin-bottom:14px">Selecione o arquivo <strong>.xlsx</strong> gerado pelo sistema da distribuidora. O sistema lerá automaticamente todas as abas e importará os produtos.</div>
+        <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:2px dashed var(--border-d);border-radius:var(--r-lg);padding:32px;cursor:pointer;background:var(--bg-card2);margin-bottom:12px">
+          <svg width="32" height="32" fill="none" stroke="var(--text-m)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <span style="font-size:13px;color:var(--text-s)">Clique para selecionar ou arraste o arquivo aqui</span>
+          <span style="font-size:11px;color:var(--text-m)">.xlsx — Planilha de vencidos do mês</span>
+          <input type="file" accept=".xlsx,.xls" style="display:none" onchange="processarVncXlsx(this)">
+        </label>
+        <div id="vnc-import-prev"></div>
+      </div>
+    </div>`;
+}
+
+async function processarVncXlsx(input){
+  if(!input.files||!input.files[0])return;
+  const prev=document.getElementById('vnc-import-prev');
+  prev.innerHTML='<div class="empty">Lendo arquivo...</div>';
+  const file=input.files[0];
+  try{
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(buf,{type:'array'});
+    const itens=[];
+    wb.SheetNames.forEach(shName=>{
+      const ws=wb.Sheets[shName];
+      const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(!data.length)return;
+      let hi=-1;const hm={};
+      for(let i=0;i<Math.min(6,data.length);i++){
+        const r=data[i];
+        const s=r.join(',').toLowerCase();
+        if(s.includes('digo')||s.includes('produto')){
+          hi=i;
+          r.forEach((h,idx)=>{
+            const k=(h+'').toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g,'');
+            if(k.includes('codigo')||k==='cod'||k==='código')hm.codigo=idx;
+            else if(k==='produto'||k.includes('produto'))hm.produto=idx;
+            else if(k==='lote')hm.lote=idx;
+            else if(k.includes('laboratorio')||k.includes('laborat')||k==='n lab'||k==='no lab')hm.lab=idx;
+            else if(k.includes('validade'))hm.validade=idx;
+            else if(k==='qt'||k==='qtd'||k==='qntd'||k.includes('quant'))hm.qt=idx;
+            else if(k==='rua')hm.rua=idx;
+            else if(k.includes('predio')||k.includes('prédio'))hm.predio=idx;
+            else if(k==='andar')hm.andar=idx;
+          });
+          break;
+        }
+      }
+      if(hi<0||!hm.produto)return;
+      for(let i=hi+1;i<data.length;i++){
+        const r=data[i];
+        const prod=(r[hm.produto]||'').toString().trim();
+        if(!prod)continue;
+        itens.push({
+          setor:shName,
+          codigo:(r[hm.codigo]||'').toString().trim(),
+          produto:prod,
+          lote:(r[hm.lote]||'').toString().trim(),
+          laboratorio:(r[hm.lab]||'').toString().trim(),
+          validade:(r[hm.validade]||'').toString().trim(),
+          quantidade:parseInt(r[hm.qt])||0,
+          rua:(r[hm.rua]||'').toString().trim(),
+          predio:(r[hm.predio]||'').toString().trim(),
+          andar:(r[hm.andar]||'').toString().trim(),
+        });
+      }
+    });
+    if(!itens.length){prev.innerHTML='<div class="empty">Nenhum produto encontrado. Verifique se o arquivo é a planilha correta.</div>';return;}
+    // Check duplicatas
+    const todos=await getVencidos();
+    const dups=itens.filter(it=>todos.some(v=>v.codigo&&v.codigo===it.codigo&&v.lote===it.lote));
+    window._vncImportItens=itens;
+    prev.innerHTML=`
+      <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">✅ ${itens.length} produtos encontrados em ${wb.SheetNames.length} abas</div>
+        ${dups.length?`<div style="font-size:12px;color:var(--amber);margin-bottom:8px">⚠️ ${dups.length} item(ns) já cadastrado(s) (mesmo código + lote) — serão ignorados na importação</div>`:''}
+        <div class="tbl-wrap" style="max-height:260px;overflow-y:auto"><table class="tbl">
+          <thead><tr><th>Setor</th><th>Código</th><th>Produto</th><th>Qtd</th><th>Validade</th><th>Lab.</th></tr></thead>
+          <tbody>${itens.slice(0,50).map(it=>`<tr style="opacity:${dups.some(d=>d.codigo===it.codigo&&d.lote===it.lote)?'.4':'1'}"><td style="font-size:10px">${it.setor}</td><td style="font-size:11px">${it.codigo||'—'}</td><td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.produto}</td><td style="text-align:center">${it.quantidade||'—'}</td><td style="font-size:11px">${it.validade||'—'}</td><td style="font-size:11px">${it.laboratorio||'—'}</td></tr>`).join('')}
+          ${itens.length>50?`<tr><td colspan="6" style="text-align:center;color:var(--text-m);font-size:11px">... e mais ${itens.length-50} itens</td></tr>`:''}</tbody>
+        </table></div>
+      </div>
+      <button class="btn btn-primary" onclick="confirmarImportVnc()" style="width:100%">📥 Importar ${itens.length-dups.length} itens novos</button>`;
+  }catch(e){prev.innerHTML=`<div style="color:var(--red);font-size:13px;padding:12px">Erro ao ler arquivo: ${e.message}</div>`;}
+}
+
+async function confirmarImportVnc(){
+  const itens=window._vncImportItens||[];
+  if(!itens.length)return;
+  const todos=await getVencidos();
+  const novos=itens.filter(it=>!todos.some(v=>v.codigo&&v.codigo===it.codigo&&v.lote===it.lote));
+  const btn=document.querySelector('#vnc-tc-importar .btn-primary');
+  if(btn){btn.disabled=true;btn.textContent='Importando...';}
+  for(const it of novos){
+    const item={...it,id:'',status:'aguardando',letra:'',pallet:'',destino:'',observacoes:'',dataRegistro:new Date().toISOString()};
+    await _saveVnc(item);
+  }
+  CACHE.vencidos=null;
+  document.getElementById('vnc-import-prev').innerHTML=`<div style="background:var(--green-bg);color:var(--green-d);border-radius:var(--r);padding:12px 14px;font-size:13px;font-weight:600">✅ ${novos.length} itens importados com sucesso!</div>`;
+  window._vncImportItens=null;
+}
+
+function renderVncAdd(){
+  const el=document.getElementById('vnc-tc-add');if(!el)return;
+  el.innerHTML=`
+    <div class="card">
+      <div class="card-hd"><div class="card-title">➕ Adicionar Item Avulso</div></div>
+      <div style="padding:16px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>Código</label><input id="vnca-cod" type="text" placeholder="ex: 760901" oninput="vncAutoNome(this.value)" style="font-size:13px"></div>
+          <div class="fg"><label>Produto</label><input id="vnca-prod" type="text" placeholder="Nome do produto" style="font-size:13px"></div>
+          <div class="fg"><label>Lote</label><input id="vnca-lote" type="text" style="font-size:13px"></div>
+          <div class="fg"><label>Validade</label><input id="vnca-val" type="text" placeholder="MM/AA ou MM/AAAA" style="font-size:13px"></div>
+          <div class="fg"><label>Quantidade</label><input id="vnca-qt" type="number" min="0" style="font-size:13px"></div>
+          <div class="fg"><label>Laboratório</label><input id="vnca-lab" type="text" style="font-size:13px"></div>
+          <div class="fg"><label>Setor</label><select id="vnca-setor" style="font-size:13px">
+            <option value="">— selecionar —</option>
+            ${VENCIDOS_SETORES_LIST.map(s=>`<option value="${s}">${s}</option>`).join('')}
+            <option value="OUTRO">Outro</option>
+          </select></div>
+          <div class="fg"><label>Letra (identificador)</label><input id="vnca-letra" type="text" placeholder="A, B, C..." style="font-size:13px;text-transform:uppercase"></div>
+          <div class="fg"><label>Pallet</label><input id="vnca-pallet" type="text" placeholder="ex: N°9" style="font-size:13px"></div>
+          <div class="fg"><label>Destino</label><input id="vnca-dest" type="text" placeholder="ex: Devolução à indústria" style="font-size:13px"></div>
+          <div class="fg" style="grid-column:1/-1"><label>Rua / Prédio / Andar</label>
+            <div style="display:flex;gap:6px">
+              <input id="vnca-rua" type="text" placeholder="Rua" style="font-size:12px;flex:1">
+              <input id="vnca-pred" type="text" placeholder="Prédio" style="font-size:12px;width:80px">
+              <input id="vnca-and" type="text" placeholder="Andar" style="font-size:12px;width:80px">
+            </div>
+          </div>
+          <div class="fg" style="grid-column:1/-1"><label>Observações</label><textarea id="vnca-obs" rows="2" placeholder="ex: Aguardando retorno comercial — Unilever" style="font-size:13px;resize:vertical"></textarea></div>
+        </div>
+        <button onclick="salvarVncAdd()" class="btn btn-primary" style="width:100%;margin-top:14px">➕ Adicionar Item</button>
+      </div>
+    </div>`;
+}
+
+function vncAutoNome(cod){
+  if(CATALOG_LOOKUP&&cod){const n=CATALOG_LOOKUP[cod.trim()];if(n)document.getElementById('vnca-prod').value=n.n||n||'';}
+}
+
+async function salvarVncAdd(){
+  const get=id=>document.getElementById(id)?.value||'';
+  const prod=get('vnca-prod').trim();
+  if(!prod){alert('Informe o nome do produto.');return;}
+  const item={
+    id:'',codigo:get('vnca-cod').trim(),produto:prod,lote:get('vnca-lote').trim(),
+    laboratorio:get('vnca-lab').trim(),validade:get('vnca-val').trim(),
+    quantidade:parseInt(get('vnca-qt'))||0,
+    setor:get('vnca-setor'),rua:get('vnca-rua').trim(),predio:get('vnca-pred').trim(),andar:get('vnca-and').trim(),
+    letra:get('vnca-letra').trim().toUpperCase(),pallet:get('vnca-pallet').trim(),
+    destino:get('vnca-dest').trim(),observacoes:get('vnca-obs').trim(),
+    status:'aguardando',dataRegistro:new Date().toISOString(),
+  };
+  await _saveVnc(item);
+  alert('✅ Item adicionado!');
+  renderVncAdd();
+}
+
+async function openVncDetalhe(id){
+  const todos=await getVencidos();
+  const item=todos.find(v=>v.id===id);if(!item)return;
+  const d=vncDias(item);const cor=vncCor(d);const bg=vncBg(d);
+  const st=VNCST[item.status||'aguardando']||VNCST.aguardando;
+  const body=document.getElementById('vnc-modal-body');
+  const infoRow=(label,val)=>`<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-s)"><span style="font-size:11px;color:var(--text-m);min-width:100px">${label}</span><span style="font-size:13px;color:var(--text);font-weight:500">${val||'—'}</span></div>`;
+  body.innerHTML=`
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${item.produto||'—'}</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="background:${bg};color:${cor};padding:3px 10px;border-radius:99px;font-size:12px;font-weight:700">${d} dias parados</span>
+          <span style="font-size:12px;color:${st.cor};font-weight:600">${st.emoji} ${st.label}</span>
+        </div>
+      </div>
+      <button onclick="closeVncModal()" style="background:none;border:none;cursor:pointer;color:var(--text-m);font-size:20px;padding:0 4px">✕</button>
+    </div>
+    ${infoRow('Código',item.codigo)}
+    ${infoRow('Lote',item.lote)}
+    ${infoRow('Laboratório',item.laboratorio)}
+    ${infoRow('Validade',item.validade)}
+    ${infoRow('Quantidade',item.quantidade)}
+    ${infoRow('Setor',item.setor)}
+    ${infoRow('Localização',[item.rua,item.predio,item.andar].filter(Boolean).join(' · '))}
+    ${infoRow('Registrado',item.dataRegistro?new Date(item.dataRegistro).toLocaleDateString('pt-BR'):'')}
+    <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="fg"><label>Letra</label><input id="vncd-letra" type="text" value="${item.letra||''}" style="font-size:13px;text-transform:uppercase"></div>
+      <div class="fg"><label>Pallet</label><input id="vncd-pallet" type="text" value="${item.pallet||''}" style="font-size:13px"></div>
+      <div class="fg" style="grid-column:1/-1"><label>Destino</label><input id="vncd-dest" type="text" value="${item.destino||''}" placeholder="ex: Devolução à indústria" style="font-size:13px"></div>
+      <div class="fg" style="grid-column:1/-1"><label>Observações</label><textarea id="vncd-obs" rows="3" style="font-size:13px;resize:vertical">${item.observacoes||''}</textarea></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button onclick="salvarVncDetalhe('${id}')" class="btn btn-primary" style="flex:1">💾 Salvar</button>
+      <button onclick="deleteVncConfirm('${id}')" class="btn" style="color:var(--red);border-color:var(--red)">🗑</button>
+    </div>`;
+  document.getElementById('vnc-modal').style.display='flex';
+}
+
+function closeVncModal(){document.getElementById('vnc-modal').style.display='none';}
+
+async function salvarVncDetalhe(id){
+  const get=i=>document.getElementById(i)?.value||'';
+  await _updateVnc(id,{letra:get('vncd-letra').trim().toUpperCase(),pallet:get('vncd-pallet').trim(),destino:get('vncd-dest').trim(),observacoes:get('vncd-obs').trim()});
+  closeVncModal();
+  renderVncGeral();
+}
+
+async function deleteVncConfirm(id){
+  if(!confirm('Remover este item dos vencidos?'))return;
+  await _deleteVnc(id);
+  closeVncModal();
+  renderVncGeral();
 }
 
 // ── CONFIG ──────────────────────────────────────────────────────────────────────
