@@ -2582,7 +2582,7 @@ function calcMensal(mes){
   const dias=allDays().filter(d=>d.startsWith(`${y}-${m}`));
   const users=getUsers().filter(u=>!u.admin);
   const stats={};
-  users.forEach(u=>{stats[u.mat]={nome:u.nome,mat:u.mat,dias:0,faltas:0,atestados:0,ferias:0,indDias:0,indMetaDias:0,indProdDias:0,indProdMetaDias:0,hInd:0,hIndDia:0,totalSkus:0,somaPct:0,cntPct:0,somaSKUH:0,cntSKUH:0,tasks:[]};});
+  users.forEach(u=>{stats[u.mat]={nome:u.nome,mat:u.mat,dias:0,faltas:0,atestados:0,ferias:0,licenca:0,indDias:0,indMetaDias:0,indProdDias:0,indProdMetaDias:0,hInd:0,hIndDia:0,totalSkus:0,somaPct:0,cntPct:0,somaSKUH:0,cntSKUH:0,tasks:[]};});
   const semanas={};
   dias.forEach(d=>{
     const data=getDD(d);
@@ -2612,9 +2612,10 @@ function calcMensal(mes){
             else st.tasks.push({atv_id:t.atv_id,nome:atv.nome,metaVal:parseFloat(atv.metaVal)||0,horas:parseFloat(t.horas)||0,count:1});
           });
         }
-      } else if(c.status==='Falta')st.faltas++;
-      else if(c.status==='Atestado')st.atestados++;
+      } else if(c.status==='Falta'){st.faltas++;st.cntPct++;}// falta = 0% no dia, puxa média pra baixo
+      else if(c.status==='Atestado')st.atestados++;// atestado = dia excluído da avaliação
       else if(c.status==='Férias')st.ferias++;
+      else if(c.status==='Licença')st.licenca++;
       else if(c.status==='Atividade Indireta'){
         st.indDias++;st.hIndDia+=HORAS_BASE;diaTemInd=true;
         const hEntregueInd=(c.tasks||[]).reduce((acc,t)=>acc+(parseFloat(t.horas)||0),0);
@@ -2675,13 +2676,16 @@ async function renderMensal(){
     const _ativInds=ativIndsByMat[s.mat]||[];
     const _pctInd=calcIndStats(_ativInds).pct;
     const _mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
+    const _isIsento=s.ferias>0||s.licenca>0;
     const _hasProd=s.cntPct>0,_hasInd=_ativInds.length>0;
     const _temIndLanc=s.hInd>0||s.indDias>0;
     let _res=null;
-    if(_hasProd&&_hasInd)_res=Math.round(((_mediaPct||0)+(_pctInd||0))/2);
-    else if(_hasProd)_res=_mediaPct;
-    else if(_hasInd)_res=_pctInd;
-    else if(_temIndLanc)_res=100; // presença indireta nos lançamentos sem atividades_ind = atingiu
+    if(!_isIsento){
+      if(_hasProd&&_hasInd)_res=Math.round(((_mediaPct||0)+(_pctInd||0))/2);
+      else if(_hasProd)_res=_mediaPct;
+      else if(_hasInd)_res=_pctInd;
+      else if(_temIndLanc)_res=100;
+    }
     if(_res!=null&&_res>=100)totBat++;
   });
   const medG=comD.length>0?(comD.reduce((a,s)=>a+s.somaSKUH/s.cntSKUH,0)/comD.length).toFixed(1):'—';
@@ -2719,28 +2723,38 @@ async function renderMensal(){
     const hIT=s.hInd+s.hIndDia;
     const diasPresentes=s.dias+s.indDias;
     const pctDisp=diasPresentes>0?Math.round((diasPresentes*HORAS_BASE-hIT)/(diasPresentes*HORAS_BASE)*100):0;
+    const isIsento=s.ferias>0||s.licenca>0;
     const ativInds=ativIndsByMat[u.mat]||[];
     const indSt=calcIndStats(ativInds);
     const hasProd=s.cntPct>0,hasInd=ativInds.length>0;
     const temIndLanc=s.hInd>0||s.indDias>0;
     let resultadoPct=null;
-    if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
-    else if(hasProd)resultadoPct=mediaPct;
-    else if(hasInd)resultadoPct=indSt.pct;
-    else if(temIndLanc)resultadoPct=100;
+    if(!isIsento){
+      if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
+      else if(hasProd)resultadoPct=mediaPct;
+      else if(hasInd)resultadoPct=indSt.pct;
+      else if(temIndLanc)resultadoPct=100;
+    }
     const atingiu=resultadoPct!=null&&resultadoPct>=100;
-    const badgeRH=resultadoPct==null?'Sem dados':atingiu?'✅ Atingiu':'✗ Não atingiu';
-    const cor=resultadoPct==null?'var(--text-m)':atingiu?'var(--green)':'var(--red)';
+    const badgeRH=isIsento?(s.licenca>0?'🏥 Licença':'🌴 Férias'):resultadoPct==null?'Sem dados':atingiu?'✅ Atingiu':'✗ Não atingiu';
+    const cor=isIsento?'var(--text-m)':resultadoPct==null?'var(--text-m)':atingiu?'var(--green)':'var(--red)';
     const initials=u.nome.split(' ').map(n=>n[0]).slice(0,2).join('');
-    const avatarBg=resultadoPct==null?'var(--bg-card2)':atingiu?'var(--green-bg)':'var(--red-bg)';
-    const avatarCor=resultadoPct==null?'var(--text-m)':atingiu?'var(--green-d)':'var(--red-d)';
-    const barPct=resultadoPct!=null?Math.min(resultadoPct,100):0;
+    const avatarBg=isIsento?'var(--bg-card2)':resultadoPct==null?'var(--bg-card2)':atingiu?'var(--green-bg)':'var(--red-bg)';
+    const avatarCor=isIsento?'var(--text-m)':resultadoPct==null?'var(--text-m)':atingiu?'var(--green-d)':'var(--red-d)';
+    const barPct=(!isIsento&&resultadoPct!=null)?Math.min(resultadoPct,100):0;
     const barCor=atingiu?'var(--green)':barPct>=80?'var(--amber)':'var(--red)';
     const lbl=(t)=>`<div style="font-size:10px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">${t}</div>`;
     const val=(v,c='var(--text)')=>`<div style="font-size:15px;font-weight:700;color:${c};line-height:1">${v}</div>`;
     const statCol=(label,value,color)=>`<div style="text-align:center">${lbl(label)}${val(value,color)}</div>`;
     let statsGrid;
-    if(hasProd&&hasInd){
+    if(isIsento){
+      const diasIsentos=s.ferias+s.licenca;
+      statsGrid=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
+        ${statCol(s.licenca>0?'Licença':'Férias',diasIsentos+'d','var(--text-m)')}
+        ${statCol('Dias trab.',s.dias||'—','var(--text-m)')}
+        ${statCol('Avaliação','Isento','var(--text-m)')}
+      </div>`;
+    } else if(hasProd&&hasInd){
       // Caso 3 — híbrido: média de % produção e % cumprimento indiretas
       statsGrid=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
         ${statCol('Dias prod.',s.dias,'var(--text)')}
@@ -2779,11 +2793,13 @@ async function renderMensal(){
         ${statCol('Atestados',s.atestados||'—','var(--text-m)')}
       </div>`;
     }
-    const tagRow=(s.ferias>0||s.atestados>0)?`<div style="display:flex;gap:5px;flex-wrap:wrap">
+    const tagRow=(s.ferias>0||s.licenca>0||s.atestados>0||s.faltas>0)?`<div style="display:flex;gap:5px;flex-wrap:wrap">
       ${s.ferias>0?`<span class="badge bg-green">🌴 ${s.ferias}d férias</span>`:''}
+      ${s.licenca>0?`<span class="badge bg-green">🏥 ${s.licenca}d licença</span>`:''}
       ${s.atestados>0?`<span class="badge bg-amber">📋 ${s.atestados}d atestado</span>`:''}
+      ${s.faltas>0?`<span class="badge bg-red">❌ ${s.faltas}d falta</span>`:''}
     </div>`:'';
-    const subtag=hasProd&&(hasInd||temIndLanc)?' · Híbrido':(hasInd||temIndLanc)?' · Atividade Indireta':'';
+    const subtag=isIsento?(s.licenca>0?' · Licença':' · Férias'):hasProd&&(hasInd||temIndLanc)?' · Híbrido':(hasInd||temIndLanc)?' · Atividade Indireta':'';
     return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:36px;height:36px;border-radius:var(--r);background:${avatarBg};color:${avatarCor};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">${initials}</div>
@@ -3037,21 +3053,24 @@ async function exportarExcel(){
     const s=stats[u.mat];if(!s)return;
     const mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
     const hIT=s.hInd+s.hIndDia;
+    const isIsento=s.ferias>0||s.licenca>0;
     const ativInds=ativIndsByMat[u.mat]||[];
     const indSt=calcIndStats(ativInds);
     const hasProd=s.cntPct>0,hasInd=ativInds.length>0;
     const temIndLanc=s.hInd>0||s.indDias>0;
     let resultadoPct=null;
-    if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
-    else if(hasProd)resultadoPct=mediaPct;
-    else if(hasInd)resultadoPct=indSt.pct;
-    else if(temIndLanc)resultadoPct=100;
+    if(!isIsento){
+      if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
+      else if(hasProd)resultadoPct=mediaPct;
+      else if(hasInd)resultadoPct=indSt.pct;
+      else if(temIndLanc)resultadoPct=100;
+    }
     const atingiu=resultadoPct!=null&&resultadoPct>=100;
-    rhD.push([u.nome,u.mat,s.dias,s.faltas,s.atestados,s.ferias,s.indDias+s.indProdDias,hIT+'h',
-      hasProd?(mediaPct!=null?mediaPct+'%':'—'):'N/A',
-      hasInd?(indSt.pct!=null?indSt.pct+'%':'—'):'N/A',
-      resultadoPct!=null?resultadoPct+'%':'Sem dados',
-      resultadoPct==null?'—':atingiu?'SIM':'NÃO']);
+    rhD.push([u.nome,u.mat,s.dias,s.faltas,s.atestados,s.ferias+(s.licenca||0),s.indDias+s.indProdDias,hIT+'h',
+      isIsento?'Isento':hasProd?(mediaPct!=null?mediaPct+'%':'—'):'N/A',
+      isIsento?'Isento':hasInd?(indSt.pct!=null?indSt.pct+'%':'—'):'N/A',
+      isIsento?(s.licenca>0?'Licença':'Férias'):resultadoPct!=null?resultadoPct+'%':'Sem dados',
+      isIsento?'ISENTO':resultadoPct==null?'—':atingiu?'SIM':'NÃO']);
   });
   const ws1=XLSX.utils.aoa_to_sheet(rhD);ws1['!cols']=[{wch:25},{wch:10},{wch:10},{wch:8},{wch:10},{wch:8},{wch:13},{wch:10},{wch:14},{wch:12},{wch:14},{wch:10}];
   XLSX.utils.book_append_sheet(wb,ws1,'Resumo RH');
