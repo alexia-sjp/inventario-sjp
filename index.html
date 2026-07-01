@@ -564,7 +564,7 @@ body.dark .bg-indigo{background:rgba(99,102,241,.15);color:#a5b4fc}
         <div class="lanc-tc" id="ltc-ocorr">
           <div style="font-size:11px;color:#94a3b8;margin-bottom:8px">Erros operacionais: divergência de quantidade, item errado, produto vencido, avaria. Não é sobre obstáculos.</div>
           <div style="display:flex;gap:8px;margin-bottom:8px">
-            <input type="text" id="ocorr-busca" placeholder="🔍 Buscar ocorrência..." oninput="filtrarOcorr(this.value)" style="flex:1;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d);background:white;box-sizing:border-box">
+            <input type="text" id="ocorr-busca" placeholder="🔍 Buscar ocorrência..." oninput="filtrarOcorr(this.value)" style="flex:1;font-size:13px;padding:7px 10px;border-radius:6px;border:1px solid var(--border-d);background:var(--bg-card);color:var(--text);box-sizing:border-box">
             <button class="btn btn-danger" onclick="addOcorr()" style="font-size:12px">+ Registrar</button>
           </div>
           <div id="lista-ocorr-dia"></div>
@@ -590,7 +590,7 @@ body.dark .bg-indigo{background:rgba(99,102,241,.15);color:#a5b4fc}
       </div>
       <div id="tab-mensal" class="tc">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-          <select id="sel-mes" onchange="renderMensal()" style="font-size:13px;padding:7px 11px;border-radius:6px;border:1px solid var(--border-d);background:white"></select>
+          <select id="sel-mes" onchange="renderMensal()" style="font-size:13px;padding:7px 11px;border-radius:6px;border:1px solid var(--border-d);background:var(--bg-card);color:var(--text)"></select>
           <div style="display:flex;gap:7px">
             <button class="btn btn-primary" onclick="exportarExcel()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Excel</button>
             <button class="btn" onclick="imprimirMensal()" style="border-color:#7c3aed;color:#7c3aed"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>PDF</button>
@@ -972,16 +972,16 @@ body.dark .bg-indigo{background:rgba(99,102,241,.15);color:#a5b4fc}
 
 <!-- Modal finalizar atividade indireta -->
 <div id="ai-fim-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;align-items:center;justify-content:center;padding:16px">
-  <div style="background:white;border-radius:14px;padding:22px;width:100%;max-width:380px">
-    <div style="font-size:16px;font-weight:700;color:#1e293b;margin-bottom:14px">⏹ Finalizar Atividade</div>
+  <div style="background:var(--bg-card);border-radius:14px;padding:22px;width:100%;max-width:380px">
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px">⏹ Finalizar Atividade</div>
     <div id="ai-fim-foto-prev"></div>
-    <label style="cursor:pointer;display:flex;align-items:center;gap:8px;background:#f1f5f9;border:1px dashed #cbd5e1;border-radius:8px;padding:12px 14px;font-size:13px;color:#475569;margin-bottom:14px">
+    <label style="cursor:pointer;display:flex;align-items:center;gap:8px;background:var(--bg-card2);border:1px dashed var(--border-d);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text-s);margin-bottom:14px">
       📷 Adicionar foto de comprovação (opcional)
       <input type="file" accept="image/*" capture="environment" style="display:none" onchange="aiFotoFim(this)">
     </label>
     <div style="display:flex;gap:8px">
       <button onclick="aiConfirmarFim()" style="flex:1;padding:11px;border:none;border-radius:8px;background:#16a34a;color:white;font-size:14px;font-weight:700;cursor:pointer">✅ Confirmar</button>
-      <button onclick="document.getElementById('ai-fim-modal').style.display='none'" style="padding:11px 16px;border:1px solid #e2e8f0;border-radius:8px;background:white;font-size:14px;cursor:pointer">Cancelar</button>
+      <button onclick="document.getElementById('ai-fim-modal').style.display='none'" style="padding:11px 16px;border:1px solid var(--border-d);border-radius:8px;background:var(--bg-card);color:var(--text);font-size:14px;cursor:pointer">Cancelar</button>
     </div>
   </div>
 </div>
@@ -1219,7 +1219,7 @@ function renderVales(){
   const abertos=items.filter(v=>calcValeStatus(v,d)==='aberto').length;
   if(tot>0){
     bar.style.display='flex';
-    bar.style.cssText='display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:white;border:1px solid #e2e8f0;border-radius:10px;align-items:center';
+    bar.style.cssText='display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;align-items:center';
     bar.innerHTML=`<span style="font-size:12px;font-weight:600;color:#64748b">${tot} vale${tot>1?'s':''} nesta data</span>
       <span style="margin-left:auto;display:flex;gap:8px">
         ${antes>0?`<span style="background:#dbeafe;color:#1d4ed8;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600">🔵 ${antes} antes</span>`:''}
@@ -1238,7 +1238,7 @@ function renderVales(){
       status==='depois'?'<span style="background:#ffedd5;color:#c2410c;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">🟠 Ocorr. DEPOIS do vale</span>':
       '<span style="background:#f1f5f9;color:#64748b;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">⚪ Em aberto</span>';
     const nomeSku=v.nome||(CATALOG_LOOKUP&&v.cod?CATALOG_LOOKUP[v.cod.trim()]?.n||'':'');
-    return`<div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin-bottom:10px">
+    return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
         ${statusBadge}
         <button onclick="remValeItem(${i})" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#dc2626;font-size:13px">🗑 Remover</button>
@@ -1255,7 +1255,7 @@ function renderVales(){
       </div>
       <div class="fg" style="margin-bottom:8px"><label style="font-size:11px;color:#94a3b8;font-weight:600">MERCADORIA</label>
         <input type="text" value="${nomeSku}" id="vale-nome-${i}" placeholder="Nome automático via código..." readonly
-          style="font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box;background:#f8fafc;color:#334155"></div>
+          style="font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box;background:var(--bg-card2);color:var(--text)"></div>
       <div class="fg"><label style="font-size:11px;color:#94a3b8;font-weight:600">MOTIVO (opcional)</label>
         <input type="text" value="${v.motivo||''}" placeholder="Descreva o motivo do vale..."
           oninput="upValeItem(${i},'motivo',this.value)"
@@ -2309,7 +2309,7 @@ function renderColab(lista){
           return`<div class="setor-block">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
               <div class="fg" style="flex:0 0 190px"><label>Setor</label><select onchange="db('ss${i}_${si}',()=>upSetor(${i},${si},'setor',this.value))"><option value="">— setor —</option>${setorOpts}</select></div>
-              <button onclick="toggleModoSetor(${i},${si})" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border-d);background:white;cursor:pointer;color:var(--accent)">${modoAtual==='total'?'🕐 Hora a hora':'📊 Total do dia'}</button>
+              <button onclick="toggleModoSetor(${i},${si})" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border-d);background:var(--bg-card);cursor:pointer;color:var(--accent)">${modoAtual==='total'?'🕐 Hora a hora':'📊 Total do dia'}</button>
               ${setores.length>1?`<button class="btn-ghost" onclick="remSetorC(${i},${si})" style="color:#dc2626;margin-left:auto">✕ Remover</button>`:''}
             </div>
             ${inputArea}
@@ -2368,7 +2368,7 @@ function renderColab(lista){
         return`<div class="setor-block">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
             <div class="fg" style="flex:0 0 190px"><label>Setor</label><select onchange="db('ss${i}_${si}',()=>upSetor(${i},${si},'setor',this.value))"><option value="">— setor —</option>${setorOpts}</select></div>
-            <button onclick="toggleModoSetor(${i},${si})" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border-d);background:white;cursor:pointer;color:var(--accent)">${modoAtual==='total'?'🕐 Hora a hora':'📊 Total do dia'}</button>
+            <button onclick="toggleModoSetor(${i},${si})" style="font-size:11px;padding:4px 10px;border-radius:5px;border:1px solid var(--border-d);background:var(--bg-card);cursor:pointer;color:var(--accent)">${modoAtual==='total'?'🕐 Hora a hora':'📊 Total do dia'}</button>
             ${setores.length>1?`<button class="btn-ghost" onclick="remSetorC(${i},${si})" style="color:#dc2626;margin-left:auto">✕ Remover</button>`:''}
           </div>
           ${inputArea}
@@ -2518,11 +2518,11 @@ function renderResumo(){
       const tipos=getTipos();const porTipo={};
       _oc.forEach(o=>{const n=tipos.find(t=>t.id===o.tipo_id)?.nome||'Sem tipo';porTipo[n]=(porTipo[n]||0)+1;});
       const ent=Object.entries(porTipo).sort((a,b)=>b[1]-a[1]);const mx=ent[0]?.[1]||1;
-      return`<div style="background:white;border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px">
+      return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">⚠️ Ocorrências hoje — ${_oc.length} registro${_oc.length>1?'s':''}</div>
         <div style="display:flex;flex-direction:column;gap:6px">
         ${ent.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:12px;color:#475569;width:130px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+          <span style="font-size:12px;color:var(--text-s);width:130px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
           <div style="flex:1;height:10px;background:#fee2e2;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.round(v/mx*100)}%;background:#dc2626;border-radius:99px"></div></div>
           <span style="font-size:12px;font-weight:700;color:#dc2626;width:16px;text-align:right">${v}</span>
         </div>`).join('')}
@@ -2754,7 +2754,7 @@ function renderMensal(){
   const obsHTML=Object.entries(obsGrupos).map(([texto,datas])=>{
     const sorted=datas.sort();const n=datas.length;
     const range=n>1?`${fmtDate(sorted[0])} – ${fmtDate(sorted[n-1])} · ${n} dias`:fmtDate(sorted[0]);
-    return`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9"><div style="font-size:11px;color:#94a3b8;min-width:130px;flex-shrink:0">${range}</div><div style="font-size:13px;color:#334155">${texto}</div></div>`;
+    return`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border-s)"><div style="font-size:11px;color:#94a3b8;min-width:130px;flex-shrink:0">${range}</div><div style="font-size:13px;color:var(--text)">${texto}</div></div>`;
   }).join('');
 
   cont.innerHTML=`
@@ -2782,9 +2782,9 @@ function renderMensal(){
       if(!comDados.length)return'';
       const mediaEquipe=Math.round(comDados.reduce((a,s)=>a+s.somaPct/s.cntPct,0)/comDados.length);
       const cor=mediaEquipe>=100?'#16a34a':mediaEquipe>=80?'#d97706':'#dc2626';
-      return`<div style="margin-top:10px;padding:12px 16px;background:white;border:1px solid #e2e8f0;border-radius:10px;display:flex;align-items:center;gap:12px">
-        <div style="font-size:12px;color:#64748b;font-weight:500">Média geral da equipe no mês</div>
-        <div style="height:6px;flex:1;background:#f1f5f9;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.min(mediaEquipe,100)}%;background:${cor};border-radius:99px"></div></div>
+      return`<div style="margin-top:10px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:12px;color:var(--text-s);font-weight:500">Média geral da equipe no mês</div>
+        <div style="height:6px;flex:1;background:var(--border);border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.min(mediaEquipe,100)}%;background:${cor};border-radius:99px"></div></div>
         <div style="font-size:20px;font-weight:800;color:${cor}">${mediaEquipe}%</div>
         <div style="font-size:11px;color:#94a3b8">${totBat} de ${users.length} bateram a meta</div>
       </div>`;
@@ -2792,13 +2792,13 @@ function renderMensal(){
 
     ${Object.values(stats).some(s=>s.tasks.length)?`
     ${sec('⚡','Atividades Indiretas')}
-    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
     <div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>Colaborador</th><th>Atividade</th><th>Vezes</th><th>H. total</th><th>Meta/vez</th><th>Resultado</th></tr></thead><tbody>
     ${users.map(u=>{const s=stats[u.mat];if(!s||!s.tasks.length)return'';return s.tasks.map((t,ti)=>{const metaT=t.metaVal*t.count;const ok=t.horas<=metaT;return`<tr><td style="font-weight:600">${ti===0?u.nome:''}</td><td><span class="badge bg-amber">${t.nome}</span></td><td style="text-align:center">${t.count}×</td><td style="text-align:center;font-weight:700">${t.horas}h</td><td style="text-align:center;color:#94a3b8">${t.metaVal>0?t.metaVal+'h':'—'}</td><td><span class="badge ${ok?'bg-green':'bg-red'}">${ok?'✅ OK':'⚠️ Excedeu'}</span></td></tr>`;}).join('');}).join('')}
     </tbody></table></div></div>`:''}
 
     ${_d.ocorrs.length?sec('⚠️','Ocorrências do Mês',_d.ocorrs.length+' registro'+(_d.ocorrs.length>1?'s':'')):''}
-    ${_d.ocorrs.length?`<div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+    ${_d.ocorrs.length?`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div class="fg"><label>Data início</label><input type="date" value="${_f.dataIni}" onchange="_mensalFiltros.dataIni=this.value;renderMensal()" style="font-size:12px;padding:5px 8px"></div>
         <div class="fg"><label>Data fim</label><input type="date" value="${_f.dataFim}" onchange="_mensalFiltros.dataFim=this.value;renderMensal()" style="font-size:12px;padding:5px 8px"></div>
@@ -2823,12 +2823,12 @@ function renderMensal(){
       const top3=Object.entries(porSecao).sort((a,b)=>b[1]-a[1]).slice(0,3);
       if(!top3.length)return'';
       const medals=['🥇','🥈','🥉'];
-      return`<div style="background:white;border:1px solid #fecaca;border-radius:10px;padding:14px;margin-bottom:12px">
+      return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
         <div style="font-size:11px;font-weight:700;color:#dc2626;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">🏴 Seções mais críticas do mês</div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          ${top3.map(([loc,v],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${i===0?'#fef2f2':i===1?'#fff7ed':'#fffbeb'};border-radius:8px">
+          ${top3.map(([loc,v],i)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:${i===0?'var(--red-bg)':i===1?'var(--amber-bg)':'var(--amber-bg)'};border-radius:8px">
             <span style="font-size:20px">${medals[i]}</span>
-            <span style="font-size:16px;font-weight:800;color:#1e293b;flex:1">${loc}</span>
+            <span style="font-size:16px;font-weight:800;color:var(--text);flex:1">${loc}</span>
             <span style="font-size:22px;font-weight:800;color:${i===0?'#dc2626':i===1?'#d97706':'#ca8a04'}">${v}</span>
             <span style="font-size:11px;color:#94a3b8">ocorrência${v>1?'s':''}</span>
           </div>`).join('')}
@@ -2836,24 +2836,24 @@ function renderMensal(){
       </div>`;
     })()}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-      <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px">
         <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Por tipo</div>
         ${tipoEnt.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-          <span style="font-size:12px;color:#475569;width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+          <span style="font-size:12px;color:var(--text-s);width:120px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
           <div style="flex:1;height:8px;background:#fee2e2;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.round(v/maxTipo*100)}%;background:#dc2626;border-radius:99px"></div></div>
           <span style="font-size:12px;font-weight:700;color:#dc2626;width:18px;text-align:right">${v}</span>
         </div>`).join('')}
       </div>
-      <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:14px">
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px">
         <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Por setor</div>
         ${setorEnt.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-          <span style="font-size:12px;color:#475569;width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
+          <span style="font-size:12px;color:var(--text-s);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${n}</span>
           <div style="flex:1;height:8px;background:#fef3c7;border-radius:99px;overflow:hidden"><div style="height:100%;width:${Math.round(v/maxSetor*100)}%;background:#d97706;border-radius:99px"></div></div>
           <span style="font-size:12px;font-weight:700;color:#d97706;width:18px;text-align:right">${v}</span>
         </div>`).join('')}
       </div>
     </div>
-    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;overflow:hidden">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden">
       <div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>Data · Hora</th><th>Tipo</th><th>Localização</th><th>Item</th><th>Qtd</th><th>Responsável</th><th>📷</th></tr></thead><tbody>
       ${ocorrs.map(o=>{
         const tn=tipos.find(t=>t.id===o.tipo_id)?.nome||'—';
@@ -2876,7 +2876,7 @@ function renderMensal(){
 
     ${obsHTML?`
     ${sec('📝','Observações do Mês')}
-    <div style="background:white;border:1px solid #e2e8f0;border-radius:10px;padding:2px 16px">
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:2px 16px">
       ${obsHTML}
     </div>`:''}
 
@@ -2908,15 +2908,15 @@ function renderMensal(){
         <div class="met-card"><div class="ml">Em aberto</div><div class="mv" style="color:#dc2626">${abertos.length}</div></div>
         <div class="met-card"><div class="ml">Tempo médio</div><div class="mv" style="color:#d97706">${tmedio}</div><div class="ms">dias até ocorrência</div></div>
       </div>
-      ${abertos.length?`<div style="background:white;border:1px solid #fecaca;border-radius:10px;overflow:hidden;margin-bottom:12px">
-        <div style="padding:10px 14px;font-size:11px;font-weight:700;color:#dc2626;border-bottom:1px solid #fee2e2">⚪ Vales em aberto (sem ocorrência registrada)</div>
+      ${abertos.length?`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px">
+        <div style="padding:10px 14px;font-size:11px;font-weight:700;color:#dc2626;border-bottom:1px solid var(--border)">⚪ Vales em aberto (sem ocorrência registrada)</div>
         <div class="tbl-wrap" style="margin-bottom:0"><table class="tbl"><thead><tr><th>Data</th><th>Código</th><th>Mercadoria</th><th>Qtd</th><th>Motivo</th></tr></thead><tbody>
         ${abertos.map(v=>`<tr><td>${fmtDate(v.data)}</td><td style="font-weight:700">${v.cod||'—'}</td><td>${v.nome||'—'}</td><td style="text-align:center">${v.qtd||'—'}</td><td style="color:#94a3b8">${v.motivo||'—'}</td></tr>`).join('')}
         </tbody></table></div>
       </div>`:''}`;
     })()}
 
-    <div style="font-size:11px;color:#94a3b8;margin-top:16px;padding:10px 0;border-top:1px solid #f1f5f9">* Média % mês = soma dos % diários ÷ dias produtivos. Meta = ≥100%.</div>`;
+    <div style="font-size:11px;color:#94a3b8;margin-top:16px;padding:10px 0;border-top:1px solid var(--border-s)">* Média % mês = soma dos % diários ÷ dias produtivos. Meta = ≥100%.</div>`;
   }catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px;font-size:13px">Erro ao renderizar: '+e.message+'</div>';console.error('renderMensal error:',e);}
 }
 
@@ -3059,7 +3059,7 @@ async function renderSugeridas(){
   snap.forEach(d=>{const r=d.data();const n=r.atv_nome;if(n&&!nomes.has(n))nomes.set(n,{nome:n,count:1,mat:r.mat,colaborador:r.nome});else if(n)nomes.get(n).count++;});
   if(!nomes.size){el.innerHTML='<div class="empty">Nenhuma atividade sugerida.</div>';return;}
   el.innerHTML=[...nomes.values()].map(s=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-    <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1e293b">${s.nome}</div><div style="font-size:11px;color:#94a3b8">${s.count}× usada</div></div>
+    <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${s.nome}</div><div style="font-size:11px;color:#94a3b8">${s.count}× usada</div></div>
     <button onclick="aprovarSugerida('${s.nome.replace(/'/g,'\\\'')}')" style="font-size:12px;padding:5px 12px;border-radius:6px;border:none;background:#dcfce7;color:#15803d;font-weight:600;cursor:pointer">✅ Aprovar</button>
   </div>`).join('');
 }
@@ -3493,7 +3493,7 @@ async function renderAtivInd(){
       const tempo=h>0?`${h}h ${m}min`:`${m}min`;
       return`<div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:14px;margin-bottom:12px">
         <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:6px">⚡ EM ANDAMENTO</div>
-        <div style="font-size:15px;font-weight:700;color:#1e293b;margin-bottom:4px">${rec.atv_nome}</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px">${rec.atv_nome}</div>
         <div style="font-size:12px;color:#78716c">Iniciada às ${inicio.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})} · há ${tempo}</div>
         ${rec.meta_val>0?`<div style="font-size:11px;color:#92400e;margin-top:4px">Meta: ${rec.meta_val} ${rec.meta_tipo==='dias'?'dias úteis':'horas'}</div>`:''}
         <button onclick="aiFinalizar('${rec.id}')" style="margin-top:12px;width:100%;padding:11px;border:none;border-radius:8px;background:#dc2626;color:white;font-size:14px;font-weight:700;cursor:pointer">⏹ Finalizar Atividade</button>
@@ -3516,8 +3516,8 @@ async function renderAtivInd(){
   if(!hist.length){histEl.innerHTML='<div style="color:#64748b;font-size:13px;padding:8px 0">Nenhuma atividade neste mês.</div>';return;}
   histEl.innerHTML=hist.map(r=>{
     const st=r.status==='concluido'?`<span style="color:#16a34a;font-weight:700">✅ ${r.duracao_h?r.duracao_h.toFixed(1)+'h':''}</span>`:'<span style="color:#d97706;font-weight:700">⏳ em andamento</span>';
-    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9">
-      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#1e293b">${r.atv_nome}</div><div style="font-size:11px;color:#94a3b8">${fmtDate(r.data)}</div></div>
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-s)">
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${r.atv_nome}</div><div style="font-size:11px;color:#94a3b8">${fmtDate(r.data)}</div></div>
       ${st}
     </div>`;
   }).join('');
