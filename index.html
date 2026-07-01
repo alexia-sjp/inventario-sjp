@@ -3210,49 +3210,16 @@ async function desfazerImport(importId,count,label){
   CACHE.vencidos=null;renderVncImportar();
 }
 
-async function renderVncGeral(){
-  const el=document.getElementById('vnc-tc-geral');if(!el)return;
-  el.innerHTML='<div class="empty" style="padding:20px">Carregando...</div>';
-  const todos=await getVencidos();
-  const ativos=todos.filter(v=>v.status!=='finalizado');
-  const d30=ativos.filter(v=>vncDias(v)>30);
-  const d15=ativos.filter(v=>{const d=vncDias(v);return d>15&&d<=30;});
-  const d7=ativos.filter(v=>vncDias(v)<=15);
+function _vncFiltrar(){
+  const todos=CACHE.vencidos||[];
   let lista=[...todos];
   if(_vncF.status)lista=lista.filter(v=>(v.status||'aguardando')===_vncF.status);
   if(_vncF.setor)lista=lista.filter(v=>v.setor===_vncF.setor);
   if(_vncF.lab)lista=lista.filter(v=>(v.laboratorio||'').toLowerCase().includes(_vncF.lab.toLowerCase()));
   if(_vncF.busca){const b=_vncF.busca.toLowerCase();lista=lista.filter(v=>(v.produto||'').toLowerCase().includes(b)||(v.codigo||'').toLowerCase().includes(b));}
-  const setores=[...new Set(todos.map(v=>v.setor||'').filter(Boolean))].sort();
+  const el=document.getElementById('vnc-tabela');if(!el)return;
   const editStyle='cursor:pointer;user-select:none';
   el.innerHTML=`
-    <div class="met-grid" style="margin-bottom:16px">
-      <div class="met-card"><div class="ml">Ativos</div><div class="mv">${ativos.length}</div><div class="ms">total em aberto</div></div>
-      <div class="met-card"><div class="ml" style="color:var(--red)">+30 dias 🔴</div><div class="mv" style="color:var(--red)">${d30.length}</div><div class="ms">ação urgente</div></div>
-      <div class="met-card"><div class="ml" style="color:#f97316">15–30 dias 🟠</div><div class="mv" style="color:#f97316">${d15.length}</div><div class="ms">atenção</div></div>
-      <div class="met-card"><div class="ml" style="color:var(--green)">Até 15 dias 🟢</div><div class="mv" style="color:var(--green)">${d7.length}</div><div class="ms">sob controle</div></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      <input type="text" placeholder="🔍 Buscar produto ou código..." value="${_vncF.busca}" oninput="_vncF.busca=this.value;renderVncGeral()" style="flex:1;min-width:180px;font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
-      <select onchange="_vncF.status=this.value;renderVncGeral()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
-        <option value="">Todos status</option>
-        <option value="aguardando" ${_vncF.status==='aguardando'?'selected':''}>🟡 Aguardando</option>
-        <option value="agendado" ${_vncF.status==='agendado'?'selected':''}>🔵 Coleta agendada</option>
-        <option value="processo" ${_vncF.status==='processo'?'selected':''}>🟠 Em processo</option>
-        <option value="finalizado" ${_vncF.status==='finalizado'?'selected':''}>✅ Finalizado</option>
-      </select>
-      <select onchange="_vncF.setor=this.value;renderVncGeral()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
-        <option value="">Todos setores</option>
-        ${setores.map(s=>`<option value="${s}" ${_vncF.setor===s?'selected':''}>${s}</option>`).join('')}
-      </select>
-      <input type="text" placeholder="Laboratório..." value="${_vncF.lab}" oninput="_vncF.lab=this.value;renderVncGeral()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text);width:130px">
-    </div>
-    <div id="vnc-sel-bar" style="display:none;align-items:center;gap:10px;background:var(--red-bg);border:1px solid var(--red);border-radius:8px;padding:8px 12px;margin-bottom:10px">
-      <span style="font-size:13px;color:var(--red);font-weight:600">Itens selecionados</span>
-      <button id="vnc-del-sel" onclick="deleteVncSelecionados()" style="font-size:12px;padding:4px 12px;border:1px solid var(--red);border-radius:5px;background:var(--red);color:#fff;cursor:pointer;font-weight:600">🗑 Excluir selecionado(s)</button>
-      <button onclick="vncToggleAll(false)" style="font-size:12px;padding:4px 10px;border:1px solid var(--border-d);border-radius:5px;background:none;cursor:pointer;color:var(--text-s)">Desmarcar todos</button>
-    </div>
-    <div style="font-size:11px;color:var(--text-m);margin-bottom:8px">✏️ Clique em Letra, Pallet, Lote ou Qtd para editar direto na tabela.</div>
     ${lista.length===0?'<div class="empty">Nenhum item encontrado.</div>':''}
     ${lista.length>0?`<div class="tbl-wrap"><table class="tbl">
       <thead><tr>
@@ -3280,12 +3247,52 @@ async function renderVncGeral(){
           <td><button onclick="deleteVncRow('${v.id}')" style="font-size:11px;padding:3px 6px;border:1px solid var(--red);border-radius:5px;background:none;cursor:pointer;color:var(--red)" title="Excluir">🗑</button></td>
         </tr>`;
       }).join('')}</tbody></table></div>`:''}`;
-  // Delegated click for inline edit
   const tbody=document.getElementById('vnc-tbody');
   if(tbody)tbody.addEventListener('click',e=>{
     const td=e.target.closest('td[data-id]');if(!td)return;
     vncInlineEdit(td.dataset.id,td.dataset.f,td.textContent==='—'?'':td.textContent,td);
   });
+}
+
+async function renderVncGeral(){
+  const el=document.getElementById('vnc-tc-geral');if(!el)return;
+  el.innerHTML='<div class="empty" style="padding:20px">Carregando...</div>';
+  const todos=await getVencidos();
+  const ativos=todos.filter(v=>v.status!=='finalizado');
+  const d30=ativos.filter(v=>vncDias(v)>30);
+  const d15=ativos.filter(v=>{const d=vncDias(v);return d>15&&d<=30;});
+  const d7=ativos.filter(v=>vncDias(v)<=15);
+  const setores=[...new Set(todos.map(v=>v.setor||'').filter(Boolean))].sort();
+  el.innerHTML=`
+    <div class="met-grid" style="margin-bottom:16px">
+      <div class="met-card"><div class="ml">Ativos</div><div class="mv">${ativos.length}</div><div class="ms">total em aberto</div></div>
+      <div class="met-card"><div class="ml" style="color:var(--red)">+30 dias 🔴</div><div class="mv" style="color:var(--red)">${d30.length}</div><div class="ms">ação urgente</div></div>
+      <div class="met-card"><div class="ml" style="color:#f97316">15–30 dias 🟠</div><div class="mv" style="color:#f97316">${d15.length}</div><div class="ms">atenção</div></div>
+      <div class="met-card"><div class="ml" style="color:var(--green)">Até 15 dias 🟢</div><div class="mv" style="color:var(--green)">${d7.length}</div><div class="ms">sob controle</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input id="vnc-busca" type="text" placeholder="🔍 Buscar produto ou código..." value="${_vncF.busca}" oninput="_vncF.busca=this.value;_vncFiltrar()" style="flex:1;min-width:180px;font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
+      <select onchange="_vncF.status=this.value;_vncFiltrar()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
+        <option value="">Todos status</option>
+        <option value="aguardando" ${_vncF.status==='aguardando'?'selected':''}>🟡 Aguardando</option>
+        <option value="agendado" ${_vncF.status==='agendado'?'selected':''}>🔵 Coleta agendada</option>
+        <option value="processo" ${_vncF.status==='processo'?'selected':''}>🟠 Em processo</option>
+        <option value="finalizado" ${_vncF.status==='finalizado'?'selected':''}>✅ Finalizado</option>
+      </select>
+      <select onchange="_vncF.setor=this.value;_vncFiltrar()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text)">
+        <option value="">Todos setores</option>
+        ${setores.map(s=>`<option value="${s}" ${_vncF.setor===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <input id="vnc-lab" type="text" placeholder="Laboratório..." value="${_vncF.lab}" oninput="_vncF.lab=this.value;_vncFiltrar()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text);width:130px">
+    </div>
+    <div id="vnc-sel-bar" style="display:none;align-items:center;gap:10px;background:var(--red-bg);border:1px solid var(--red);border-radius:8px;padding:8px 12px;margin-bottom:10px">
+      <span style="font-size:13px;color:var(--red);font-weight:600">Itens selecionados</span>
+      <button id="vnc-del-sel" onclick="deleteVncSelecionados()" style="font-size:12px;padding:4px 12px;border:1px solid var(--red);border-radius:5px;background:var(--red);color:#fff;cursor:pointer;font-weight:600">🗑 Excluir selecionado(s)</button>
+      <button onclick="vncToggleAll(false)" style="font-size:12px;padding:4px 10px;border:1px solid var(--border-d);border-radius:5px;background:none;cursor:pointer;color:var(--text-s)">Desmarcar todos</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-m);margin-bottom:8px">✏️ Clique em Letra, Pallet, Lote ou Qtd para editar direto na tabela.</div>
+    <div id="vnc-tabela"></div>`;
+  _vncFiltrar();
 }
 
 async function vncAtualizarStatus(id,status){
