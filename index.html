@@ -3983,8 +3983,19 @@ async function importarValesPlanilha(input){
     let dt=today();
     if(iDt>=0&&row[iDt]){
       const raw=row[iDt];
-      if(typeof raw==='number'){const d=new Date(Math.round((raw-25569)*86400*1000));dt=d.toISOString().split('T')[0];}
-      else{const p=String(raw).trim();if(p.match(/^\d{4}-\d{2}-\d{2}$/))dt=p;}
+      if(typeof raw==='number'){
+        // Serial numérico do Excel
+        const d=new Date(Math.round((raw-25569)*86400*1000));dt=d.toISOString().split('T')[0];
+      }else{
+        const p=String(raw).trim();
+        if(p.match(/^\d{4}-\d{2}-\d{2}$/)){
+          dt=p; // ISO: 2026-07-01
+        }else if(p.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)){
+          const[,dd,mm,yyyy]=p.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);dt=`${yyyy}-${mm}-${dd}`; // BR: 01/07/2026
+        }else if(p.match(/^(\d{2})\/(\d{2})\/(\d{2})$/)){
+          const[,dd,mm,yy]=p.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);dt=`20${yy}-${mm}-${dd}`; // BR curto: 01/07/26
+        }
+      }
     }
     const qtd=parseInt(row[iQtd])||1;
     const motivo=iMot>=0?String(row[iMot]||'').trim():'';
