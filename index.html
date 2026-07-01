@@ -2472,9 +2472,9 @@ function renderResumo(){
   const med=cntH>0?(somaH/cntH).toFixed(1):'—';
   const pctMeta=metaTot>0?Math.round(totSku/metaTot*100):0;
   // horas indiretas: colaboradores 100% indiretos + parciais (Trabalhando com horas_ind) + híbridos (tarefas indiretas)
-  const hIndHibrido=trab.filter(c=>c.status==='Trabalhando + Indireta').reduce((a,c)=>{return a+(c.tasks||[]).reduce((s,t)=>s+(parseFloat(t.horas)||0),0);},0);
-  const hIndTot=inds.length*HORAS_BASE+trab.reduce((a,c)=>a+(parseFloat(c.horas_ind)||0),0)+hIndHibrido;
-  const pctInd=data.cols.length*HORAS_BASE>0?Math.round(hIndTot/(data.cols.length*HORAS_BASE)*100):0;
+  const hIndTot=inds.length*HORAS_BASE+trab.reduce((a,c)=>a+(Math.min(parseFloat(c.horas_ind)||0,HORAS_BASE)),0);
+  const presentes=trab.length+inds.length;
+  const pctInd=presentes*HORAS_BASE>0?Math.round(hIndTot/(presentes*HORAS_BASE)*100):0;
   const trabOrd=[...trab].sort((a,b)=>(calcColabTotal(b).skuh||0)-(calcColabTotal(a).skuh||0));
   const mc=pctMeta>=100?'#16a34a':pctMeta>=80?'#d97706':'#dc2626';
   try{ cont.innerHTML=`
@@ -3201,7 +3201,7 @@ function atualizarTV(){
     if(!semanas[wk])semanas[wk]={skus:0,meta:0,hInd:0,indDias:0};
     let diaTemInd=false;
     dd.cols.forEach(col=>{
-      if(col.status==='Trabalhando'||col.status==='Trabalhando + Indireta'){const r=calcColabTotal(col);semanas[wk].skus+=r.totalSkus;semanas[wk].meta+=r.metaPond*(r.hUsed||0);semanas[wk].hInd+=parseFloat(col.horas_ind)||0;if(col.status==='Trabalhando + Indireta')(col.tasks||[]).forEach(t=>{semanas[wk].hInd+=parseFloat(t.horas)||0;});}
+      if(col.status==='Trabalhando'||col.status==='Trabalhando + Indireta'){const r=calcColabTotal(col);semanas[wk].skus+=r.totalSkus;semanas[wk].meta+=r.metaPond*(r.hUsed||0);semanas[wk].hInd+=Math.min(parseFloat(col.horas_ind)||0,HORAS_BASE);}
       else if(col.status==='Atividade Indireta'){semanas[wk].hInd+=HORAS_BASE;diaTemInd=true;}
     });
     if(diaTemInd)semanas[wk].indDias++;
