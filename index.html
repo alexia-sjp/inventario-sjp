@@ -2719,7 +2719,8 @@ async function renderMensal(){
     }
     if(_res!=null&&_res>=100)totBat++;
   });
-  const medG=comD.length>0?(comD.reduce((a,s)=>a+s.somaSKUH/s.cntSKUH,0)/comD.length).toFixed(1):'—';
+  const comSKUH=comD.filter(s=>s.cntSKUH>0);
+  const medG=comSKUH.length>0?(comSKUH.reduce((a,s)=>a+s.somaSKUH/s.cntSKUH,0)/comSKUH.length).toFixed(1):'—';
   const totalPoss=users.length*diasU*HORAS_BASE;
   const pctInd=totalPoss>0?Math.round(totHInd/totalPoss*100):0;
 
