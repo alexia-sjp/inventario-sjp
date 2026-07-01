@@ -2676,10 +2676,12 @@ async function renderMensal(){
     const _pctInd=calcIndStats(_ativInds).pct;
     const _mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
     const _hasProd=s.cntPct>0,_hasInd=_ativInds.length>0;
+    const _temIndLanc=s.hInd>0||s.indDias>0;
     let _res=null;
     if(_hasProd&&_hasInd)_res=Math.round(((_mediaPct||0)+(_pctInd||0))/2);
     else if(_hasProd)_res=_mediaPct;
     else if(_hasInd)_res=_pctInd;
+    else if(_temIndLanc)_res=100; // presença indireta nos lançamentos sem atividades_ind = atingiu
     if(_res!=null&&_res>=100)totBat++;
   });
   const medG=comD.length>0?(comD.reduce((a,s)=>a+s.somaSKUH/s.cntSKUH,0)/comD.length).toFixed(1):'—';
@@ -2720,10 +2722,12 @@ async function renderMensal(){
     const ativInds=ativIndsByMat[u.mat]||[];
     const indSt=calcIndStats(ativInds);
     const hasProd=s.cntPct>0,hasInd=ativInds.length>0;
+    const temIndLanc=s.hInd>0||s.indDias>0;
     let resultadoPct=null;
     if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
     else if(hasProd)resultadoPct=mediaPct;
     else if(hasInd)resultadoPct=indSt.pct;
+    else if(temIndLanc)resultadoPct=100;
     const atingiu=resultadoPct!=null&&resultadoPct>=100;
     const badgeRH=resultadoPct==null?'Sem dados':atingiu?'✅ Atingiu':'✗ Não atingiu';
     const cor=resultadoPct==null?'var(--text-m)':atingiu?'var(--green)':'var(--red)';
@@ -3029,10 +3033,12 @@ async function exportarExcel(){
     const ativInds=ativIndsByMat[u.mat]||[];
     const indSt=calcIndStats(ativInds);
     const hasProd=s.cntPct>0,hasInd=ativInds.length>0;
+    const temIndLanc=s.hInd>0||s.indDias>0;
     let resultadoPct=null;
     if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
     else if(hasProd)resultadoPct=mediaPct;
     else if(hasInd)resultadoPct=indSt.pct;
+    else if(temIndLanc)resultadoPct=100;
     const atingiu=resultadoPct!=null&&resultadoPct>=100;
     rhD.push([u.nome,u.mat,s.dias,s.faltas,s.atestados,s.ferias,s.indDias+s.indProdDias,hIT+'h',
       hasProd?(mediaPct!=null?mediaPct+'%':'—'):'N/A',
