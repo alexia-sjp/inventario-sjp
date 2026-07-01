@@ -2765,6 +2765,13 @@ async function renderMensal(){
         ${statCol('No prazo',indSt.noPrazo,atingiu?'var(--green)':'var(--red)')}
         ${statCol('% Cumprim.',indSt.pct!=null?indSt.pct+'%':'—',cor)}
       </div>`;
+    } else if(temIndLanc){
+      // Caso 4 — só indireta via lançamentos (sem atividades_ind cadastradas)
+      statsGrid=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
+        ${statCol('Dias ind.',s.indDias,'var(--text)')}
+        ${statCol('H. indireta',s.hIndDia+'h','var(--text)')}
+        ${statCol('Resultado','✅','var(--green)')}
+      </div>`;
     } else {
       statsGrid=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
         ${statCol('Dias',s.dias,'var(--text)')}
@@ -2776,7 +2783,7 @@ async function renderMensal(){
       ${s.ferias>0?`<span class="badge bg-green">🌴 ${s.ferias}d férias</span>`:''}
       ${s.atestados>0?`<span class="badge bg-amber">📋 ${s.atestados}d atestado</span>`:''}
     </div>`:'';
-    const subtag=hasInd&&hasProd?' · Híbrido':hasInd?' · Atividade Indireta':'';
+    const subtag=hasProd&&(hasInd||temIndLanc)?' · Híbrido':(hasInd||temIndLanc)?' · Atividade Indireta':'';
     return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:36px;height:36px;border-radius:var(--r);background:${avatarBg};color:${avatarCor};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">${initials}</div>
