@@ -1241,7 +1241,13 @@ function renderVales(){
     cont.innerHTML=`<div style="text-align:center;padding:40px;color:#94a3b8;font-size:13px">Nenhum vale registrado para esta data.<br><small>Clique em "+ Adicionar item" para começar.</small></div>`;
     return;
   }
-  cont.innerHTML=items.map((v,i)=>{
+  const selBar=`<div id="vale-sel-bar" style="display:none;align-items:center;gap:10px;background:var(--red-bg);border:1px solid var(--red);border-radius:8px;padding:8px 12px;margin-bottom:10px">
+    <span style="font-size:13px;color:var(--red);font-weight:600">Itens selecionados</span>
+    <button id="vale-del-sel" onclick="remValesSelecionados()" style="font-size:12px;padding:4px 12px;border:1px solid var(--red);border-radius:5px;background:var(--red);color:#fff;cursor:pointer;font-weight:600">🗑 Excluir selecionado(s)</button>
+    <button onclick="valeToggleAll(false)" style="font-size:12px;padding:4px 10px;border:1px solid var(--border-d);border-radius:5px;background:none;cursor:pointer;color:var(--text-s)">Desmarcar todos</button>
+    <label style="font-size:12px;color:var(--text-s);cursor:pointer;margin-left:auto"><input type="checkbox" id="vale-chk-all" onchange="valeToggleAll(this.checked)" style="margin-right:4px">Todos</label>
+  </div>`;
+  cont.innerHTML=selBar+items.map((v,i)=>{
     const status=calcValeStatus(v,d);
     const statusBadge=status==='antes'?'<span style="background:#dbeafe;color:#1d4ed8;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">🔵 Ocorr. ANTES do vale</span>':
       status==='depois'?'<span style="background:#ffedd5;color:#c2410c;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700">🟠 Ocorr. DEPOIS do vale</span>':
@@ -1249,8 +1255,9 @@ function renderVales(){
     const nomeSku=v.nome||(CATALOG_LOOKUP&&v.cod?CATALOG_LOOKUP[v.cod.trim()]?.n||'':'');
     return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <input type="checkbox" class="vale-chk" data-id="${v.id}" onchange="valeUpdateSelBar()" style="width:15px;height:15px;cursor:pointer;flex-shrink:0">
         ${statusBadge}
-        <button onclick="remValeItem(${i})" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#dc2626;font-size:13px">🗑 Remover</button>
+        <button onclick="remValeItem(${i})" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#dc2626;font-size:13px">🗑</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
         <div class="fg"><label style="font-size:11px;color:#94a3b8;font-weight:600">CÓDIGO</label>
@@ -1271,6 +1278,30 @@ function renderVales(){
           style="font-size:13px;padding:7px 10px;border:1px solid var(--border-d);border-radius:7px;width:100%;box-sizing:border-box"></div>
     </div>`;
   }).join('');
+}
+
+function valeToggleAll(checked){
+  document.querySelectorAll('.vale-chk').forEach(c=>c.checked=checked);
+  valeUpdateSelBar();
+}
+function valeUpdateSelBar(){
+  const total=document.querySelectorAll('.vale-chk').length;
+  const sel=document.querySelectorAll('.vale-chk:checked').length;
+  const bar=document.getElementById('vale-sel-bar');
+  const btn=document.getElementById('vale-del-sel');
+  const allChk=document.getElementById('vale-chk-all');
+  if(bar)bar.style.display=sel>0?'flex':'none';
+  if(btn)btn.textContent=`🗑 Excluir ${sel} selecionado(s)`;
+  if(allChk)allChk.indeterminate=sel>0&&sel<total;
+}
+function remValesSelecionados(){
+  const checks=[...document.querySelectorAll('.vale-chk:checked')];
+  if(!checks.length)return;
+  if(!confirm(`Isso vai excluir ${checks.length} vale(s) selecionado(s). Confirmar?`))return;
+  const ids=new Set(checks.map(c=>c.dataset.id));
+  const d=getValeDate();const data=getVales(d);
+  data.items=data.items.filter(v=>!ids.has(v.id));
+  saveVales(d,data);renderVales();
 }
 
 function addValeItem(){
