@@ -3119,6 +3119,38 @@ async function renderVencidos(){
   renderVncGeral();
 }
 
+function vncInlineEdit(id,field,currentVal,tdEl){
+  const inp=document.createElement('input');
+  inp.value=currentVal||'';
+  inp.type=field==='quantidade'?'number':'text';
+  inp.style.cssText='width:100%;min-width:54px;font-size:12px;padding:2px 5px;border:1px solid var(--accent);border-radius:4px;background:var(--bg-card);color:var(--text);outline:none';
+  const save=async()=>{
+    let val=field==='quantidade'?parseInt(inp.value)||0:inp.value.trim();
+    if(field==='letra')val=val.toUpperCase();
+    tdEl.onclick=null;tdEl.textContent=val||'—';
+    if(field==='letra')tdEl.style.color='var(--accent)';
+    await _updateVnc(id,{[field]:val});
+    if(CACHE.vencidos){const i=CACHE.vencidos.findIndex(v=>v.id===id);if(i>=0)CACHE.vencidos[i][field]=val;}
+    setTimeout(()=>{ tdEl.onclick=e=>{if(e.target===tdEl)vncInlineEdit(id,field,CACHE.vencidos?.find(v=>v.id===id)?.[field]??val,tdEl);}; },100);
+  };
+  inp.onblur=save;
+  inp.onkeydown=e=>{if(e.key==='Enter'){inp.blur();}else if(e.key==='Escape'){tdEl.textContent=currentVal||'—';if(field==='letra')tdEl.style.color='var(--accent)';}};
+  tdEl.onclick=null;tdEl.textContent='';tdEl.appendChild(inp);inp.focus();inp.select();
+}
+
+async function deleteVncRow(id){
+  if(!confirm('Tem certeza que deseja excluir este item?'))return;
+  await _deleteVnc(id);renderVncGeral();
+}
+
+async function desfazerImport(importId,count,label){
+  if(!confirm(`Isso vai remover ${count} iten(s) da importação "${label}". Confirmar?`))return;
+  const todos=await getVencidos();
+  const alvo=todos.filter(v=>v.importId===importId);
+  for(const v of alvo)await _deleteVnc(v.id);
+  CACHE.vencidos=null;renderVncImportar();
+}
+
 async function renderVncGeral(){
   const el=document.getElementById('vnc-tc-geral');if(!el)return;
   el.innerHTML='<div class="empty" style="padding:20px">Carregando...</div>';
@@ -3128,12 +3160,12 @@ async function renderVncGeral(){
   const d15=ativos.filter(v=>{const d=vncDias(v);return d>15&&d<=30;});
   const d7=ativos.filter(v=>vncDias(v)<=15);
   let lista=[...todos];
-  if(_vncF.status)lista=lista.filter(v=>v.status===_vncF.status||(v.status==null&&_vncF.status==='aguardando'?false:false));
   if(_vncF.status)lista=lista.filter(v=>(v.status||'aguardando')===_vncF.status);
   if(_vncF.setor)lista=lista.filter(v=>v.setor===_vncF.setor);
   if(_vncF.lab)lista=lista.filter(v=>(v.laboratorio||'').toLowerCase().includes(_vncF.lab.toLowerCase()));
   if(_vncF.busca){const b=_vncF.busca.toLowerCase();lista=lista.filter(v=>(v.produto||'').toLowerCase().includes(b)||(v.codigo||'').toLowerCase().includes(b));}
   const setores=[...new Set(todos.map(v=>v.setor||'').filter(Boolean))].sort();
+  const editStyle='cursor:pointer;user-select:none';
   el.innerHTML=`
     <div class="met-grid" style="margin-bottom:16px">
       <div class="met-card"><div class="ml">Ativos</div><div class="mv">${ativos.length}</div><div class="ms">total em aberto</div></div>
@@ -3156,17 +3188,19 @@ async function renderVncGeral(){
       </select>
       <input type="text" placeholder="Laboratório..." value="${_vncF.lab}" oninput="_vncF.lab=this.value;renderVncGeral()" style="font-size:12px;padding:6px 8px;border:1px solid var(--border-d);border-radius:6px;background:var(--bg-card);color:var(--text);width:130px">
     </div>
+    <div style="font-size:11px;color:var(--text-m);margin-bottom:8px">✏️ Clique em Letra, Pallet, Lote ou Qtd para editar direto na tabela.</div>
     ${lista.length===0?'<div class="empty">Nenhum item encontrado.</div>':''}
     ${lista.length>0?`<div class="tbl-wrap"><table class="tbl">
-      <thead><tr><th>Letra</th><th>Pallet</th><th>Código</th><th>Produto</th><th>Qtd</th><th>Validade</th><th>Dias parados</th><th>Status</th><th></th></tr></thead>
-      <tbody>${lista.map(v=>{
+      <thead><tr><th>Letra</th><th>Pallet</th><th>Código</th><th>Produto</th><th>Lote</th><th>Qtd</th><th>Validade</th><th>Dias</th><th>Status</th><th></th></tr></thead>
+      <tbody id="vnc-tbody">${lista.map(v=>{
         const d=vncDias(v);
         return`<tr>
-          <td style="font-weight:700;color:var(--accent)">${v.letra||'—'}</td>
-          <td style="font-size:12px">${v.pallet||'—'}</td>
+          <td data-id="${v.id}" data-f="letra" style="font-weight:700;color:var(--accent);${editStyle}" title="Clique para editar">${v.letra||'—'}</td>
+          <td data-id="${v.id}" data-f="pallet" style="font-size:12px;${editStyle}" title="Clique para editar">${v.pallet||'—'}</td>
           <td style="font-size:11px;color:var(--text-m)">${v.codigo||'—'}</td>
-          <td style="font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.produto||''}">${v.produto||'—'}</td>
-          <td style="text-align:center;font-weight:600">${v.quantidade||'—'}</td>
+          <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.produto||''}">${v.produto||'—'}</td>
+          <td data-id="${v.id}" data-f="lote" style="font-size:12px;${editStyle}" title="Clique para editar">${v.lote||'—'}</td>
+          <td data-id="${v.id}" data-f="quantidade" style="text-align:center;font-weight:600;${editStyle}" title="Clique para editar">${v.quantidade||'—'}</td>
           <td style="font-size:11px;white-space:nowrap">${v.validade||'—'}</td>
           <td style="text-align:center"><span style="background:${vncBg(d)};color:${vncCor(d)};padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700">${d}d</span></td>
           <td><select onchange="vncAtualizarStatus('${v.id}',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--border-d);border-radius:5px;background:var(--bg-card);color:var(--text);cursor:pointer">
@@ -3175,19 +3209,33 @@ async function renderVncGeral(){
             <option value="processo" ${v.status==='processo'?'selected':''}>🟠 Em processo</option>
             <option value="finalizado" ${v.status==='finalizado'?'selected':''}>✅ Finalizado</option>
           </select></td>
-          <td><button onclick="openVncDetalhe('${v.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border-d);border-radius:5px;background:none;cursor:pointer;color:var(--accent)">Detalhes</button></td>
+          <td style="white-space:nowrap;display:flex;gap:4px">
+            <button onclick="openVncDetalhe('${v.id}')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border-d);border-radius:5px;background:none;cursor:pointer;color:var(--accent)">Detalhes</button>
+            <button onclick="deleteVncRow('${v.id}')" style="font-size:11px;padding:3px 6px;border:1px solid var(--red);border-radius:5px;background:none;cursor:pointer;color:var(--red)" title="Excluir">🗑</button>
+          </td>
         </tr>`;
       }).join('')}</tbody></table></div>`:''}`;
+  // Delegated click for inline edit
+  const tbody=document.getElementById('vnc-tbody');
+  if(tbody)tbody.addEventListener('click',e=>{
+    const td=e.target.closest('td[data-id]');if(!td)return;
+    vncInlineEdit(td.dataset.id,td.dataset.f,td.textContent==='—'?'':td.textContent,td);
+  });
 }
 
 async function vncAtualizarStatus(id,status){
   await _updateVnc(id,{status});
 }
 
-function renderVncImportar(){
+async function renderVncImportar(){
   const el=document.getElementById('vnc-tc-importar');if(!el)return;
+  // Build import history from existing items
+  const todos=await getVencidos();
+  const hist={};
+  todos.forEach(v=>{if(v.importId){if(!hist[v.importId])hist[v.importId]={label:v.importLabel||v.importId,count:0,ids:[]};hist[v.importId].count++;hist[v.importId].ids.push(v.id);}});
+  const histKeys=Object.keys(hist).sort().reverse();
   el.innerHTML=`
-    <div class="card">
+    <div class="card" style="margin-bottom:14px">
       <div class="card-hd"><div class="card-title">📥 Importar Planilha de Vencidos</div></div>
       <div style="padding:16px">
         <div style="font-size:13px;color:var(--text-s);margin-bottom:14px">Selecione o arquivo <strong>.xlsx</strong> gerado pelo sistema da distribuidora. O sistema lerá automaticamente todas as abas e importará os produtos.</div>
@@ -3199,7 +3247,19 @@ function renderVncImportar(){
         </label>
         <div id="vnc-import-prev"></div>
       </div>
-    </div>`;
+    </div>
+    ${histKeys.length?`<div class="card">
+      <div class="card-hd"><div class="card-title">📋 Histórico de Importações</div></div>
+      <div style="padding:0 16px 16px">
+        ${histKeys.map(k=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-s)">
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--text)">${hist[k].label}</div>
+            <div style="font-size:11px;color:var(--text-m)">${hist[k].count} item(ns)</div>
+          </div>
+          <button onclick="desfazerImport('${k}',${hist[k].count},'${hist[k].label.replace(/'/g,"\\'")}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--red);border-radius:5px;background:none;cursor:pointer;color:var(--red)">🗑 Desfazer</button>
+        </div>`).join('')}
+      </div>
+    </div>`:''}`;
 }
 
 async function processarVncXlsx(input){
@@ -3209,68 +3269,100 @@ async function processarVncXlsx(input){
   const file=input.files[0];
   try{
     const buf=await file.arrayBuffer();
-    const wb=XLSX.read(buf,{type:'array'});
-    const itens=[];
+    const wb=XLSX.read(buf,{type:'array',cellText:true,cellDates:true});
+    const rawItens=[];
     wb.SheetNames.forEach(shName=>{
       const ws=wb.Sheets[shName];
-      const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
       if(!data.length)return;
       let hi=-1;const hm={};
-      for(let i=0;i<Math.min(6,data.length);i++){
+      for(let i=0;i<Math.min(8,data.length);i++){
         const r=data[i];
         const s=r.join(',').toLowerCase();
         if(s.includes('digo')||s.includes('produto')){
           hi=i;
           r.forEach((h,idx)=>{
             const k=(h+'').toLowerCase().trim().normalize('NFD').replace(/[̀-ͯ]/g,'');
-            if(k.includes('codigo')||k==='cod'||k==='código')hm.codigo=idx;
-            else if(k==='produto'||k.includes('produto'))hm.produto=idx;
-            else if(k==='lote')hm.lote=idx;
-            else if(k.includes('laboratorio')||k.includes('laborat')||k==='n lab'||k==='no lab')hm.lab=idx;
-            else if(k.includes('validade'))hm.validade=idx;
-            else if(k==='qt'||k==='qtd'||k==='qntd'||k.includes('quant'))hm.qt=idx;
-            else if(k==='rua')hm.rua=idx;
-            else if(k.includes('predio')||k.includes('prédio'))hm.predio=idx;
+            if(k.includes('codigo')||k==='cod'||k==='codigo interno')hm.codigo=idx;
+            else if(k==='produto'||k.includes('descr')||k.includes('produto'))hm.produto=idx;
+            else if(k==='lote'||k.includes('lote')||k==='n lote'||k==='num lote'||k==='no lote')hm.lote=idx;
+            else if(k.includes('laboratorio')||k.includes('laborat')||k==='n lab'||k==='no lab'||k==='lab')hm.lab=idx;
+            else if(k.includes('validade')||k==='val'||k==='vencimento')hm.validade=idx;
+            else if(k==='qt'||k==='qtd'||k==='qntd'||k.includes('quant')||k==='qt total'||k==='qtd total')hm.qt=idx;
+            else if(k==='rua'||k.includes('endereco')||k.includes('local'))hm.rua=idx;
+            else if(k.includes('predio')||k.includes('predio'))hm.predio=idx;
             else if(k==='andar')hm.andar=idx;
+            else if(k==='letra'||k==='id'||k==='identificacao')hm.letra=idx;
+            else if(k==='pallet'||k.includes('pallet')||k==='palete')hm.pallet=idx;
           });
           break;
         }
       }
-      if(hi<0||!hm.produto)return;
+      if(hi<0||(!hm.produto&&!hm.codigo))return;
       for(let i=hi+1;i<data.length;i++){
         const r=data[i];
-        const prod=(r[hm.produto]||'').toString().trim();
-        if(!prod)continue;
-        itens.push({
-          setor:shName,
-          codigo:(r[hm.codigo]||'').toString().trim(),
-          produto:prod,
-          lote:(r[hm.lote]||'').toString().trim(),
-          laboratorio:(r[hm.lab]||'').toString().trim(),
-          validade:(r[hm.validade]||'').toString().trim(),
-          quantidade:parseInt(r[hm.qt])||0,
-          rua:(r[hm.rua]||'').toString().trim(),
-          predio:(r[hm.predio]||'').toString().trim(),
-          andar:(r[hm.andar]||'').toString().trim(),
+        const prod=hm.produto!=null?(r[hm.produto]||'').toString().trim():'';
+        const cod=hm.codigo!=null?(r[hm.codigo]||'').toString().trim():'';
+        if(!prod&&!cod)continue;
+        const lotRaw=hm.lote!=null?r[hm.lote]:undefined;
+        const lote=lotRaw!=null&&lotRaw!==''?String(lotRaw).trim():'';
+        const addr=[hm.rua!=null?(r[hm.rua]||'').toString().trim():'',hm.predio!=null?(r[hm.predio]||'').toString().trim():'',hm.andar!=null?(r[hm.andar]||'').toString().trim():''].filter(Boolean).join(' ');
+        rawItens.push({
+          setor:shName,codigo:cod,produto:prod,lote,
+          laboratorio:hm.lab!=null?(r[hm.lab]||'').toString().trim():'',
+          validade:hm.validade!=null?(r[hm.validade]||'').toString().trim():'',
+          quantidade:parseInt((r[hm.qt]||'').toString())||0,
+          addr,
+          letra:hm.letra!=null?(r[hm.letra]||'').toString().trim().toUpperCase():'',
+          pallet:hm.pallet!=null?(r[hm.pallet]||'').toString().trim():'',
         });
       }
     });
-    if(!itens.length){prev.innerHTML='<div class="empty">Nenhum produto encontrado. Verifique se o arquivo é a planilha correta.</div>';return;}
-    // Check duplicatas
+    if(!rawItens.length){prev.innerHTML='<div class="empty">Nenhum produto encontrado. Verifique se o arquivo é a planilha correta.</div>';return;}
+    // Dedup within file: mesmo código + lote → somar qtd e agregar endereços
+    const merged=[];const mergeMap={};
+    rawItens.forEach(it=>{
+      const key=it.codigo&&it.lote?`${it.codigo}||${it.lote}`:null;
+      if(key&&mergeMap[key]!=null){
+        const m=merged[mergeMap[key]];
+        m.quantidade+=it.quantidade;
+        if(it.addr&&!m._addrs.includes(it.addr))m._addrs.push(it.addr);
+        m.setor=m.setor===it.setor?m.setor:m.setor+' / '+it.setor;
+      }else{
+        const idx=merged.length;
+        merged.push({...it,_addrs:it.addr?[it.addr]:[]});
+        if(key)mergeMap[key]=idx;
+      }
+    });
+    merged.forEach(m=>{m.rua=m._addrs.join(' / ');delete m._addrs;delete m.addr;});
+    const mergeCount=rawItens.length-merged.length;
+    // Check against Firestore
     const todos=await getVencidos();
-    const dups=itens.filter(it=>todos.some(v=>v.codigo&&v.codigo===it.codigo&&v.lote===it.lote));
-    window._vncImportItens=itens;
+    const dups=merged.filter(it=>it.codigo&&todos.some(v=>v.codigo===it.codigo&&v.lote===it.lote));
+    window._vncImportItens=merged;
     prev.innerHTML=`
       <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">✅ ${itens.length} produtos encontrados em ${wb.SheetNames.length} abas</div>
-        ${dups.length?`<div style="font-size:12px;color:var(--amber);margin-bottom:8px">⚠️ ${dups.length} item(ns) já cadastrado(s) (mesmo código + lote) — serão ignorados na importação</div>`:''}
-        <div class="tbl-wrap" style="max-height:260px;overflow-y:auto"><table class="tbl">
-          <thead><tr><th>Setor</th><th>Código</th><th>Produto</th><th>Qtd</th><th>Validade</th><th>Lab.</th></tr></thead>
-          <tbody>${itens.slice(0,50).map(it=>`<tr style="opacity:${dups.some(d=>d.codigo===it.codigo&&d.lote===it.lote)?'.4':'1'}"><td style="font-size:10px">${it.setor}</td><td style="font-size:11px">${it.codigo||'—'}</td><td style="font-size:11px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.produto}</td><td style="text-align:center">${it.quantidade||'—'}</td><td style="font-size:11px">${it.validade||'—'}</td><td style="font-size:11px">${it.laboratorio||'—'}</td></tr>`).join('')}
-          ${itens.length>50?`<tr><td colspan="6" style="text-align:center;color:var(--text-m);font-size:11px">... e mais ${itens.length-50} itens</td></tr>`:''}</tbody>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px">✅ ${rawItens.length} linhas lidas em ${wb.SheetNames.length} aba(s)</div>
+        ${mergeCount?`<div style="font-size:12px;color:var(--accent);margin-bottom:4px">🔗 ${mergeCount} linha(s) mesclada(s) por código+lote duplicado → ${merged.length} itens únicos</div>`:''}
+        ${dups.length?`<div style="font-size:12px;color:var(--amber);margin-bottom:8px">⚠️ ${dups.length} item(ns) já existem no sistema (mesmo código+lote) — serão ignorados</div>`:''}
+        <div class="tbl-wrap" style="max-height:280px;overflow-y:auto"><table class="tbl">
+          <thead><tr><th>Setor</th><th>Código</th><th>Produto</th><th>Lote</th><th>Qtd</th><th>Validade</th><th>Endereços</th></tr></thead>
+          <tbody>${merged.slice(0,100).map(it=>{
+            const isDup=dups.some(d=>d.codigo===it.codigo&&d.lote===it.lote);
+            return`<tr style="opacity:${isDup?'.35':'1'}">
+              <td style="font-size:10px">${it.setor}</td>
+              <td style="font-size:11px">${it.codigo||'—'}</td>
+              <td style="font-size:11px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.produto||'—'}</td>
+              <td style="font-size:11px">${it.lote||'—'}</td>
+              <td style="text-align:center">${it.quantidade||'—'}</td>
+              <td style="font-size:11px">${it.validade||'—'}</td>
+              <td style="font-size:10px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${it.rua||''}">${it.rua||'—'}</td>
+            </tr>`;
+          }).join('')}
+          ${merged.length>100?`<tr><td colspan="7" style="text-align:center;color:var(--text-m);font-size:11px">... e mais ${merged.length-100} itens</td></tr>`:''}</tbody>
         </table></div>
       </div>
-      <button class="btn btn-primary" onclick="confirmarImportVnc()" style="width:100%">📥 Importar ${itens.length-dups.length} itens novos</button>`;
+      <button class="btn btn-primary" onclick="confirmarImportVnc()" style="width:100%">📥 Importar ${merged.length-dups.length} itens novos</button>`;
   }catch(e){prev.innerHTML=`<div style="color:var(--red);font-size:13px;padding:12px">Erro ao ler arquivo: ${e.message}</div>`;}
 }
 
@@ -3279,15 +3371,19 @@ async function confirmarImportVnc(){
   if(!itens.length)return;
   const todos=await getVencidos();
   const novos=itens.filter(it=>!todos.some(v=>v.codigo&&v.codigo===it.codigo&&v.lote===it.lote));
+  if(!novos.length){document.getElementById('vnc-import-prev').innerHTML='<div class="empty">Nenhum item novo para importar.</div>';return;}
   const btn=document.querySelector('#vnc-tc-importar .btn-primary');
   if(btn){btn.disabled=true;btn.textContent='Importando...';}
+  const now=new Date();
+  const importId=`imp_${now.getTime()}`;
+  const importLabel=`Importação ${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;
   for(const it of novos){
-    const item={...it,id:'',status:'aguardando',letra:'',pallet:'',destino:'',observacoes:'',dataRegistro:new Date().toISOString()};
+    const item={...it,id:'',status:'aguardando',letra:it.letra||'',pallet:it.pallet||'',destino:'',observacoes:'',dataRegistro:now.toISOString(),importId,importLabel};
     await _saveVnc(item);
   }
-  CACHE.vencidos=null;
+  CACHE.vencidos=null;window._vncImportItens=null;
   document.getElementById('vnc-import-prev').innerHTML=`<div style="background:var(--green-bg);color:var(--green-d);border-radius:var(--r);padding:12px 14px;font-size:13px;font-weight:600">✅ ${novos.length} itens importados com sucesso!</div>`;
-  window._vncImportItens=null;
+  renderVncImportar();
 }
 
 function renderVncAdd(){
