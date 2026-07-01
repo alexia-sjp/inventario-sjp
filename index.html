@@ -2548,6 +2548,25 @@ function buildOcorrTable(ocorrs){
 }
 
 // ── MENSAL ─────────────────────────────────────────────────────────────────────
+function calcDiasUteis(ini,fim){
+  if(!ini||!fim)return 999;
+  let d=new Date(ini.slice(0,10)),end=new Date(fim.slice(0,10)),n=0;
+  while(d<=end){const dow=d.getDay();if(dow!==0&&dow!==6)n++;d.setDate(d.getDate()+1);}
+  return n;
+}
+function calcIndStats(ativInds){
+  const total=(ativInds||[]).length;
+  if(!total)return{pct:null,total:0,concluidas:0,noPrazo:0};
+  let noPrazo=0,concluidas=0;
+  (ativInds||[]).forEach(a=>{
+    if(a.status!=='concluido')return;
+    concluidas++;
+    if(!a.meta_val||a.meta_val<=0){noPrazo++;return;}
+    if(a.meta_tipo==='horas'){if((parseFloat(a.duracao_h)||0)<=a.meta_val)noPrazo++;}
+    else{if(calcDiasUteis(a.inicio,a.fim)<=a.meta_val)noPrazo++;}
+  });
+  return{pct:Math.round(noPrazo/total*100),total,concluidas,noPrazo};
+}
 function calcMensal(mes){
   const[y,m]=mes.split('-');
   const dias=allDays().filter(d=>d.startsWith(`${y}-${m}`));
@@ -2612,9 +2631,18 @@ function calcMensal(mes){
   return{stats,semanas,dias,users,ocorrs,obsAll};
 }
 
-function renderMensal(){
+async function renderMensal(){
   const mes=document.getElementById('sel-mes').value;if(!mes)return;
   const cont=document.getElementById('men-content');
+  cont.innerHTML='<div class="empty" style="padding:20px">Carregando...</div>';
+  let ativIndsByMat={};
+  if(fdb){
+    try{
+      const[y,m]=mes.split('-');
+      const snap=await fdb.collection('atividades_ind').where('data','>=',`${y}-${m}-01`).where('data','<=',`${y}-${m}-31`).get();
+      snap.forEach(d=>{const r=d.data();if(!ativIndsByMat[r.mat])ativIndsByMat[r.mat]=[];ativIndsByMat[r.mat].push(r);});
+    }catch(e){console.warn('ativInds fetch:',e);}
+  }
   let _d;try{_d=calcMensal(mes);}catch(e){cont.innerHTML='<div style="color:#dc2626;padding:12px">Erro: '+e.message+'</div>';return;}
   const{stats,semanas,dias,users,obsAll}=_d;
   // Aplicar filtros nas ocorrências
@@ -2633,13 +2661,16 @@ function renderMensal(){
   const comD=Object.values(stats).filter(s=>s.cntPct>0);
   Object.values(stats).forEach(s=>{
     totSku+=s.totalSkus;
-    const _totInd=s.indDias+(s.indProdDias||0);
-    const _totIndMeta=s.indMetaDias+(s.indProdMetaDias||0);
-    const _soInd=s.cntPct===0&&_totInd>0;
-    const _indBateu=_soInd&&_totIndMeta>=_totInd&&_totInd>0;
-    const _prodBateu=s.cntPct>0&&Math.round(s.somaPct/s.cntPct)>=100;
-    if(_prodBateu||_indBateu)totBat++;
     totHInd+=s.hInd+s.hIndDia;
+    const _ativInds=ativIndsByMat[s.mat]||[];
+    const _pctInd=calcIndStats(_ativInds).pct;
+    const _mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
+    const _hasProd=s.cntPct>0,_hasInd=_ativInds.length>0;
+    let _res=null;
+    if(_hasProd&&_hasInd)_res=Math.round(((_mediaPct||0)+(_pctInd||0))/2);
+    else if(_hasProd)_res=_mediaPct;
+    else if(_hasInd)_res=_pctInd;
+    if(_res!=null&&_res>=100)totBat++;
   });
   const medG=comD.length>0?(comD.reduce((a,s)=>a+s.somaSKUH/s.cntSKUH,0)/comD.length).toFixed(1):'—';
   const totalPoss=users.length*diasU*HORAS_BASE;
@@ -2673,57 +2704,71 @@ function renderMensal(){
     const s=stats[u.mat];if(!s)return'';
     const mediaSKUH=s.cntSKUH>0?(s.somaSKUH/s.cntSKUH).toFixed(1):'—';
     const mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
-    const bateu=mediaPct!=null&&mediaPct>=100;
     const hIT=s.hInd+s.hIndDia;
-    const totInd=s.indDias+(s.indProdDias||0);
-    const totIndMeta=s.indMetaDias+(s.indProdMetaDias||0);
     const diasPresentes=s.dias+s.indDias;
     const pctDisp=diasPresentes>0?Math.round((diasPresentes*HORAS_BASE-hIT)/(diasPresentes*HORAS_BASE)*100):0;
-    const soInd=s.cntPct===0&&totInd>0;
-    const indBateu=soInd&&totInd>0&&totIndMeta>=totInd;
-    const indParcial=soInd&&totIndMeta>0&&totIndMeta<totInd;
-    const metaOk=bateu||indBateu;
-    let badgeRH,cor;
-    if(soInd){
-      if(indBateu){badgeRH='Meta ind. atingida';cor='var(--green)';}
-      else if(indParcial){badgeRH=`Ind. ${totIndMeta}/${totInd}d`;cor='var(--amber)';}
-      else{badgeRH='Ind. não entregue';cor='var(--red)';}
-    }
-    else if(bateu){badgeRH='Meta atingida';cor='var(--green)';}
-    else if(mediaPct!=null){badgeRH='Não bateu';cor='var(--red)';}
-    else{badgeRH='Sem dados';cor='var(--text-m)';}
+    const ativInds=ativIndsByMat[u.mat]||[];
+    const indSt=calcIndStats(ativInds);
+    const hasProd=s.cntPct>0,hasInd=ativInds.length>0;
+    let resultadoPct=null;
+    if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
+    else if(hasProd)resultadoPct=mediaPct;
+    else if(hasInd)resultadoPct=indSt.pct;
+    const atingiu=resultadoPct!=null&&resultadoPct>=100;
+    const badgeRH=resultadoPct==null?'Sem dados':atingiu?'✅ Atingiu':'✗ Não atingiu';
+    const cor=resultadoPct==null?'var(--text-m)':atingiu?'var(--green)':'var(--red)';
     const initials=u.nome.split(' ').map(n=>n[0]).slice(0,2).join('');
-    const avatarBg=metaOk?'var(--green-bg)':soInd&&!indBateu?'var(--purple-bg)':'var(--red-bg)';
-    const avatarCor=metaOk?'var(--green-d)':soInd&&!indBateu?'var(--purple)':'var(--red-d)';
-    const barPct=soInd?Math.round(totIndMeta/Math.max(totInd,1)*100):mediaPct!=null?Math.min(mediaPct,100):0;
-    const barCor=metaOk?'var(--green)':barPct>=80?'var(--amber)':'var(--red)';
+    const avatarBg=resultadoPct==null?'var(--bg-card2)':atingiu?'var(--green-bg)':'var(--red-bg)';
+    const avatarCor=resultadoPct==null?'var(--text-m)':atingiu?'var(--green-d)':'var(--red-d)';
+    const barPct=resultadoPct!=null?Math.min(resultadoPct,100):0;
+    const barCor=atingiu?'var(--green)':barPct>=80?'var(--amber)':'var(--red)';
     const lbl=(t)=>`<div style="font-size:10px;font-weight:500;color:var(--text-m);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">${t}</div>`;
     const val=(v,c='var(--text)')=>`<div style="font-size:15px;font-weight:700;color:${c};line-height:1">${v}</div>`;
     const statCol=(label,value,color)=>`<div style="text-align:center">${lbl(label)}${val(value,color)}</div>`;
-    const statsGrid=soInd
-      ?`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
-          ${statCol('Dias ind.',totInd,'var(--text)')}
-          ${statCol('Entregues',totIndMeta,metaOk?'var(--green)':indParcial?'var(--amber)':'var(--red)')}
-          ${statCol('Faltas',s.faltas||'—',s.faltas>0?'var(--red)':'var(--text-m)')}
-          ${statCol('H. ind.',(s.hInd+s.hIndDia).toFixed(0)+'h','var(--text)')}
-        </div>`
-      :`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
-          ${statCol('Dias',s.dias+(s.indDias>0?`<span style="font-size:10px;font-weight:500;color:var(--text-m)"> +${s.indDias}i</span>`:''),'var(--text)')}
-          ${statCol('Faltas',s.faltas||'—',s.faltas>0?'var(--red)':'var(--text-m)')}
-          ${statCol('Disp.',pctDisp+'%',pctDisp>=80?'var(--green)':'var(--amber)')}
-          ${statCol('SKU/h',mediaSKUH,parseFloat(mediaSKUH)>=26?'var(--green)':'var(--red)')}
-          ${statCol('Média%',mediaPct!=null?mediaPct+'%':'—',mediaPct!=null?(bateu?'var(--green)':'var(--red)'):'var(--text-m)')}
-        </div>`;
+    let statsGrid;
+    if(hasProd&&hasInd){
+      // Caso 3 — híbrido: média de % produção e % cumprimento indiretas
+      statsGrid=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
+        ${statCol('Dias prod.',s.dias,'var(--text)')}
+        ${statCol('% Produção',mediaPct!=null?mediaPct+'%':'—',mediaPct!=null?(mediaPct>=100?'var(--green)':'var(--red)'):'var(--text-m)')}
+        ${statCol('% Indiretas',indSt.pct!=null?indSt.pct+'%':'—',indSt.pct!=null?(indSt.pct>=100?'var(--green)':'var(--red)'):'var(--text-m)')}
+        ${statCol('Resultado',resultadoPct!=null?resultadoPct+'%':'—',cor)}
+      </div>`;
+    } else if(hasProd){
+      // Caso 1 — só produção
+      statsGrid=`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
+        ${statCol('Dias',s.dias,'var(--text)')}
+        ${statCol('Faltas',s.faltas||'—',s.faltas>0?'var(--red)':'var(--text-m)')}
+        ${statCol('Disp.',pctDisp+'%',pctDisp>=80?'var(--green)':'var(--amber)')}
+        ${statCol('SKU/h',mediaSKUH,parseFloat(mediaSKUH)>=26?'var(--green)':'var(--red)')}
+        ${statCol('% Mês',mediaPct!=null?mediaPct+'%':'—',mediaPct!=null?(atingiu?'var(--green)':'var(--red)'):'var(--text-m)')}
+      </div>`;
+    } else if(hasInd){
+      // Caso 2 — só atividade indireta
+      statsGrid=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
+        ${statCol('Atividades',indSt.total,'var(--text)')}
+        ${statCol('Concluídas',indSt.concluidas,'var(--text)')}
+        ${statCol('No prazo',indSt.noPrazo,atingiu?'var(--green)':'var(--red)')}
+        ${statCol('% Cumprim.',indSt.pct!=null?indSt.pct+'%':'—',cor)}
+      </div>`;
+    } else {
+      statsGrid=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px 0;border-top:1px solid var(--border)">
+        ${statCol('Dias',s.dias,'var(--text)')}
+        ${statCol('Faltas',s.faltas||'—',s.faltas>0?'var(--red)':'var(--text-m)')}
+        ${statCol('Atestados',s.atestados||'—','var(--text-m)')}
+      </div>`;
+    }
     const tagRow=(s.ferias>0||s.atestados>0)?`<div style="display:flex;gap:5px;flex-wrap:wrap">
       ${s.ferias>0?`<span class="badge bg-green">🌴 ${s.ferias}d férias</span>`:''}
       ${s.atestados>0?`<span class="badge bg-amber">📋 ${s.atestados}d atestado</span>`:''}
     </div>`:'';
+    const subtag=hasInd&&hasProd?' · Híbrido':hasInd?' · Atividade Indireta':'';
     return`<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px">
       <div style="display:flex;align-items:center;gap:10px">
         <div style="width:36px;height:36px;border-radius:var(--r);background:${avatarBg};color:${avatarCor};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">${initials}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.nome}</div>
-          <div style="font-size:11px;color:var(--text-m)">Mat. ${u.mat}${soInd?' · Atividade Indireta':''}</div>
+          <div style="font-size:11px;color:var(--text-m)">Mat. ${u.mat}${subtag}</div>
         </div>
         <span style="font-size:11px;font-weight:600;color:${cor};white-space:nowrap">${badgeRH}</span>
       </div>
@@ -2778,9 +2823,9 @@ function renderMensal(){
     ${sec('👥','Desempenho por Colaborador')}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">${colCards}</div>
     ${(()=>{
-      const comDados=users.map(u=>stats[u.mat]).filter(s=>s&&s.cntPct>0);
-      if(!comDados.length)return'';
-      const mediaEquipe=Math.round(comDados.reduce((a,s)=>a+s.somaPct/s.cntPct,0)/comDados.length);
+      const resultados=users.map(u=>{const s=stats[u.mat];if(!s)return null;const ai=ativIndsByMat[u.mat]||[];const pi=calcIndStats(ai).pct;const mp=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;const hp=s.cntPct>0,hi=ai.length>0;if(hp&&hi)return Math.round(((mp||0)+(pi||0))/2);if(hp)return mp;if(hi)return pi;return null;}).filter(r=>r!=null);
+      if(!resultados.length)return'';
+      const mediaEquipe=Math.round(resultados.reduce((a,r)=>a+r,0)/resultados.length);
       const cor=mediaEquipe>=100?'#16a34a':mediaEquipe>=80?'#d97706':'#dc2626';
       return`<div style="margin-top:10px;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:12px">
         <div style="font-size:12px;color:var(--text-s);font-weight:500">Média geral da equipe no mês</div>
@@ -2921,27 +2966,40 @@ function renderMensal(){
 }
 
 // ── EXCEL ───────────────────────────────────────────────────────────────────────
-function exportarExcel(){
+async function exportarExcel(){
   const mes=document.getElementById('sel-mes').value;if(!mes){alert('Selecione um mês.');return;}
+  let ativIndsByMat={};
+  if(fdb){
+    try{
+      const[y2,m2]=mes.split('-');
+      const snap=await fdb.collection('atividades_ind').where('data','>=',`${y2}-${m2}-01`).where('data','<=',`${y2}-${m2}-31`).get();
+      snap.forEach(d=>{const r=d.data();if(!ativIndsByMat[r.mat])ativIndsByMat[r.mat]=[];ativIndsByMat[r.mat].push(r);});
+    }catch(e){console.warn('ativInds fetch excel:',e);}
+  }
   const{stats,dias,users,ocorrs,obsAll}=calcMensal(mes);
   const[y,m]=mes.split('-');const diasU=dias.length;
   const wb=XLSX.utils.book_new();
   // Resumo RH
-  const rhD=[['Colaborador','Matrícula','Dias Prod.','Faltas','Atestados','Férias','Dias Indireta','H.Indireta','Disp.%','SKU/h médio','Média % Mês','Meta','Resultado','Motivo']];
+  const rhD=[['Colaborador','Matrícula','Dias Prod.','Faltas','Atestados','Férias','Dias Indireta','H.Indireta','% Produtividade','% Indiretas','Resultado Final','✅ Atingiu?']];
   users.forEach(u=>{
     const s=stats[u.mat];if(!s)return;
     const mediaPct=s.cntPct>0?Math.round(s.somaPct/s.cntPct):null;
-    const bateu=mediaPct!=null&&mediaPct>=100;const hIT=s.hInd+s.hIndDia;
-    const pctDisp=Math.round((diasU*HORAS_BASE-hIT)/(diasU*HORAS_BASE)*100);
-    const soInd=s.dias===0&&s.indDias>0;const maiorInd=s.indDias>s.dias;
-    let res='Sem dados';let motivo='';
-    if(soInd){res='⚡ Só indireta';motivo='Dedicação total a atividades indiretas';}
-    else if(bateu){res='✅ Bateu';motivo='Meta atingida';}
-    else if(mediaPct!=null&&maiorInd){res='⚠️ Avaliar';motivo='Mais dias em indireta';}
-    else if(mediaPct!=null){res='✗ Não bateu';motivo='Produtividade abaixo da meta';}
-    rhD.push([u.nome,u.mat,s.dias,s.faltas,s.atestados,s.ferias,s.indDias,hIT+'h',pctDisp+'%',s.cntSKUH>0?(s.somaSKUH/s.cntSKUH).toFixed(1):'—',mediaPct!=null?mediaPct+'%':'—',bateu?'SIM':'NÃO',res,motivo]);
+    const hIT=s.hInd+s.hIndDia;
+    const ativInds=ativIndsByMat[u.mat]||[];
+    const indSt=calcIndStats(ativInds);
+    const hasProd=s.cntPct>0,hasInd=ativInds.length>0;
+    let resultadoPct=null;
+    if(hasProd&&hasInd)resultadoPct=Math.round(((mediaPct||0)+(indSt.pct||0))/2);
+    else if(hasProd)resultadoPct=mediaPct;
+    else if(hasInd)resultadoPct=indSt.pct;
+    const atingiu=resultadoPct!=null&&resultadoPct>=100;
+    rhD.push([u.nome,u.mat,s.dias,s.faltas,s.atestados,s.ferias,s.indDias+s.indProdDias,hIT+'h',
+      hasProd?(mediaPct!=null?mediaPct+'%':'—'):'N/A',
+      hasInd?(indSt.pct!=null?indSt.pct+'%':'—'):'N/A',
+      resultadoPct!=null?resultadoPct+'%':'Sem dados',
+      resultadoPct==null?'—':atingiu?'SIM':'NÃO']);
   });
-  const ws1=XLSX.utils.aoa_to_sheet(rhD);ws1['!cols']=[{wch:25},{wch:10},{wch:10},{wch:8},{wch:10},{wch:8},{wch:13},{wch:10},{wch:8},{wch:10},{wch:12},{wch:8},{wch:15},{wch:40}];
+  const ws1=XLSX.utils.aoa_to_sheet(rhD);ws1['!cols']=[{wch:25},{wch:10},{wch:10},{wch:8},{wch:10},{wch:8},{wch:13},{wch:10},{wch:14},{wch:12},{wch:14},{wch:10}];
   XLSX.utils.book_append_sheet(wb,ws1,'Resumo RH');
   // % Diário
   const dD=[['Colaborador','Data','SKUs','SKU/h','Meta','% do Dia','Setores']];
